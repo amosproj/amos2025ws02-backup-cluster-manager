@@ -1,0 +1,51 @@
+# This workflow
+#   • Provides a reproducible, automated build and test process
+#     for the Spring Boot backend service.
+#   • Runs on every branch for backend-related changes
+#     or when this workflow file itself is modified.
+#
+# What it does:
+#   1. Checks out the repository.
+#   2. Sets up a Java 21 environment (Temurin distribution)
+#      and caches Maven dependencies for faster builds.
+#   3. Runs a clean Maven package build (skipping tests) to
+#      verify compilation and dependency correctness.
+#   4. Executes all unit and integration tests under
+#      src/test/java using `mvn test`.
+
+name: CI Build Backend
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/build-backend.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/build-backend.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn -B -q -DskipTests clean package
+
+      - name: Test with Maven
+        run: mvn -B test

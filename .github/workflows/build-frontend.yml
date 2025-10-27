@@ -5,9 +5,13 @@ name: CI Build Frontend Angular
 
 on:
   push:
-    branches: [ "main" ]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/build-frontend.yml"
   pull_request:
-    branches: [ "main" ]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/build-frontend.yml"
 
 jobs:
   build:

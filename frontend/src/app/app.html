@@ -27,7 +27,7 @@
     <ul class="space-y-2">
       @for (navigationItem of navigationItems(); track navigationItem.label) {
         <li>
-          <a href="#"
+          <a href="{{ navigationItem.route }}"
              class="sidebar-navigation-item  flex rounded-lg items-center p-2 text-base font-normal text-foreground hover:bg-primary-2 group">
             <img [src]="navigationItem.icon">
             <span class="ml-3">{{ navigationItem.label }}</span>

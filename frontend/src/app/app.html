@@ -2,7 +2,7 @@
 <div class="w-full bg-primary-1 flex h-12 items-center gap-2 px-4 relative z-40">
   <a href="/" class="flex items-center gap-2">
     <img class="w-8" src="/brand-icon.svg"/>
-    <p class="uppercase font-semibold">Cluster Manager</p>
+    <p id="header-text" class="uppercase font-semibold">Cluster Manager</p>
   </a>
 </div>
 
@@ -28,7 +28,7 @@
       @for (navigationItem of navigationItems(); track navigationItem.label) {
         <li>
           <a href="#"
-             class="flex rounded-lg items-center p-2 text-base font-normal text-foreground hover:bg-primary-2 group">
+             class="sidebar-navigation-item  flex rounded-lg items-center p-2 text-base font-normal text-foreground hover:bg-primary-2 group">
             <img [src]="navigationItem.icon">
             <span class="ml-3">{{ navigationItem.label }}</span>
           </a>

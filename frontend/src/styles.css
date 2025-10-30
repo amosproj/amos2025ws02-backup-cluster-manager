@@ -4,3 +4,22 @@
 @plugin "flowbite/plugin";
 @source "../node_modules/flowbite";
 
+@theme{
+  --color-primary: hsl(0, 0%, 100%);
+  --color-primary-1: hsl(0, 0%, 96%);
+  --color-primary-2: hsl(0, 0%, 92%);
+  --color-primary-3: hsl(0, 0%, 88%);
+  --color-primary-4: hsl(0, 0%, 84%);
+
+  --color-secondary: hsl(230, 100%, 50%);
+  --color-secondary-1: hsl(0, 0%, 100%);
+  --color-secondary-2: hsl(230, 100%, 90%);
+
+  --color-foreground: hsl(0, 0%, 5%);
+  --color-foreground-muted: hsl(0, 0%, 30%);
+}
+
+/* Backgrop color for side-navigation*/
+[drawer-backdrop] {
+  @apply bg-primary-4/40 backdrop-blur-sm;
+}

@@ -2,19 +2,61 @@ spring:
   application:
     name: bcm
 
+  # Default profile (can be overridden)
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
+    username: ${POSTGRES_USER:appuser}
+    password: ${POSTGRES_PASSWORD:apppassword}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  logging:
+    level:
+      root: INFO
+      com.bcm: DEBUG
+server:
+  port: 8080
+
+---
+# Development profile (PostgreSQL)
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+---
+# Test profile (H2)
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     driver-class-name: org.h2.Driver
     username: sa
     password:
   h2:
     console:
       enabled: true
-
-server:
-  port: 8080
-
-logging:
-  level:
-    root: INFO
-    com.bcm: DEBUG
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop

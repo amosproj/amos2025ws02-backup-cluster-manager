@@ -1,16 +1,67 @@
 @startuml
-'https://plantuml.com/object-diagram
-
-object London
-object Washington
-object Berlin
-object NewYork
-
-map CapitalCity {
- UK *-> London
- USA *--> Washington
- Germany *---> Berlin
+entity "users" {
+  * id : UUID <<PK>>
+  --
+  * name : varchar(150) <<UNIQUE>>
+  * password_hash : varchar(255)
+  * enabled : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
 }
 
-NewYork --> CapitalCity::USA
+entity "groups" {
+  * id : UUID <<PK>>
+  --
+  * name : varchar(100)
+  * enabled : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "user_group_relations" {
+  * user_id : UUID <<FK users.id>>
+  * group_id : UUID <<FK groups.id>>
+  --
+  added_at : timestamptz
+}
+
+entity "clients" {
+  * id : UUID <<PK>>
+  --
+  * name_or_ip : varchar(255) <<UNIQUE>>
+  * enabled : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "tasks" {
+  * id : UUID <<PK>>
+  --
+  * name : varchar(150)
+  * client_id : UUID <<FK clients.id>>
+  * source : text
+  * enabled : boolean
+  created_at : timestamptz
+  updated_at : timestamptz
+}
+
+entity "backups" {
+  * id : UUID <<PK>>
+  --
+  * client_id : UUID <<FK clients.id>>
+  * task_id : UUID <<FK tasks.id>>
+  * start_time : timestamptz
+  * stop_time  : timestamptz
+  * size_bytes : bigint
+  * state : backup_state
+  message : text
+  created_at : timestamptz
+}
+
+users ||--o{ user_group_relations
+groups ||--o{ user_group_relations
+
+clients ||--o{ tasks
+clients ||--o{ backups
+tasks   ||--o{ backups
 @enduml

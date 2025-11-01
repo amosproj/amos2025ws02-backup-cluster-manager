@@ -1,8 +1,7 @@
 # This workflow
 #   • Provides a reproducible, automated build and test process
 #     for the Spring Boot backend service.
-#   • Runs on every branch for backend-related changes
-#     or when this workflow file itself is modified.
+#   • Runs on every branch
 #
 # What it does:
 #   1. Checks out the repository.
@@ -17,13 +16,7 @@ name: CI Build Backend
 
 on:
   push:
-    paths:
-      - "backend/**"
-      - ".github/workflows/build-backend.yml"
   pull_request:
-    paths:
-      - "backend/**"
-      - ".github/workflows/build-backend.yml"
 
 jobs:
   build:

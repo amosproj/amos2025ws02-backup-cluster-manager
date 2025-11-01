@@ -5,13 +5,7 @@ name: CI Build Frontend Angular
 
 on:
   push:
-    paths:
-      - "frontend/**"
-      - ".github/workflows/build-frontend.yml"
   pull_request:
-    paths:
-      - "frontend/**"
-      - ".github/workflows/build-frontend.yml"
 
 jobs:
   build:

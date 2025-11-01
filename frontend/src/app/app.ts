@@ -12,7 +12,30 @@ import {routes} from './app.routes';
 })
 export class App implements OnInit{
   protected readonly title = signal('frontend');
-  routes = signal(routes);
+
+  // Routes should be added here, or directly in app.routes.ts
+  protected readonly navigationItems = signal([
+    {
+      label: "Users",
+      icon:"/users.svg"
+    },
+    {
+      label: "Permissions",
+      icon: "/key.svg"
+    },
+    {
+      label: "Cluster",
+      icon: "/server.svg"
+    },
+    {
+      label: "Nodes",
+      icon: "/hard-drive.svg"
+    },
+    {
+      label:"Backups",
+      icon: "/database.svg"
+    }
+  ]);
 
   ngOnInit(): void {
     initFlowbite();

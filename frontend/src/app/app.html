@@ -1,26 +1,45 @@
-<header>
-  <nav class="bg-white border-gray-200 dark:bg-gray-800">
-    <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-lg p-4">
-      <!--      <a href="https://flowbite.com" class="flex items-center">-->
-      <!--        <img src="https://flowbite.com/docs/images/logo.svg" class="mr-3 h-6 sm:h-9" alt="Flowbite Logo"/>-->
-      <!--        <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">Flowbite</span>-->
-      <!--      </a>-->
-      <div>
-        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">SEP - Cluster Manager</span>
-      </div>
-      <div class="justify-between items-center w-full w-auto order-1" id="mobile-menu-2">
-        <ul class="flex flex-col mt-4 font-medium space-x-8 flex-row mt-0">
-          @for (route of routes(); track route.path) {
-            <li class="text-white cursor-pointer">
-              <a [routerLink]="route.path">{{ route.title }}</a>
-            </li>
-          }
-        </ul>
-      </div>
-    </div>
-  </nav>
-</header>
-<main class="p-4 mx-auto max-w-screen-lg">
+<!--Header-->
+<div class="w-full bg-primary-1 flex h-12 items-center gap-2 px-4 relative z-40">
+  <a href="/" class="flex items-center gap-2">
+    <img class="w-8" src="/brand-icon.svg"/>
+    <p id="header-text" class="uppercase font-semibold">Cluster Manager</p>
+  </a>
+</div>
+
+<!--Mobile Navigation Trigger-->
+<button data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar"
+        type="button"
+        data-drawer-backdrop="true"
+        class="z-10 inline-flex items-center p-2 mt-2 ml-3 text-sm text-foreground rounded-lg sm:hidden hover:bg-primary-1 focus:outline-none">
+  <span class="sr-only">Open sidebar</span>
+  <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+    <path clip-rule="evenodd" fill-rule="evenodd"
+          d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
+  </svg>
+</button>
+
+<!--Side Navigation-->
+<aside id="default-sidebar"
+       class="fixed top-12 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
+       aria-label="Sidenav"
+>
+  <div class="overflow-y-auto py-5 px-3 h-full bg-primary-1">
+    <ul class="space-y-2">
+      @for (navigationItem of navigationItems(); track navigationItem.label) {
+        <li>
+          <a href="#"
+             class="sidebar-navigation-item  flex rounded-lg items-center p-2 text-base font-normal text-foreground hover:bg-primary-2 group">
+            <img [src]="navigationItem.icon">
+            <span class="ml-3">{{ navigationItem.label }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</aside>
+
+<!--Main Content-->
+<main class="mx-auto w-full p-4 sm:pl-68 transition-all">
   <!--  feature routes will be rendered here-->
   <router-outlet/>
 </main>

@@ -5,6 +5,15 @@ spring:
   # Default profile (can be overridden)
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
+    username: ${POSTGRES_USER:appuser}
+    password: ${POSTGRES_PASSWORD:apppassword}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
   jpa:
     show-sql: true
     properties:
@@ -23,15 +32,6 @@ spring:
   config:
     activate:
       on-profile: dev
-  datasource:
-    url: jdbc:postgresql://localhost:5432/bcm
-    username: appuser
-    password: apppassword
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:

@@ -61,7 +61,7 @@ For unit-tests a h2 in-memory database is used.
 Spring Boot
 Maven
 
-## Building the Docker Image
+## Building the Docker Image and running local docker-compose setup
 
 multi-stage Docker build for Spring Boot bcm application
 
@@ -73,4 +73,13 @@ docker build -t backend:latest .
 
 # Run the container
 docker run -p 8080:8080 backend:latest
+```
+
+The back- and frontend images need to be built to start successfully.
+To start the cluster setup in the project root directory:
+
+```bash
+cd ..
+
+docker-compose up
 ```

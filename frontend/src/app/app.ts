@@ -1,12 +1,12 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { OnInit } from '@angular/core';
 import { initFlowbite } from 'flowbite';
 import {routes} from './app.routes';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -17,23 +17,28 @@ export class App implements OnInit{
   protected readonly navigationItems = signal([
     {
       label: "Users",
-      icon:"/users.svg"
+      icon:"/users.svg",
+      route: "users"
     },
     {
       label: "Permissions",
-      icon: "/key.svg"
+      icon: "/key.svg",
+      route: "permissions"
     },
     {
-      label: "Cluster",
-      icon: "/server.svg"
+      label: "Clusters",
+      icon: "/server.svg",
+      route: "clusters"
     },
     {
       label: "Nodes",
-      icon: "/hard-drive.svg"
+      icon: "/hard-drive.svg",
+      route: "nodes"
     },
     {
       label:"Backups",
-      icon: "/database.svg"
+      icon: "/database.svg",
+      route: "backups"
     }
   ]);
 

@@ -60,3 +60,17 @@ For unit-tests a h2 in-memory database is used.
 ## Resources
 Spring Boot
 Maven
+
+## Building the Docker Image
+
+multi-stage Docker build for Spring Boot bcm application
+
+To build and run locally:
+
+```bash
+# Build the image
+docker build -t backend:latest .
+
+# Run the container
+docker run -p 8080:8080 backend:latest
+```

@@ -19,6 +19,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  backend:
+    image: backend:latest
+    container_name: spring-backend
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - postgres
 
 volumes:
   postgres-data:

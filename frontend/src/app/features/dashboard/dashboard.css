@@ -1,0 +1,122 @@
+.dashboard-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.action-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.info-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  overflow: hidden;
+}
+
+.info-card:hover {
+  background: #f9fafb;
+}
+
+.card-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.card-header-large {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  font-size: 1.125rem;
+  text-align: center;
+  color: white;
+}
+
+.card-value {
+  padding: 1rem;
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #2563eb;
+  text-align: center;
+}
+
+.card-value-sm {
+  padding: 1rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: white;
+}
+
+.card-text {
+  padding: 1rem;
+  font-size: 1rem;
+  text-align: center;
+  color: white;
+}
+
+/* Performance Cards */
+.performance-card {
+  background: linear-gradient(to bottom right, #9333ea, #7e22ce);
+  border-color: #7e22ce;
+}
+
+.performance-card:hover {
+  background: linear-gradient(to bottom right, #7e22ce, #6b21a8);
+}
+
+.performance-card .card-header {
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.logout-card {
+  background: linear-gradient(to bottom right, #ec4899, #dc2626);
+  border-color: #dc2626;
+}
+
+.logout-card:hover {
+  background: linear-gradient(to bottom right, #db2777, #b91c1c);
+}
+
+.logout-card .card-header-large {
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}

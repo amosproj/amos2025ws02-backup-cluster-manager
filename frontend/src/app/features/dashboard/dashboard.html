@@ -1,1 +1,78 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+
+  <div class="action-buttons">
+    <button class="action-btn" (click)="onButtonClick('add-user')">
+      <img src="/add_user.svg" alt="Add User" />
+      Add User
+    </button>
+
+    <button class="action-btn" (click)="onButtonClick('add-server')">
+      <img src="/add_serv.svg" alt="Add Server" />
+      Add Server
+    </button>
+
+    <button class="action-btn" (click)="onButtonClick('add-permission')">
+      <img src="/add_perm.svg" alt="Add Permission" />
+      Add Permission
+    </button>
+
+    <button class="action-btn" (click)="onButtonClick('edit-user')">
+      <img src="/edit_user.svg" alt="Edit User" />
+      Edit User
+    </button>
+
+    <button class="action-btn" (click)="onButtonClick('edit-server')">
+      <img src="/edit_serv.svg" alt="Edit Server" />
+      Edit Server
+    </button>
+
+    <button class="action-btn" (click)="onButtonClick('edit-permission')">
+      <img src="/edit_perm.svg" alt="Edit Permission" />
+      Edit Permission
+    </button>
+  </div>
+
+  <div class="info-cards-grid">
+
+    <div class="info-card" (click)="onCardClick('list-users')">
+      <div class="card-header">List Users</div>
+      <div class="card-value">{{ userCount }}</div>
+    </div>
+
+    <div class="info-card" (click)="onCardClick('list-permissions')">
+      <div class="card-header">List Permissions</div>
+      <div class="card-value">{{ permissionCount }}</div>
+    </div>
+
+    <div class="info-card" (click)="onCardClick('list-cluster')">
+      <div class="card-header">List Cluster</div>
+      <div class="card-value">{{ clusterCount }}</div>
+    </div>
+
+    <div class="info-card" (click)="onCardClick('list-nodes')">
+      <div class="card-header">List Nodes</div>
+      <div class="card-value">{{ nodeCount }}</div>
+    </div>
+
+    <div class="info-card" (click)="onCardClick('list-backups')">
+      <div class="card-header">List Backups</div>
+      <div class="card-value">{{ backupCount }}</div>
+    </div>
+
+    <div class="info-card performance-card" (click)="onCardClick('performance-1')">
+      <div class="card-header">Performance Panel 1</div>
+      <div class="card-value-sm">CPU: {{ cpuUsage }}%</div>
+    </div>
+
+    <div class="info-card performance-card" (click)="onCardClick('performance-2')">
+      <div class="card-header">Performance Panel 2</div>
+      <div class="card-value-sm">Memory: {{ memoryUsage }}%</div>
+    </div>
+
+    <div class="info-card logout-card" (click)="onLogout()">
+      <div class="card-header-large">LOG OUT</div>
+      <div class="card-text">End Session</div>
+    </div>
+  </div>
+
+</div>

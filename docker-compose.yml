@@ -1,9 +1,34 @@
 version: '3.8'
 
 services:
+
+  frontend:
+    image: frontend
+    container_name: frontend   
+    networks:
+      - app-network
+    ports:
+      - "9000:8080"
+    build: ./frontend
+
+  cluster-manager:
+    image: backend
+    container_name: cluster-manager
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+    build: ./backend
+    
   postgres:
     image: postgres:16-alpine
-    container_name: postgres-db
+    container_name: postgres
     environment:
       POSTGRES_DB: bcm
       POSTGRES_USER: appuser
@@ -19,19 +44,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  backend:
-    image: backend:latest
-    container_name: spring-backend
-    environment:
-      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
-      - POSTGRES_USER=appuser
-      - POSTGRES_PASSWORD=apppassword
-    ports:
-      - "8080:8080"
-    networks:
-      - app-network
-    depends_on:
-      - postgres
 
 volumes:
   postgres-data:

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Plus Icon (main, centered) -->
+  <path d="M2 12h20"/>
+  <path d="M12 2v20"/>
+
+  <!-- Smaller Gavel Icon (bottom-right) -->
+  <g transform="translate(13,14) scale(0.5)">
+    <path d="M14 3l7 7-4 4-7-7z"/> <!-- Gavel head -->
+    <path d="M5 18l5-5"/>           <!-- Handle -->
+  </g>
+</svg>

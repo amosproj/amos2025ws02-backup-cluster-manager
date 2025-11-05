@@ -4,8 +4,8 @@ Frontend: Create Node Tab	https://github.com/amosproj/amos2025ws02-backup-cluste
 Frontend: Create Backup Tab	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/51		Product Backlog		
 Backend: Create User Node	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/32		Product Backlog		
 Backend: Create Cluster Manager	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/49		Product Backlog		
-Backend: Get Nodes API	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/54		Product Backlog		
 Backend: Create Database	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/30		Product Backlog		
+Backend: Get Nodes API	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/54		Product Backlog		
 Create a test setup with 3 nodes	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/52		Product Backlog		
 Add Jacoco To Build And Integrate As Badge	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/16		Product Backlog		
 Create Backup Nodes & Manager	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/31		Product Backlog		
@@ -18,10 +18,10 @@ Create Basic UI Layout	https://github.com/amosproj/amos2025ws02-backup-cluster-m
 Create Overview page	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/25	ervinn09	Awaiting Review	3	
 Setup Dockerfile (Backend)	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/17	ervinn09	Awaiting Review	3	
 Setup Database and Integrate it	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/15	fe27hity	Awaiting Review	2	
+Define entities for DBs	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/34	HansKiller-TH	Awaiting Review	3	
 Build Pipeline should run without changes in respected folders	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/43	HansKiller-TH	Awaiting Review	0	
 Create multiple pages for Router Outlet	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/24	robinrj6	Awaiting Review	3	
 Create Docker Compose Configuration	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/18	fe27hity	Awaiting Review	3	
-Define entities for DBs	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/34	HansKiller-TH	Feature Archive	3	
 Deciding our Tshirt design	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/2	Stringrimm	Feature Archive	1	
 Setup Build Process For Backend	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/10	HansKiller-TH	Feature Archive	3	2
 Setup Basic Angular Project (Frontend)	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/3	krueger-hash	Feature Archive	2	2

@@ -1,5 +1,5 @@
 <!--Header-->
-<div class="w-full bg-primary-1 flex h-12 items-center gap-2 px-4 relative z-40">
+<div class="w-full bg-primary-1 flex h-12 items-center gap-2 px-4 fixed top-0 z-40">
   <a href="/" class="flex items-center gap-2">
     <img class="w-8" src="/brand-icon.svg"/>
     <p id="header-text" class="uppercase font-semibold">Cluster Manager</p>
@@ -10,7 +10,7 @@
 <button data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar"
         type="button"
         data-drawer-backdrop="true"
-        class="z-10 inline-flex items-center p-2 mt-2 ml-3 text-sm text-foreground rounded-lg sm:hidden hover:bg-primary-1 focus:outline-none">
+        class="fixed top-12 z-10 inline-flex items-center p-2 ml-3 text-sm text-foreground rounded-lg sm:hidden hover:bg-primary-1 focus:outline-none">
   <span class="sr-only">Open sidebar</span>
   <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
     <path clip-rule="evenodd" fill-rule="evenodd"
@@ -40,7 +40,7 @@
 </aside>
 
 <!--Main Content-->
-<main class="mx-auto w-full p-4 sm:pl-68 transition-all">
+<main class="mx-auto w-full p-4 sm:pl-68 transition-all mt-12 sm:mt-8">
   <!--  feature routes will be rendered here-->
   <router-outlet/>
 </main>

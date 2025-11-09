@@ -1,0 +1,95 @@
+<section class="h-full flex flex-col overflow-auto gap-2">
+
+  <div class="relative flex-col flex-0">
+    <!--      Header-->
+    <div class="flex flex-col items-center justify-between md:flex-row gap-4">
+      <div class="w-full flex items-center py-2">
+        <label for="simple-search" class="sr-only">Search</label>
+        <div class="relative w-full">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <img src="search.svg"/>
+          </div>
+          <input type="text" id="simple-search"
+                 (keyup)="handleSearch($event)"
+                 class="block w-full p-2 h-10 text-foreground focus:ring-0 pl-12 text-sm outline-none rounded-lg bg-primary-2 border-none"
+                 placeholder="Search" required="">
+        </div>
+      </div>
+      <div
+        class="flex  flex-col justify-end flex-shrink-0 w-full md:w-auto md:flex-row md:items-end gap-4">
+        <!-- Add Node -->
+        <button type="button"
+                class="flex items-center justify-center hover:bg-primary-3  gap-2 px-4 py-2 h-10 text-sm font-medium text-foreground bg-primary-2 rounded-lg ">
+          <img src="plus.svg"/>
+          Add Node
+        </button>
+        <!--Filter-->
+        <div class="flex items-center w-full md:w-auto">
+          <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
+                  class="flex items-center justify-center hover:bg-primary-3 gap-2 w-full px-4 py-2 h-10 text-sm font-medium text-foreground  rounded-lg bg-primary-2 "
+                  type="button">
+            <img src="filter.svg" class="w-6 h-6"/>
+            Filter
+            <img src="chevron-down.svg" class="w-6 h-6"/>
+          </button>
+          <!-- Dropdown menu -->
+          <div id="filterDropdown" class="z-10 hidden w-48 p-3 rounded-lg bg-primary-2 text-primary">
+            <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
+              @for (filter of tableFilters(); track filter.label) {
+                <li class="flex items-center">
+                  <input id="apple" type="checkbox" value=""
+                         (change)="toggleFilter(filter)"
+                         class="w-4 h-4 rounded text-foreground"/>
+                  <label for="apple" class="ml-2 text-sm font-medium text-foreground">
+                    {{ filter.label }}
+                  </label>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--      Table-->
+  <div class="relative overflow-auto flex-1 flex-col">
+    <div class="rounded-lg overflow-auto">
+      <table class="w-full text-sm text-left rtl:text-right text-foreground-muted overflow-auto ">
+        <thead class="text-xs sticky top-0 text-foreground-muted uppercase bg-primary-2">
+        <tr>
+          @for (column of tableColumns(); track column.field) {
+            <th scope="col" class="px-6 py-3">
+              {{ column.header }}
+            </th>
+          }
+        </tr>
+        </thead>
+        <tbody class="overflow-scroll">
+          @for (dataItem of tableData(); track dataItem.id) {
+            <tr class="bg-primary-1 border-b border-primary-4 border-gray-200">
+              @for (column of tableColumns(); track column.field) {
+                <td class="px-6 py-4">
+                  {{ getColumnValue(dataItem, column.field) }}
+                </td>
+              }
+            </tr>
+          }
+
+        </tbody>
+      </table>
+      @if (tableData().length == 0 && !tableDataLoading()) {
+        <div class="w-full flex justify-center items-center bg-primary-1 p-4 rounded-b-lg">
+          No data found
+        </div>
+      }
+      @if (tableDataLoading()) {
+        <div class="w-full flex justify-center items-center bg-primary-1 p-4 rounded-b-lg">
+          Loading...
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+
+

@@ -1,4 +1,4 @@
-package com.bcm;
+package test.com.bcm;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -47,6 +47,31 @@ mvn spring-boot:run
 ```
 Server runs at http://localhost:8080/
 
+## Node Roles and configuring profiles
+
+The application runs with default functionality stored in the *.shared-package.
+To extend the functionality of the application and let the app run with different roles or configure for prod/dev:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=backup_manager,dev
+```
+Profiles: backup_manager,cluster_manager,backup_node,dev,prod
+
+Dev and Prod profiles can be used in the future to configure the nodes independently of the node roles to configure e.g. datasources, etc.
+
+Docker/Docker Compose:
+SPRING_PROFILES_ACTIVE=cluster_manager
+
+IntelliJ:
+
+Spring Application Profile -> Active profiles -> cluster_manager,dev ...
+
+For running a multi-node setup locally you can configure each role for every runtime on start-command.
+For this to work, you need unique ports:
+- IntelliJ: Modify Options -> Program arguments -> --APPLICATION_PORT=...
+- Maven: mvn spring-boot:run -Dspring-boot.run.profiles=backup_manager,dev -Dspring-boot.run.arguments="--APPLICATION_PORT=8089"
+- Docker/Docker Compose: Change service port mapping to "XXXX:8080" with XXXX being a unique Port. Changing the port of the app won't make much a difference since the port exposed by the container matters.
+
 ## API Endpoints
 curl http://localhost:8080/example
 

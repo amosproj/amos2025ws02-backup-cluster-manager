@@ -1,4 +1,4 @@
-package com.bcm.config;
+package com.bcm.shared;
 
 public class CorsConfig {
 }

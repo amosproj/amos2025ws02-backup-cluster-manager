@@ -18,6 +18,7 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
+      - SPRING_PROFILES_ACTIVE=cluster_manager,dev
     ports:
       - "8080:8080"
     networks:

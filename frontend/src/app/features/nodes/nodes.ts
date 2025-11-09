@@ -53,6 +53,5 @@ export class Nodes implements OnInit {
       next: (data) => this.nodes.set(data),
       error: (error) => this.error.set(error.message)
     })
-    console.log("Nodes loaded:", this.nodes());
   }
 }

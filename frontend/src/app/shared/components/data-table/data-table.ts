@@ -57,7 +57,6 @@ export class DataTable implements OnChanges {
   toggleFilter(filter: any) {
     filter.active = !filter.active;
     this.tableFilters.set([...this.tableFilters()]);
-    console.log(this.tableFilters());
     this.applySearchAndFilters();
   }
 
@@ -74,7 +73,6 @@ export class DataTable implements OnChanges {
 
     // 2. Apply Filters
     const activeFilters = this.tableFilters().filter(f => f.active);
-    console.log("Active filters:", activeFilters);
     if (activeFilters.length > 0) {
       filteredData = filteredData.filter(item => {
         return activeFilters.every(filter => filter.filterFn(item))

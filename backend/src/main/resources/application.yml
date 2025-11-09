@@ -5,6 +5,14 @@ spring:
   # Default profile (can be overridden)
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  flyway:
+    enabled: true
+
+  mybatis:
+    mapper-locations: classpath*:mappers/*.xml
+    type-aliases-package: com.bcm.domain
+
   datasource:
     url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
     username: ${POSTGRES_USER:appuser}
@@ -35,7 +43,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         jdbc:

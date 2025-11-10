@@ -1,7 +1,6 @@
-package bcm.cluster_manager;
+package com.bcm.cluster_manager;
 
-import api.model.NodeDTO;
-import com.bcm.cluster_manager.ClusterManagerService;
+import com.bcm.shared.model.NodeDTO;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 
@@ -37,13 +36,5 @@ class ClusterManagerControllerTests {
         assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().length).isEqualTo(2);
-    }
-
-    // Keep this only if /example exists and returns exactly "Here is a string"
-    @Test
-    void exampleEndpoint_containsString() {
-        ResponseEntity<String> resp = restTemplate.getForEntity("/example", String.class);
-        assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(resp.getBody()).isEqualTo("Here is a string");
     }
 }

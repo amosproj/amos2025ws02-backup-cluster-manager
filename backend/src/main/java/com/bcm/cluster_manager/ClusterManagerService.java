@@ -1,7 +1,7 @@
 package com.bcm.cluster_manager;
 
 
-import api.model.NodeDTO;
+import com.bcm.shared.model.NodeDTO;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

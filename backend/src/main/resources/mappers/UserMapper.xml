@@ -1,0 +1,47 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bcm.mybatis.mapper.UserMapper">
+
+    <resultMap id="UserMap" type="com.bcm.mybatis.model.User">
+        <id     property="id"           column="id"/>
+        <result property="name"         column="name"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="enabled"      column="enabled"/>
+        <result property="createdAt"    column="created_at"/>
+        <result property="updatedAt"    column="updated_at"/>
+    </resultMap>
+
+    <sql id="UserColumns">
+        id, name, password_hash, enabled, created_at, updated_at
+    </sql>
+
+    <select id="findById" parameterType="java.util.UUID" resultMap="UserMap">
+        SELECT <include refid="UserColumns"/> FROM users WHERE id = #{id}
+    </select>
+
+    <select id="findByName" parameterType="string" resultMap="UserMap">
+        SELECT <include refid="UserColumns"/> FROM users WHERE name = #{name}
+    </select>
+
+    <select id="findAll" resultMap="UserMap">
+        SELECT <include refid="UserColumns"/> FROM users ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.bcm.mybatis.model.User">
+        INSERT INTO users (id, name, password_hash, enabled)
+        VALUES (#{id}, #{name}, #{passwordHash}, #{enabled})
+    </insert>
+
+    <update id="update" parameterType="com.bcm.mybatis.model.User">
+        UPDATE users
+        SET name = #{name},
+            password_hash = #{passwordHash},
+            enabled = #{enabled}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.util.UUID">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
+
+</mapper>

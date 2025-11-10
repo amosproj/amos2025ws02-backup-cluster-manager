@@ -1,0 +1,34 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bcm.mybatis.mapper.UserGroupRelationMapper">
+
+    <resultMap id="RelMap" type="com.bcm.mybatis.model.UserGroupRelation">
+        <id     property="userId" column="user_id"/>
+        <id     property="groupId" column="group_id"/>
+        <result property="addedAt" column="added_at"/>
+    </resultMap>
+
+    <sql id="RelColumns"> user_id, group_id, added_at </sql>
+
+    <select id="findByUser" parameterType="java.util.UUID" resultMap="RelMap">
+        SELECT <include refid="RelColumns"/> FROM user_group_relations WHERE user_id = #{userId}
+    </select>
+
+    <select id="findByGroup" parameterType="java.util.UUID" resultMap="RelMap">
+        SELECT <include refid="RelColumns"/> FROM user_group_relations WHERE group_id = #{groupId}
+    </select>
+
+    <insert id="insert" parameterType="com.bcm.mybatis.model.UserGroupRelation">
+        INSERT INTO user_group_relations (user_id, group_id) VALUES (#{userId}, #{groupId})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM user_group_relations WHERE user_id = #{param1} AND group_id = #{param2}
+    </delete>
+
+    <select id="exists" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM user_group_relations WHERE user_id = #{param1} AND group_id = #{param2}
+        )
+    </select>
+</mapper>

@@ -1,0 +1,42 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bcm.mybatis.mapper.TaskMapper">
+
+    <resultMap id="TaskMap" type="com.bcm.mybatis.model.Task">
+        <id     property="id"        column="id"/>
+        <result property="name"      column="name"/>
+        <result property="clientId"  column="client_id"/>
+        <result property="source"    column="source"/>
+        <result property="enabled"   column="enabled"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="TaskCols"> id, name, client_id, source, enabled, created_at, updated_at </sql>
+
+    <select id="findById" parameterType="java.util.UUID" resultMap="TaskMap">
+        SELECT <include refid="TaskCols"/> FROM tasks WHERE id = #{id}
+    </select>
+
+    <select id="findByClient" parameterType="java.util.UUID" resultMap="TaskMap">
+        SELECT <include refid="TaskCols"/> FROM tasks WHERE client_id = #{clientId} ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.bcm.mybatis.model.Task">
+        INSERT INTO tasks (id, name, client_id, source, enabled)
+        VALUES (#{id}, #{name}, #{clientId}, #{source}, #{enabled})
+    </insert>
+
+    <update id="update" parameterType="com.bcm.mybatis.model.Task">
+        UPDATE tasks
+        SET name = #{name},
+            client_id = #{clientId},
+            source = #{source},
+            enabled = #{enabled}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.util.UUID">
+        DELETE FROM tasks WHERE id = #{id}
+    </delete>
+</mapper>

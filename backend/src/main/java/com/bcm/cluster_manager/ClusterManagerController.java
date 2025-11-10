@@ -16,7 +16,7 @@ public class ClusterManagerController {
     private ClusterManagerService clusterManagerService;
 
 
-    @GetMapping("/nods")
+    @GetMapping("/nodes")
     public List<NodeDTO> getNodes() {
         return clusterManagerService.getAllNodes();
     }

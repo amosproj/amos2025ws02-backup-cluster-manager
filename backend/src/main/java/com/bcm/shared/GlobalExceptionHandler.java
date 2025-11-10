@@ -1,4 +1,4 @@
-package com.bcm.exception;
+package com.bcm.shared;
 
 public class GlobalExceptionHandler {
 }

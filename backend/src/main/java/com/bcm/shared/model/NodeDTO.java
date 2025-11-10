@@ -1,15 +1,15 @@
-package api.model;
+package com.bcm.shared.model;
 
 import java.time.LocalDateTime;
 
-public class NodeClass {
+public class NodeDTO {
     private Long id;
     private String name;
     private String status;
     private LocalDateTime createdAt;
 
     // Constructors
-    public NodeClass(Long id, String name, String status, LocalDateTime createdAt) {
+    public NodeDTO(Long id, String name, String status, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.status = status;

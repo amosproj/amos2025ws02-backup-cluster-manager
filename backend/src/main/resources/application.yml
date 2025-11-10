@@ -1,8 +1,12 @@
+# Note for creating profiles:
+# There are profiles for each node type for role-dependant bean activation, etc.
+# Regarding differences between local-dev and prod setup there are two general configs that can include all the different settings regarding the environment the application is deployed in
+# and can be applied for all node-types. e.g. profile=dev,cluster_manager; profile=prod,cluster_manager
+
+
 spring:
   application:
     name: bcm
-
-  # Default profile (can be overridden)
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   datasource:
@@ -15,35 +19,61 @@ spring:
       minimum-idle: 5
       connection-timeout: 30000
   jpa:
+    hibernate:
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   logging:
     level:
       root: INFO
       com.bcm: DEBUG
 server:
-  port: 8080
+  port: ${APPLICATION_PORT:8080}
+application:
+  cors:
+    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:4200}
 
-frontend:
-  origin: ${FRONTEND_ORIGIN:http://localhost:4200}
+
+
+# Node-type profiles (only one should be activated at the same time and can be combined with prod / dev
+---
+spring:
+  config:
+    activate:
+      on-profile: cluster-manager
+---
+spring:
+  config:
+    activate:
+      on-profile: backup-manager
+---
+spring:
+  config:
+    activate:
+      on-profile: backup-node
 
 ---
-# Development profile (PostgreSQL)
+# Prod profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+---
+# Development profile
 spring:
   config:
     activate:
       on-profile: dev
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        jdbc:
-          lob:
-            non_contextual_creation: true
+
+
+
+
 
 ---
 # Test profile (H2)

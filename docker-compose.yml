@@ -8,7 +8,7 @@ services:
     networks:
       - app-network
     ports:
-      - "9000:8080"
+      - "4200:8080"
     build: ./frontend
 
   cluster-manager:
@@ -18,7 +18,9 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - FRONTEND_ORIGIN:http://localhost:4200
+      - FRONTEND_ORIGIN=http://localhost:4200
+      - APPLICATION_PORT=8080
+      - SPRING_PROFILES_ACTIVE=cluster_manager
     ports:
       - "8080:8080"
     networks:

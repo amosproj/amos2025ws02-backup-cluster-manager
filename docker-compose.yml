@@ -19,6 +19,7 @@ services:
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
       - SPRING_PROFILES_ACTIVE=cluster_manager,dev
+      - FRONTEND_ORIGIN:http://localhost:4200
     ports:
       - "8080:8080"
     networks:

@@ -1,58 +1,58 @@
 CREATE TYPE IF NOT EXISTS backup_state AS ENUM ('COMPLETED', 'FAILED', 'RUNNING', 'CANCELLED', 'QUEUED');
 
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     name VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
 CREATE TABLE IF NOT EXISTS "groups" (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT groups_name_ck CHECK (name IN ('Superuser','Administrators','Operators','Restore Users','Backup Users'))
     );
 
 CREATE TABLE IF NOT EXISTS user_group_relations (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     group_id UUID NOT NULL REFERENCES "groups"(id) ON DELETE CASCADE,
-    added_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, group_id)
     );
 
 CREATE TABLE IF NOT EXISTS clients (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     name_or_ip VARCHAR(255) NOT NULL UNIQUE,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
 CREATE TABLE IF NOT EXISTS tasks (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
     source TEXT NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
 CREATE TABLE IF NOT EXISTS backups (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     client_id UUID NOT NULL REFERENCES clients(id) ON DELETE RESTRICT,
     task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
-    start_time TIMESTAMPTZ NOT NULL,
-    stop_time TIMESTAMPTZ,
+    start_time TIMESTAMP NOT NULL,
+    stop_time TIMESTAMP,
     size_bytes BIGINT NOT NULL DEFAULT 0,
     state backup_state NOT NULL,
     message TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT backups_time_ck CHECK (stop_time IS NULL OR stop_time >= start_time)
     );
 

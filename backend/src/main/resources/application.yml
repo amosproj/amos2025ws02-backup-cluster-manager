@@ -1,7 +1,7 @@
 # Note for creating profiles:
 # There are profiles for each node type for role-dependant bean activation, etc.
 # Regarding differences between local-dev and prod setup there are two general configs that can include all the different settings regarding the environment the application is deployed in
-# and can be applied for all node-types. eg. profile=dev,cluster_manager; profile=prod,cluster_manager
+# and can be applied for all node-types. e.g. profile=dev,cluster_manager; profile=prod,cluster_manager
 
 
 spring:
@@ -57,11 +57,6 @@ spring:
   config:
     activate:
       on-profile: backup-node
-
-
-
-frontend:
-  origin: ${FRONTEND_ORIGIN:http://localhost:4200}
 
 ---
 # Prod profile

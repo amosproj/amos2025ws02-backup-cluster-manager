@@ -51,7 +51,7 @@ class ControllerTests {
         when(backupService.getAllBackups()).thenReturn(List.of(n1, n2));
 
         ResponseEntity<BackupClass[]> resp =
-            restTemplate.getForEntity("/api/v1/nodes", BackupClass[].class);
+            restTemplate.getForEntity("/api/v1/backups", BackupClass[].class);
 
         assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(resp.getBody()).isNotNull();

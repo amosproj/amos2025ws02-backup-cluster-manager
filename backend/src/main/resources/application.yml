@@ -35,7 +35,9 @@ spring:
       com.bcm: DEBUG
 server:
   port: ${APPLICATION_PORT:8080}
-
+application:
+  cors:
+    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:4200}
 
 
 

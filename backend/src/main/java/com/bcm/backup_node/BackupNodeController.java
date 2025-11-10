@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/backupNode")
+@RequestMapping("/api/v1")
 public class BackupNodeController {
 
-    @GetMapping("/test")
+    @GetMapping("/backupNode/test")
     public String test(){
         return "This is a backup node endpoint";
     }

@@ -60,6 +60,9 @@ spring:
 
 
 
+frontend:
+  origin: ${FRONTEND_ORIGIN:http://localhost:4200}
+
 ---
 # Prod profile
 spring:

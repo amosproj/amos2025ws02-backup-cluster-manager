@@ -1,3 +1,3 @@
 spring:
   profiles:
-    active: test
+    active: test,cluster_manager,backup_manager,backup_node

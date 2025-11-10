@@ -1,0 +1,3 @@
+CREATE DATABASE bcm_cluster;
+CREATE DATABASE bcm_node1;
+CREATE DATABASE bcm_node2;

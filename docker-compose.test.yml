@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-test
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppassword
+      POSTGRES_DB: postgres
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d bcm_cluster"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cluster-manager:
+    image: backend-test
+    build: ./backend
+    container_name: cluster-manager-test
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_cluster
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+      - FRONTEND_ORIGIN=http://localhost:14200
+      - SPRING_PROFILES_ACTIVE=cluster_manager
+      - APPLICATION_PORT=8080
+    depends_on:
+      - postgres
+    ports:
+      - "18080:8080"
+    networks:
+      - app-network
+
+  node1:
+    image: backend-test
+    build: ./backend
+    container_name: node1-test
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node1
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+      - SPRING_PROFILES_ACTIVE=node
+      - NODE_ID=node1
+      - APPLICATION_PORT=8080
+    depends_on:
+      - postgres
+    ports:
+      - "18081:8080"
+    networks:
+      - app-network
+
+  node2:
+    image: backend-test
+    build: ./backend
+    container_name: node2-test
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node2
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+      - SPRING_PROFILES_ACTIVE=node
+      - NODE_ID=node2
+      - APPLICATION_PORT=8080
+    depends_on:
+      - postgres
+    ports:
+      - "18082:8080"
+    networks:
+      - app-network
+
+  frontend:
+    image: frontend-test
+    build: ./frontend
+    container_name: frontend-test
+    environment:
+      - BACKEND_MANAGER_ORIGIN=http://localhost:18080
+    depends_on:
+      - cluster-manager
+      - node1
+      - node2
+    ports:
+      - "14200:8080"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-test-data:

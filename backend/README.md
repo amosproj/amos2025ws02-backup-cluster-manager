@@ -1,4 +1,8 @@
 # Backend
+[![CI Build](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions/workflows/ci-build-backend.yml/badge.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions)
+[![Coverage](.github/badges/jacoco.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions)
+[![Branches](.github/badges/branches.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions)
+
 ## Example Project Structure
 ```bash
 backend/
@@ -80,6 +84,13 @@ curl http://localhost:8080/example
 ```bash
 mvn test
 ```
+
+Run tests with coverage report:
+```bash
+mvn clean test
+open target/site/jacoco/index.html
+```
+
 For unit-tests a h2 in-memory database is used.
 
 ## Resources

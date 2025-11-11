@@ -6,5 +6,5 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("cluster_manager")
-@ComponentScan("com.bcm.cluster_manager, com.bcm.backup_manager")
+@ComponentScan("com.bcm.cluster_manager")
 public class ClusterManagerConfig {}

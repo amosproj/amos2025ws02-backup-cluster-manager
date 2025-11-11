@@ -1,6 +1,5 @@
 package com.bcm.cluster_manager;
 
-import com.bcm.backup_manager.BackupManagerService;
 import com.bcm.shared.model.BackupDTO;
 import com.bcm.shared.model.NodeDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,7 @@ public class ClusterManagerController {
     private ClusterManagerService clusterManagerService;
 
     @Autowired
-    private BackupManagerService backupManagerService;
+    private BackupService backupService;
 
 
     @GetMapping("/nodes")
@@ -28,6 +27,6 @@ public class ClusterManagerController {
 
     @GetMapping("/backups")
     public List<BackupDTO> getBackups() {
-        return backupManagerService.getAllBackups();
+        return backupService.getAllBackups();
     }
 }

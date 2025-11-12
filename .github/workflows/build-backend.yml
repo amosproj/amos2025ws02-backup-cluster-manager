@@ -11,6 +11,8 @@
 #      verify compilation and dependency correctness.
 #   4. Executes all unit and integration tests under
 #      src/test/java using `mvn test`.
+#   5. Generates JaCoCo coverage badges for line and branch coverage.
+#   6. Commits and pushes updated badges to the repository.
 
 name: CI Build Backend
 
@@ -29,6 +31,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -42,3 +46,27 @@ jobs:
 
       - name: Test with Maven
         run: mvn -B test
+
+      - name: Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: backend/target/site/jacoco/jacoco.csv
+          badges-directory: .github/badges
+          generate-branches-badge: true
+          generate-summary: true
+
+      - name: Log coverage percentage
+        run: | 
+          echo "Code Coverage: ${{ steps.jacoco.outputs.coverage }}%"
+          echo "Branch Coverage: ${{ steps.jacoco.outputs.branches }}%"
+
+      - name: Commit and push badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+            cd ${{ github.workspace }}
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add .github/badges/
+            git diff --quiet && git diff --staged --quiet || git commit -m "Update coverage badges [skip ci]"
+            git push

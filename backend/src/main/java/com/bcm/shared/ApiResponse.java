@@ -1,4 +1,4 @@
-package com.bcm.dto;
+package com.bcm.shared;
 
 public class ApiResponse {
 }

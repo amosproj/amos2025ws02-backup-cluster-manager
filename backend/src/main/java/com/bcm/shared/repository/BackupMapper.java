@@ -8,13 +8,14 @@ import java.util.List;
 import java.util.UUID;
 
 @Mapper
-public interface BackupRepository {
-    Backup findById(UUID id);
-    List<Backup> findByClient(UUID clientId);
-    List<Backup> findByTask(UUID taskId);
+public interface BackupMapper {
+
+    Backup findById(Long id);
+    List<Backup> findByClient(Long clientId);
+    List<Backup> findByTask(Long taskId);
     List<Backup> findByState(String state);
     List<Backup> findBetween(Instant from, Instant to);
     int insert(Backup b);
     int update(Backup b);
-    int delete(UUID id);
+    int delete(Long id);
 }

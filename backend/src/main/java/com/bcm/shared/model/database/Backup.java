@@ -1,12 +1,18 @@
 package com.bcm.shared.model.database;
 
-import java.time.Instant;
-import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.Instant;
+
+
+@Getter
+@Setter
 public class Backup {
-    private UUID id;
-    private UUID clientId;
-    private UUID taskId;       // nullable
+
+    private Long id;
+    private Long clientId;
+    private Long taskId;       // nullable
     private Instant startTime;
     private Instant stopTime;  // nullable
     private long sizeBytes;
@@ -14,22 +20,5 @@ public class Backup {
     private String message;    // nullable (TEXT)
     private Instant createdAt;
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public UUID getClientId() { return clientId; }
-    public void setClientId(UUID clientId) { this.clientId = clientId; }
-    public UUID getTaskId() { return taskId; }
-    public void setTaskId(UUID taskId) { this.taskId = taskId; }
-    public Instant getStartTime() { return startTime; }
-    public void setStartTime(Instant startTime) { this.startTime = startTime; }
-    public Instant getStopTime() { return stopTime; }
-    public void setStopTime(Instant stopTime) { this.stopTime = stopTime; }
-    public long getSizeBytes() { return sizeBytes; }
-    public void setSizeBytes(long sizeBytes) { this.sizeBytes = sizeBytes; }
-    public String getState() { return state; }
-    public void setState(String state) { this.state = state; }
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
 }

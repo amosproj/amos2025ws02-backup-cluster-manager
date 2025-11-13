@@ -1,17 +1,15 @@
 package com.bcm.shared.model.database;
 
-import java.time.Instant;
-import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.Instant;
+
+@Getter
+@Setter
 public class UserGroupRelation {
-    private UUID userId;
-    private UUID groupId;
+    private Long userId;
+    private Long groupId;
     private Instant addedAt;
 
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
-    public UUID getGroupId() { return groupId; }
-    public void setGroupId(UUID groupId) { this.groupId = groupId; }
-    public Instant getAddedAt() { return addedAt; }
-    public void setAddedAt(Instant addedAt) { this.addedAt = addedAt; }
 }

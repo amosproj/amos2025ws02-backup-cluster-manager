@@ -1,13 +1,13 @@
-package com.bcm.mybatis.mapper;
+package com.bcm.shared.repository;
 
-import com.bcm.mybatis.model.Group;
+import com.bcm.shared.model.database.Group;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 import java.util.UUID;
 
 @Mapper
-public interface GroupMapper {
+public interface GroupRepository {
     Group findById(UUID id);
     List<Group> findAll();
     int insert(Group g);

@@ -1,8 +1,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bcm.mybatis.mapper.UserMapper">
+<mapper namespace="com.bcm.shared.repository.UserRepository">
 
-    <resultMap id="UserMap" type="com.bcm.mybatis.model.User">
+    <resultMap id="UserMap" type="com.bcm.shared.model.database.User">
         <id     property="id"           column="id"/>
         <result property="name"         column="name"/>
         <result property="passwordHash" column="password_hash"/>
@@ -27,12 +27,12 @@
         SELECT <include refid="UserColumns"/> FROM users ORDER BY created_at DESC
     </select>
 
-    <insert id="insert" parameterType="com.bcm.mybatis.model.User">
+    <insert id="insert" parameterType="com.bcm.shared.model.database.User">
         INSERT INTO users (id, name, password_hash, enabled)
         VALUES (#{id}, #{name}, #{passwordHash}, #{enabled})
     </insert>
 
-    <update id="update" parameterType="com.bcm.mybatis.model.User">
+    <update id="update" parameterType="com.bcm.shared.model.database.User">
         UPDATE users
         SET name = #{name},
             password_hash = #{passwordHash},

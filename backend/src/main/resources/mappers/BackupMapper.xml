@@ -1,8 +1,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bcm.mybatis.mapper.BackupMapper">
+<mapper namespace="com.bcm.shared.mybatis.repository.BackupMapper">
 
-    <resultMap id="BackupMap" type="com.bcm.mybatis.model.Backup">
+    <resultMap id="BackupMap" type="com.bcm.shared.model.database.Backup">
         <id     property="id"        column="id"/>
         <result property="clientId"  column="client_id"/>
         <result property="taskId"    column="task_id"/>
@@ -40,12 +40,12 @@
         ORDER BY start_time DESC
     </select>
 
-    <insert id="insert" parameterType="com.bcm.mybatis.model.Backup">
+    <insert id="insert" parameterType="com.bcm.shared.model.database.Backup">
         INSERT INTO backups (id, client_id, task_id, start_time, stop_time, size_bytes, state, message)
         VALUES (#{id}, #{clientId}, #{taskId}, #{startTime}, #{stopTime}, #{sizeBytes}, #{state}, #{message})
     </insert>
 
-    <update id="update" parameterType="com.bcm.mybatis.model.Backup">
+    <update id="update" parameterType="com.bcm.shared.model.database.Backup">
         UPDATE backups
         SET client_id = #{clientId},
             task_id = #{taskId},

@@ -1,8 +1,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bcm.mybatis.mapper.GroupMapper">
+<mapper namespace="com.bcm.shared.repository.GroupRepository">
 
-    <resultMap id="GroupMap" type="com.bcm.mybatis.model.Group">
+    <resultMap id="GroupMap" type="com.bcm.shared.model.database.Group">
         <id     property="id"        column="id"/>
         <result property="name"      column="name"/>
         <result property="enabled"   column="enabled"/>
@@ -22,12 +22,12 @@
         SELECT <include refid="GroupColumns"/> FROM "groups" ORDER BY created_at DESC
     </select>
 
-    <insert id="insert" parameterType="com.bcm.mybatis.model.Group">
+    <insert id="insert" parameterType="com.bcm.shared.model.database.Group">
         INSERT INTO "groups" (id, name, enabled)
         VALUES (#{id}, #{name}, #{enabled})
     </insert>
 
-    <update id="update" parameterType="com.bcm.mybatis.model.Group">
+    <update id="update" parameterType="com.bcm.shared.model.database.Group">
         UPDATE "groups"
         SET name = #{name},
             enabled = #{enabled}

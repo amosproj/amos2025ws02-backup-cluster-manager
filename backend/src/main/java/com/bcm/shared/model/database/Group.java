@@ -1,12 +1,11 @@
-package com.bcm.mybatis.model;
+package com.bcm.shared.model.database;
 
 import java.time.Instant;
 import java.util.UUID;
 
-public class User {
+public class Group {
     private UUID id;
     private String name;
-    private String passwordHash;
     private boolean enabled;
     private Instant createdAt;
     private Instant updatedAt;
@@ -15,8 +14,6 @@ public class User {
     public void setId(UUID id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public Instant getCreatedAt() { return createdAt; }

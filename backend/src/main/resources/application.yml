@@ -13,7 +13,7 @@ spring:
     enabled: true
   mybatis:
     mapper-locations: classpath*:mappers/*.xml
-    type-aliases-package: com.bcm.domain
+    type-aliases-package: com.bcm.shared.model.database
     configuration:
       map-underscore-to-camel-case: true
   datasource:
@@ -25,17 +25,6 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 5
       connection-timeout: 30000
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc:
-          lob:
-            non_contextual_creation: true
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
   logging:
     level:
       root: INFO
@@ -96,7 +85,3 @@ spring:
   h2:
     console:
       enabled: true
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create-drop

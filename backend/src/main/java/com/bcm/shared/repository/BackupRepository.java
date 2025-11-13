@@ -1,6 +1,6 @@
-package com.bcm.mybatis.mapper;
+package com.bcm.shared.repository;
 
-import com.bcm.mybatis.model.Backup;
+import com.bcm.shared.model.database.Backup;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.time.Instant;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Mapper
-public interface BackupMapper {
+public interface BackupRepository {
     Backup findById(UUID id);
     List<Backup> findByClient(UUID clientId);
     List<Backup> findByTask(UUID taskId);

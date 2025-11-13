@@ -1,8 +1,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bcm.mybatis.mapper.ClientMapper">
+<mapper namespace="com.bcm.shared.repository.ClientRepository">
 
-    <resultMap id="ClientMap" type="com.bcm.mybatis.model.Client">
+    <resultMap id="ClientMap" type="com.bcm.shared.model.database.Client">
         <id     property="id"        column="id"/>
         <result property="nameOrIp"  column="name_or_ip"/>
         <result property="enabled"   column="enabled"/>
@@ -24,11 +24,11 @@
         SELECT <include refid="ClientCols"/> FROM clients ORDER BY created_at DESC
     </select>
 
-    <insert id="insert" parameterType="com.bcm.mybatis.model.Client">
+    <insert id="insert" parameterType="com.bcm.shared.model.database.Client">
         INSERT INTO clients (id, name_or_ip, enabled) VALUES (#{id}, #{nameOrIp}, #{enabled})
     </insert>
 
-    <update id="update" parameterType="com.bcm.mybatis.model.Client">
+    <update id="update" parameterType="com.bcm.shared.model.database.Client">
         UPDATE clients SET name_or_ip = #{nameOrIp}, enabled = #{enabled} WHERE id = #{id}
     </update>
 

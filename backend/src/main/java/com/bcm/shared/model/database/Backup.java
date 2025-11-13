@@ -1,4 +1,4 @@
-package com.bcm.mybatis.model;
+package com.bcm.shared.model.database;
 
 import java.time.Instant;
 import java.util.UUID;

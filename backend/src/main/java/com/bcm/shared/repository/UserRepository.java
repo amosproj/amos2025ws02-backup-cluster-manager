@@ -1,13 +1,13 @@
-package com.bcm.mybatis.mapper;
+package com.bcm.shared.repository;
 
-import com.bcm.mybatis.model.User;
+import com.bcm.shared.model.database.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 import java.util.UUID;
 
 @Mapper
-public interface UserMapper {
+public interface UserRepository {
     User findById(UUID id);
     User findByName(String name);
     List<User> findAll();

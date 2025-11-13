@@ -1,13 +1,13 @@
-package com.bcm.mybatis.mapper;
+package com.bcm.shared.repository;
 
-import com.bcm.mybatis.model.UserGroupRelation;
+import com.bcm.shared.model.database.UserGroupRelation;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 import java.util.UUID;
 
 @Mapper
-public interface UserGroupRelationMapper {
+public interface UserGroupRelationRepository {
     List<UserGroupRelation> findByUser(UUID userId);
     List<UserGroupRelation> findByGroup(UUID groupId);
     int insert(UserGroupRelation rel);

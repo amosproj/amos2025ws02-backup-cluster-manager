@@ -1,4 +1,4 @@
-package com.bcm.shared.model;
+package com.bcm.shared.model.api;
 
 import java.time.LocalDateTime;
 

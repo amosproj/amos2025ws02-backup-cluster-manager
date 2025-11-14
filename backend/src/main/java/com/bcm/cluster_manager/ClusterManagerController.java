@@ -2,6 +2,8 @@ package com.bcm.cluster_manager;
 
 import com.bcm.shared.model.BackupDTO;
 import com.bcm.shared.model.NodeDTO;
+import com.bcm.shared.pagination.PaginationRequest;
+import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +28,10 @@ public class ClusterManagerController {
     }
 
     @GetMapping("/backups")
-    public List<BackupDTO> getBackups() {
-        return backupService.getAllBackups();
+    public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
+        return backupService.getPaginatedItems(
+                pagination.getPage(),
+                pagination.getItemsPerPage()
+        );
     }
 }

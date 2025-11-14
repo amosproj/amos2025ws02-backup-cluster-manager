@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,8 +32,8 @@ public class UserRepositoryTest {
         user.setName("testuser_" + System.currentTimeMillis());
         user.setPasswordHash("hashedpwd");
         user.setEnabled(true);
-        user.setCreatedAt(Instant.now());
-        user.setUpdatedAt(Instant.now());
+        user.setCreatedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
+        user.setUpdatedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
 
         // Act: insert and capture the int return value
         int rowsInserted = userRepository.insert(user);

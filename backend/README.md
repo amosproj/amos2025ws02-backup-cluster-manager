@@ -119,3 +119,10 @@ cd ..
 
 docker-compose up
 ```
+
+Start the test setup with multiple nodes (1 cluster manager, 2 backup nodes):
+"--profile test" to enable the test setup in docker-compose.yml
+
+```bash
+docker compose --profile test up
+```

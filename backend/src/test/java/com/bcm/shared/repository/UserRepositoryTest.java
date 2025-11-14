@@ -45,7 +45,7 @@ public class UserRepositoryTest {
         assertTrue(rowsInserted > 0, "Insert should affect at least one row");
 
         // Optional: verify the object was persisted by fetching it back
-        User persisted = userRepository.findById(1L);
+        User persisted = userRepository.findById(user.getId());
         assertNotNull(persisted, "Persisted user should be retrievable");
         assertEquals(user.getName(), persisted.getName(), "Names should match");
         assertEquals(user.getPasswordHash(), persisted.getPasswordHash(), "Password hash should match");

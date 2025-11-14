@@ -4,20 +4,19 @@ import com.bcm.shared.model.database.Group;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Mapper
 public interface GroupMapper {
 
     @Select("""
-            SELECT id, name, enabled, created_at, updated_at
+            SELECT id, name, enabled, created_at AS createdAt, updated_at AS updatedAt
             FROM groups
             WHERE id = #{id}
             """)
     Group findById(Long id);
 
     @Select("""
-            SELECT id, name, enabled, created_at, updated_at
+            SELECT id, name, enabled, created_at AS createdAt, updated_at AS updatedAt
             FROM groups
             ORDER BY id
             """)
@@ -40,6 +39,9 @@ public interface GroupMapper {
             """)
     int update(Group g);
 
-    @Delete("DELETE FROM groups WHERE id = #{id}")
+    @Delete("""
+           DELETE FROM groups
+           WHERE id = #{id}
+           """)
     int delete(Long id);
 }

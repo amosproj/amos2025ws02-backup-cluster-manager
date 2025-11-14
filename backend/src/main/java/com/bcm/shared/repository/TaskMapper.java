@@ -8,12 +8,16 @@ import java.util.List;
 @Mapper
 public interface TaskMapper {
 
-    @Select("SELECT id, name, client_id, source, enabled, created_at, updated_at " +
-            "FROM tasks WHERE id = #{id}")
+    @Select("""
+            SELECT id, name, client_id AS clientId, source, enabled, created_at AS createdAt, updated_at AS updatedAt
+            FROM tasks WHERE id = #{id}
+            """)
     Task findById(Long id);
 
-    @Select("SELECT id, name, client_id, source, enabled, created_at, updated_at " +
-            "FROM tasks WHERE client_id = #{clientId}")
+    @Select("""
+            SELECT id, name, client_id AS clientId, source, enabled, created_at AS createdAt, updated_at AS updatedAt
+            FROM tasks WHERE client_id = #{clientId}
+            """)
     List<Task> findByClient(Long clientId);
 
     @Insert("""
@@ -35,6 +39,9 @@ public interface TaskMapper {
             """)
     int update(Task t);
 
-    @Delete("DELETE FROM tasks WHERE id = #{id}")
+    @Delete("""
+            DELETE FROM tasks
+            WHERE id = #{id}
+            """)
     int delete(Long id);
 }

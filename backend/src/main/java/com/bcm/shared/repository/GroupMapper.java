@@ -10,27 +10,27 @@ public interface GroupMapper {
 
     @Select("""
             SELECT id, name, enabled, created_at AS createdAt, updated_at AS updatedAt
-            FROM groups
+            FROM "groups"
             WHERE id = #{id}
             """)
     Group findById(Long id);
 
     @Select("""
             SELECT id, name, enabled, created_at AS createdAt, updated_at AS updatedAt
-            FROM groups
+            FROM "groups"
             ORDER BY id
             """)
     List<Group> findAll();
 
     @Insert("""
-            INSERT INTO groups (name, enabled, created_at, updated_at)
+            INSERT INTO "groups" (name, enabled, created_at, updated_at)
             VALUES (#{name}, #{enabled}, #{createdAt}, #{updatedAt})
             """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Group g);
 
     @Update("""
-            UPDATE groups
+            UPDATE "groups"
             SET name = #{name},
                 enabled = #{enabled},
                 created_at = #{createdAt},
@@ -40,7 +40,7 @@ public interface GroupMapper {
     int update(Group g);
 
     @Delete("""
-           DELETE FROM groups
+           DELETE FROM "groups"
            WHERE id = #{id}
            """)
     int delete(Long id);

@@ -10,6 +10,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +38,7 @@ class ClientMapperTest {
         Client client = new Client();
         client.setNameOrIp("test-client-" + System.currentTimeMillis());
         client.setEnabled(true);
-        Instant now = Instant.now();
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         client.setCreatedAt(now);
         client.setUpdatedAt(now);
         clientMapper.insert(client);

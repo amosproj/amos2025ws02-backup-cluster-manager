@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.bcm.shared.model.BackupDTO;
+import com.bcm.shared.model.api.BackupDTO;
 
 @Service
 public class BackupService {

@@ -39,7 +39,6 @@ public interface ClientMapper {
             UPDATE clients
             SET name_or_ip = #{nameOrIp},
                 enabled = #{enabled},
-                created_at = #{createdAt},
                 updated_at = #{updatedAt}
             WHERE id = #{id}
             """)

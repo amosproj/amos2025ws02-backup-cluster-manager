@@ -33,7 +33,6 @@ public interface TaskMapper {
                 client_id = #{clientId},
                 source = #{source},
                 enabled = #{enabled},
-                created_at = #{createdAt},
                 updated_at = #{updatedAt}
             WHERE id = #{id}
             """)

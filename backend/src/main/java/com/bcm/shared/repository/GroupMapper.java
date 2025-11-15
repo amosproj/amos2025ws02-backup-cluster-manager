@@ -33,7 +33,6 @@ public interface GroupMapper {
             UPDATE "groups"
             SET name = #{name},
                 enabled = #{enabled},
-                created_at = #{createdAt},
                 updated_at = #{updatedAt}
             WHERE id = #{id}
             """)

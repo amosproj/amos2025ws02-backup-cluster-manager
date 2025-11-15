@@ -126,7 +126,6 @@ public interface BackupMapper {
             size_bytes = #{sizeBytes},
             state = #{state},
             message = #{message},
-            created_at = #{createdAt}
         WHERE id = #{id}
         """)
     int update(Backup b);

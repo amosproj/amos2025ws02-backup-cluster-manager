@@ -1,15 +1,15 @@
-package com.bcm.shared.model;
+package com.bcm.shared.model.api;
 
 import java.time.LocalDateTime;
 
-public class NodeDTO {
+public class BackupDTO {
     private Long id;
     private String name;
     private String status;
     private LocalDateTime createdAt;
 
     // Constructors
-    public NodeDTO(Long id, String name, String status, LocalDateTime createdAt) {
+    public BackupDTO(Long id, String name, String status, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.status = status;

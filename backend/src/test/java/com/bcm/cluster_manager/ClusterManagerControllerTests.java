@@ -1,6 +1,6 @@
 package com.bcm.cluster_manager;
 
-import com.bcm.shared.model.NodeDTO;
+import com.bcm.shared.model.api.NodeDTO;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 

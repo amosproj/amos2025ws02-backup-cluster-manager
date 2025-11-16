@@ -9,7 +9,7 @@ import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.stereotype.Service;
 
-import com.bcm.shared.model.BackupDTO;
+import com.bcm.shared.model.api.BackupDTO;
 
 @Service
 public class BackupService extends PaginationProvider<BackupDTO> {

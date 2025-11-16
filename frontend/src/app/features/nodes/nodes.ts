@@ -1,5 +1,5 @@
 import {Component, OnInit, signal} from '@angular/core';
-import {NodesService} from './nodes.service';
+import {NodeFilterParams, NodesService} from './nodes.service';
 import {ApiService} from '../../core/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
@@ -36,6 +36,8 @@ export class Nodes implements OnInit {
   error = signal<string | null>(null);
   loading$;
 
+  private currentParams: NodeFilterParams = { active: false };
+
   constructor(
     private nodesService: NodesService,
     private apiService: ApiService
@@ -47,9 +49,16 @@ export class Nodes implements OnInit {
     this.loadNodes();
   }
 
+  onFiltersChange(filters: any[]) {    
+    const activeFilters = filters.filter(f => f.active);    
+    const status = activeFilters.length > 0 ? activeFilters[0].active : false;    
+    this.currentParams = { ...this.currentParams, active: status };    
+    this.loadNodes();
+  }
+
   loadNodes() {
     this.error.set(null);
-    this.nodesService.getNodes().subscribe({
+    this.nodesService.getFilteredNodes(this.currentParams).subscribe({
       next: (data) => this.nodes.set(data),
       error: (error) => this.error.set(error.message)
     })

@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, signal, SimpleChanges} from '@angular/core';
+import {Component, Input, Output, OnChanges, signal, SimpleChanges, EventEmitter} from '@angular/core';
 
 @Component({
   selector: 'app-data-table',
@@ -12,6 +12,9 @@ export class DataTable implements OnChanges {
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
   @Input() loading: boolean | null = false;
+
+  @Output() filtersChange = new EventEmitter<any[]>();
+
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
@@ -57,7 +60,7 @@ export class DataTable implements OnChanges {
   toggleFilter(filter: any) {
     filter.active = !filter.active;
     this.tableFilters.set([...this.tableFilters()]);
-    this.applySearchAndFilters();
+    this.filtersChange.emit(this.tableFilters());
   }
 
   // Apply both search and filters to the data
@@ -70,15 +73,6 @@ export class DataTable implements OnChanges {
         this.searchColumns.some(column =>
           item[column] && item[column].toString().toLowerCase().includes(this.currentSearchQuery)));
     }
-
-    // 2. Apply Filters
-    const activeFilters = this.tableFilters().filter(f => f.active);
-    if (activeFilters.length > 0) {
-      filteredData = filteredData.filter(item => {
-        return activeFilters.every(filter => filter.filterFn(item))
-      })
-    }
-    this.tableData.set(filteredData);
   }
 
 }

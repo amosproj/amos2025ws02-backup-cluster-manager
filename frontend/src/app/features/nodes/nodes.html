@@ -10,4 +10,5 @@
   [searchColumns]="tableSearchColumns()"
   [filters]="tableFilters()"
   [loading]="loading$ | async"
+  (filtersChange)="onFiltersChange($event)"
 />

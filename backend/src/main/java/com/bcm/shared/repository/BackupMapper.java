@@ -76,6 +76,23 @@ public interface BackupMapper {
         """)
     List<Backup> findByState(String state);
 
+    //get All
+    @Select("""
+        SELECT
+            id,
+            client_id AS clientId,
+            task_id AS taskId,
+            start_time AS startTime,
+            stop_time AS stopTime,
+            size_bytes AS sizeBytes,
+            state,
+            message,
+            created_at AS createdAt
+        FROM backups
+        ORDER BY start_time DESC
+        """)
+    List<Backup> findAll();
+
     @Select("""
         SELECT
             id,
@@ -109,12 +126,12 @@ public interface BackupMapper {
             #{startTime},
             #{stopTime},
             #{sizeBytes},
-            #{state},
+            #{state}::backup_state,
             #{message},
             #{createdAt}
         )
         """)
-    @Options(useGeneratedKeys = true, keyProperty = "id")
+    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     int insert(Backup b);
 
     @Update("""
@@ -124,7 +141,7 @@ public interface BackupMapper {
             start_time = #{startTime},
             stop_time = #{stopTime},
             size_bytes = #{sizeBytes},
-            state = #{state},
+            state = #{state}::backup_state,
             message = #{message},
         WHERE id = #{id}
         """)

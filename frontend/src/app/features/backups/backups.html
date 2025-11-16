@@ -2,4 +2,54 @@
   [fetchData]="fetchBackups"
   [columns]="tableColumns()"
   [filters]="tableFilters()"
+  [loading]="loading$ | async"
+  [addButtonText]="'Add Backup'"
+  (add)="openAddModal()"
 />
+
+@if (showAddModal()){
+  <div class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="fixed inset-0 bg-black opacity-50" (click)="closeAddModal()"></div>
+    <div class="relative bg-primary-2 text-foreground rounded-lg p-6 w-full max-w-md shadow-lg">
+      <h2 class="text-lg font-semibold mb-4">Add Backup</h2>
+      <form [formGroup]="addForm" (ngSubmit)="submitAddBackup()" class="space-y-4">
+
+        <div>
+          <label class="block text-sm mb-1">Client ID</label>
+          <input type="text"
+                 formControlName="clientId"
+                 class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Task ID</label>
+          <input type="text"
+                 formControlName="taskId"
+                 class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Size (Bytes)</label>
+          <input type="number"
+                 formControlName="sizeBytes"
+                 class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none"/>
+        </div>
+
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button"
+                  class="px-4 h-10 rounded bg-primary-3"
+                  (click)="closeAddModal()">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="px-4 h-10 rounded bg-primary-2 border border-primary-4"
+                  [disabled]="addForm.invalid || (loading$ | async)">
+            Create
+          </button>
+        </div>
+      </form>
+
+        </div>
+  </div>
+}

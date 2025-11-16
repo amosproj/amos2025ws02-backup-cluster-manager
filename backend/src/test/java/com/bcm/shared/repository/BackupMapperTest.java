@@ -1,6 +1,7 @@
 package com.bcm.shared.repository;
 
 import com.bcm.shared.model.database.Backup;
+import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.model.database.Client;
 import com.bcm.shared.model.database.Task;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -20,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test suite for the BackupMapper class to ensure proper database access functionality.
  * This focuses on validating the `findById` method, which retrieves a backup by its ID.
  */
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.ANY)
 @Transactional
@@ -43,7 +46,7 @@ class BackupMapperTest {
         backup.setStartTime(Instant.now().truncatedTo(ChronoUnit.MICROS));
         backup.setStopTime(Instant.now().truncatedTo(ChronoUnit.MICROS).plusSeconds(3600)); // 1 hour later
         backup.setSizeBytes(1024L);
-        backup.setState("COMPLETED");
+        backup.setState(BackupState.COMPLETED);
         backup.setMessage("Test backup message");
         backup.setCreatedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
         backupMapper.insert(backup);

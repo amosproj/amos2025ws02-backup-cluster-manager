@@ -1,7 +1,7 @@
 <div class="dashboard-container">
 
   <div class="action-buttons">
-    <button class="action-btn" (click)="onButtonClick('add-user')">
+    <button class="action-btn" (click)="openAddUserModal('create')">
       <img src="/add_user.svg" alt="Add User" />
       Add User
     </button>
@@ -16,7 +16,7 @@
       Add Permission
     </button>
 
-    <button class="action-btn" (click)="onButtonClick('edit-user')">
+    <button class="action-btn" (click)="openAddUserModal('update')">
       <img src="/edit_user.svg" alt="Edit User" />
       Edit User
     </button>
@@ -76,3 +76,9 @@
   </div>
 
 </div>
+
+<app-add-users-modal
+  [open]="isAddUserModalOpen"
+  [mode]="modalMode"
+  (closed)="isAddUserModalOpen = false"
+></app-add-users-modal>

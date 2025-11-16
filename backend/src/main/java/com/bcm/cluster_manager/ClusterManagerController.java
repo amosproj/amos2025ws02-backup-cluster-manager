@@ -1,7 +1,7 @@
 package com.bcm.cluster_manager;
 
-import com.bcm.shared.model.BackupDTO;
-import com.bcm.shared.model.NodeDTO;
+import com.bcm.shared.model.api.BackupDTO;
+import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;

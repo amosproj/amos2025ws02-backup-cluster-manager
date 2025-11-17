@@ -1,4 +1,4 @@
-package com.bcm.shared;
+package com.bcm.shared.controller;
 
 
 import com.bcm.shared.model.api.ClusterTablesDTO;

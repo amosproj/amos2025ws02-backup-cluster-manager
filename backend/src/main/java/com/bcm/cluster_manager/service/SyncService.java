@@ -1,4 +1,4 @@
-package com.bcm.cluster_manager;
+package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.ClusterTablesDTO;
 import org.slf4j.Logger;

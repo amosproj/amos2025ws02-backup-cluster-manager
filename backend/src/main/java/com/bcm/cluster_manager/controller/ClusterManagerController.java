@@ -1,5 +1,9 @@
-package com.bcm.cluster_manager;
+package com.bcm.cluster_manager.controller;
 
+import com.bcm.cluster_manager.service.ClusterManagerService;
+import com.bcm.cluster_manager.service.BackupService;
+import com.bcm.cluster_manager.service.RegistryService;
+import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;

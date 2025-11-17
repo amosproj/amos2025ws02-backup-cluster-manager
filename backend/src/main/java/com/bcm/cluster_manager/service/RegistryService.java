@@ -1,13 +1,11 @@
-package com.bcm.cluster_manager;
+package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.service.NodeIdGenerator;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service

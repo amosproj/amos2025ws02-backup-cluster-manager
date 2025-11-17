@@ -15,13 +15,16 @@ export class DataTable implements OnChanges {
 
   @Output() searchChange = new EventEmitter<string>();
   @Output() filtersChange = new EventEmitter<any[]>();
+  @Output() sortChange = new EventEmitter<{ sortBy: string, sortOrder: 'asc' | 'desc' }>();
 
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
-  tableSearchColumns = signal(this.searchColumns);
   tableDataLoading = signal(this.loading);
   tableFilters = signal(this.filters);
+
+  currentSortBy = signal<string | null>(null);
+  currentSortOrder = signal<'asc' | 'desc'>('asc');
 
   // Lifecycle hook to detect changes in input properties
   ngOnChanges(changes: SimpleChanges) {
@@ -30,9 +33,6 @@ export class DataTable implements OnChanges {
     }
     if (changes['columns']) {
       this.tableColumns.set(this.columns);
-    }
-    if (changes['searchColumns']) {
-      this.tableSearchColumns.set(this.searchColumns);
     }
     if (changes['filters']) {
       this.tableFilters.set(this.filters);
@@ -60,5 +60,25 @@ export class DataTable implements OnChanges {
     this.filtersChange.emit(this.tableFilters());
   }
 
+  handleSort(field: string) {
+    let newOrder: 'asc' | 'desc' = 'asc';
+    
+    // If clicking the same column, toggle the order
+    if (this.currentSortBy() === field) {
+      newOrder = this.currentSortOrder() === 'asc' ? 'desc' : 'asc';
+    }
+    
+    this.currentSortBy.set(field);
+    this.currentSortOrder.set(newOrder);
+    
+    this.sortChange.emit({ sortBy: field, sortOrder: newOrder });
+  }
+
+  getSortIcon(field: string): string {
+    if (this.currentSortBy() !== field) {
+      return ''; // No icon for unsorted columns
+    }
+    return this.currentSortOrder() === 'asc' ? '↑' : '↓';
+  }
 
 }

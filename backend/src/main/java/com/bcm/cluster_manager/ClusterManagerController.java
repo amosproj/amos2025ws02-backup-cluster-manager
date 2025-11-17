@@ -24,9 +24,11 @@ public class ClusterManagerController {
     @GetMapping("/nodes")
     public List<NodeDTO> getNodes(
         @RequestParam(required = false) Boolean active,
-        @RequestParam(required = false) String search
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String sortBy,
+        @RequestParam(required = false) String sortOrder
     ) {
-        return clusterManagerService.findNodes(active, search);
+        return clusterManagerService.findNodes(active, search , sortBy, sortOrder);
     }
 
     @GetMapping("/backups")

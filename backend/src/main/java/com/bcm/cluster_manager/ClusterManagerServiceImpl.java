@@ -2,6 +2,7 @@
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ import com.bcm.shared.model.api.NodeDTO;
 @Service
 public class ClusterManagerServiceImpl implements ClusterManagerService {
 
-    public List<NodeDTO> findNodes(Boolean active, String search) {
+    public List<NodeDTO> findNodes(Boolean active, String search, String sortBy, String sortOrder) {
         List<NodeDTO> nodes = getAllNodes();
 
         // Filter by active status
@@ -37,9 +38,36 @@ public class ClusterManagerServiceImpl implements ClusterManagerService {
                 return nameMatch || idMatch;
             }).toList();
         }
+        
+        // Sorting logic can be added here based on sortBy and sortOrder parameters
+        if (sortBy != null && !sortBy.isBlank()) {
+            Comparator<NodeDTO> comparator = getComparator(sortBy);
+            
+            if (comparator != null) {
+                // Reverse if descending order
+                if ("desc".equalsIgnoreCase(sortOrder)) {
+                    comparator = comparator.reversed();
+                }
+                
+                nodes = nodes.stream()
+                    .sorted(comparator)
+                    .toList();
+            }
+        }
+
         return nodes;
     }
 
+    private Comparator<NodeDTO> getComparator(String sortBy) {
+        return switch (sortBy.toLowerCase()) {
+            case "name" -> Comparator.comparing(NodeDTO::getName, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "status" -> Comparator.comparing(NodeDTO::getStatus, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "createdat" -> Comparator.comparing(NodeDTO::getCreatedAt, Comparator.nullsLast(LocalDateTime::compareTo));
+            case "id" -> Comparator.comparing(NodeDTO::getId, Comparator.nullsLast(Long::compareTo));
+            default -> null;
+        };
+    }
+    
     public List<NodeDTO> getAllNodes() {
         // Mock data for nodes
         return Arrays.asList(

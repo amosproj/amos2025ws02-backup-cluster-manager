@@ -58,8 +58,12 @@
         <thead class="text-xs sticky top-0 text-foreground-muted uppercase bg-primary-2">
         <tr>
           @for (column of tableColumns(); track column.field) {
-            <th scope="col" class="px-6 py-3">
-              {{ column.header }}
+            <th scope="col" class="px-6 py-3 cursor-pointer hover:bg-primary-3 select-none"
+                (click)="handleSort(column.field)">
+              <div class="flex items-center gap-2">
+                {{ column.header }}
+                <span class="text-base">{{ getSortIcon(column.field) }}</span>
+              </div>
             </th>
           }
         </tr>

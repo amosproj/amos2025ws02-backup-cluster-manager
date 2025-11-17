@@ -34,7 +34,7 @@ export class Nodes implements OnInit {
   error = signal<string | null>(null);
   loading$;
 
-  private currentParams: NodeFilterParams & { search?: string } = { active: false };
+  private currentParams: NodeFilterParams & { search?: string, sortBy?: string, sortOrder?: 'asc' | 'desc' } = { active: false };
   private searchSubject = new Subject<string>();
 
   constructor(
@@ -65,6 +65,15 @@ export class Nodes implements OnInit {
   onFiltersChange(filters: any[]) {    
     const isActive = filters.some(f => f.active);
     this.currentParams = { ...this.currentParams, active: isActive };
+    this.loadNodes();
+  }
+
+  onSortChange(sort: { sortBy: string, sortOrder: 'asc' | 'desc' }) {
+    this.currentParams = { 
+      ...this.currentParams, 
+      sortBy: sort.sortBy, 
+      sortOrder: sort.sortOrder 
+    };
     this.loadNodes();
   }
 

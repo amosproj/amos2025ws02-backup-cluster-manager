@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ClusterManagerService {
     List<NodeDTO> getAllNodes();
-    List<NodeDTO> findNodes(Boolean active, String search);
+    List<NodeDTO> findNodes(Boolean active, String search , String sortBy, String sortOrder);
 }

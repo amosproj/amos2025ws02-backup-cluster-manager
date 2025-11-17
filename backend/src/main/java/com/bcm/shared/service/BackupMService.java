@@ -9,11 +9,11 @@ import java.time.Instant;
 import java.util.List;
 
 @Service
-public class BackupService {
+public class BackupMService {
 
     private final BackupMapper backupMapper;
 
-    public BackupService(BackupMapper backupMapper) {
+    public BackupMService(BackupMapper backupMapper) {
         this.backupMapper = backupMapper;
     }
 

@@ -12,7 +12,7 @@
 #   4. Executes all unit and integration tests under
 #      src/test/java using `mvn test`.
 #   5. Generates JaCoCo coverage badges for line and branch coverage.
-#   6. Commits and pushes updated badges to the repository.
+#   6. Creates (updates) PR (ci/badge-update) to update badges.
 
 name: CI Build Backend
 
@@ -61,12 +61,17 @@ jobs:
           echo "Code Coverage: ${{ steps.jacoco.outputs.coverage }}%"
           echo "Branch Coverage: ${{ steps.jacoco.outputs.branches }}%"
 
-      - name: Commit and push badge
+      - name: Open/Update PR for badges
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-            cd ${{ github.workspace }}
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-            git add .github/badges/
-            git diff --quiet && git diff --staged --quiet || git commit -m "Update coverage badges [skip ci]"
-            git push
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: ci/badge-update
+          title: "Update coverage badges"
+          body: |
+            Automated update of JaCoCo coverage badges
+
+            - Line coverage: ${{ steps.jacoco.outputs.coverage }}%
+            - Branch coverage: ${{ steps.jacoco.outputs.branches }}%
+          commit-message: "Update coverage badges [skip ci]"
+          add-paths: .github/badges/**
+          labels: coverage

@@ -65,6 +65,7 @@ public class UserService {
      */
     @Transactional
     public User addUserAndAssignGroup(User user, Long groupID){
+        // Groups give users permissions. So a user without a group would be awkward.
         userMapper.insert(user);
         UserGroupRelation userGroupRelation = new UserGroupRelation();
         userGroupRelation.setUserId(user.getId());
@@ -93,6 +94,7 @@ public class UserService {
      */
     @Transactional
     public boolean deleteUser(Long id){
+        // deleting a user should also delete all related user-group relations through cascading
         return userMapper.delete(id) == 1;
     }
 }

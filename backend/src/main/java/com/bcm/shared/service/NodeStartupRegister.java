@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@Profile({"backup_node", "backup_manager"})
+@Profile({"backup_node & !test", "backup_manager & !test"})
 public class NodeStartupRegister {
 
     private static final Logger log = LoggerFactory.getLogger(NodeStartupRegister.class);
@@ -19,10 +19,10 @@ public class NodeStartupRegister {
     private final RestTemplate restTemplate = new RestTemplate();
 
     // These values come from environment variables or application.properties
-    @Value("${application.cm.public-address}")
+    @Value("${application.cm.public-address:localhost:8080}")
     private String cmPublicAddress;
 
-    @Value("${application.node.public-address}")
+    @Value("${application.node.public-address:localhost:8081}")
     private String nodePublicAddress;
 
 

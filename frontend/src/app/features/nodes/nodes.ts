@@ -3,6 +3,8 @@ import {NodeFilterParams, NodesService} from './nodes.service';
 import {ApiService} from '../../core/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
+import {Subject} from 'rxjs';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 
 @Component({
   selector: 'app-nodes',
@@ -22,21 +24,18 @@ export class Nodes implements OnInit {
     {field: 'createdAt', header: 'Created At'},
   ]);
 
-  // Columns to be included in search
-  tableSearchColumns = signal(['name', 'status', 'id']);
-
-  // Example filter: filter nodes by 'active' status
   tableFilters = signal([
     {
       label: 'Active',
-      filterFn: (item:any) => item.status.toLowerCase() === "active",
       active: false,
     }
   ]);
+  
   error = signal<string | null>(null);
   loading$;
 
-  private currentParams: NodeFilterParams = { active: false };
+  private currentParams: NodeFilterParams & { search?: string } = { active: false };
+  private searchSubject = new Subject<string>();
 
   constructor(
     private nodesService: NodesService,
@@ -47,12 +46,25 @@ export class Nodes implements OnInit {
 
   ngOnInit() {
     this.loadNodes();
+    
+    // Debounce search: wait 300ms after user stops typing
+    this.searchSubject.pipe(
+      debounceTime(1000),
+      distinctUntilChanged()
+    ).subscribe(search => {
+      this.currentParams = { ...this.currentParams, search };
+      this.loadNodes();
+    });
+  }
+
+  onSearchChange(search: string) {
+    // Don't call API immediately, push to subject instead
+    this.searchSubject.next(search);
   }
 
   onFiltersChange(filters: any[]) {    
-    const activeFilters = filters.filter(f => f.active);    
-    const status = activeFilters.length > 0 ? activeFilters[0].active : false;    
-    this.currentParams = { ...this.currentParams, active: status };    
+    const isActive = filters.some(f => f.active);
+    this.currentParams = { ...this.currentParams, active: isActive };
     this.loadNodes();
   }
 
@@ -61,6 +73,10 @@ export class Nodes implements OnInit {
     this.nodesService.getFilteredNodes(this.currentParams).subscribe({
       next: (data) => this.nodes.set(data),
       error: (error) => this.error.set(error.message)
-    })
+    });
+  }
+  
+  ngOnDestroy() {
+    this.searchSubject.complete();
   }
 }

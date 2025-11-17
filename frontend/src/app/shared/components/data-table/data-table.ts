@@ -13,6 +13,7 @@ export class DataTable implements OnChanges {
   @Input() filters: any[] = [];
   @Input() loading: boolean | null = false;
 
+  @Output() searchChange = new EventEmitter<string>();
   @Output() filtersChange = new EventEmitter<any[]>();
 
 
@@ -21,8 +22,6 @@ export class DataTable implements OnChanges {
   tableSearchColumns = signal(this.searchColumns);
   tableDataLoading = signal(this.loading);
   tableFilters = signal(this.filters);
-
-  private currentSearchQuery: string = '';
 
   // Lifecycle hook to detect changes in input properties
   ngOnChanges(changes: SimpleChanges) {
@@ -47,13 +46,11 @@ export class DataTable implements OnChanges {
     return item[field];
   }
 
-  // Handle Search triggered by input event
+  // Handle Search triggered by input event - emit to parent
   handleSearch(event: Event) {
     const target = event.target as HTMLInputElement;
-    if (target && this.data) {
-      this.currentSearchQuery = target.value.toLowerCase();
-      this.applySearchAndFilters();
-    }
+    const searchQuery = target?.value?.trim() || '';
+    this.searchChange.emit(searchQuery);
   }
 
   // Handle Filter logic triggered by clicking on filter buttons
@@ -63,16 +60,5 @@ export class DataTable implements OnChanges {
     this.filtersChange.emit(this.tableFilters());
   }
 
-  // Apply both search and filters to the data
-  applySearchAndFilters() {
-    let filteredData = [...this.data];
-
-    // 1. Apply Search
-    if (this.currentSearchQuery) {
-      filteredData = filteredData.filter(item =>
-        this.searchColumns.some(column =>
-          item[column] && item[column].toString().toLowerCase().includes(this.currentSearchQuery)));
-    }
-  }
 
 }

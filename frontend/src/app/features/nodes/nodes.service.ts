@@ -5,6 +5,7 @@ import { HttpParams } from '@angular/common/http';
 
 export interface NodeFilterParams {
   active?: boolean;
+  search?: string;
 }
 
 @Injectable({
@@ -22,11 +23,11 @@ export class NodesService {
     
     Object.keys(params).forEach(key => {
       const value = params[key as keyof NodeFilterParams];
-      if (value !== null && value !== undefined) {
+      if (value !== null && value !== undefined && value !== '') {
         httpParams = httpParams.append(key, String(value));
       }
     });
-
+    console.log('Fetching nodes with params:', httpParams.toString());
     return this.apiService.get<any>('nodes', { params: httpParams });
   }
 }

@@ -15,9 +15,9 @@ public class ClusterManagerService {
     public List<NodeDTO> getAllNodes() {
         // Mock data for nodes
         return Arrays.asList(
-                new NodeDTO(1L, "Node A", "Active", LocalDateTime.now().minusDays(1)),
-                new NodeDTO(2L, "Node B", "Inactive", LocalDateTime.now().minusDays(2)),
-                new NodeDTO(3L, "Node C", "Active", LocalDateTime.now().minusDays(3))
+                new NodeDTO(1L, "Node A", "10.100.179.80:9300", "Active", LocalDateTime.now().minusDays(1)),
+                new NodeDTO(2L, "Node B", "10.100.179.81:2030" , "Inactive", LocalDateTime.now().minusDays(2)),
+                new NodeDTO(3L, "Node C", "10.100.179.82:3333", "Active", LocalDateTime.now().minusDays(3))
         );
     }
 }

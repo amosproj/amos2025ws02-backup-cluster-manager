@@ -26,8 +26,8 @@ class ClusterManagerControllerTests {
 
     @Test
     void nodesEndpoint_returnsList() {
-        NodeDTO n1 = new NodeDTO(1L, "Node A", "Active", LocalDateTime.now().minusDays(1));
-        NodeDTO n2 = new NodeDTO(2L, "Node B", "Inactive", LocalDateTime.now().minusDays(2));
+        NodeDTO n1 = new NodeDTO(1L, "Node A","10.100.179.80:9300","Active", LocalDateTime.now().minusDays(1));
+        NodeDTO n2 = new NodeDTO(2L, "Node B", "10.100.179.81:9333","Inactive", LocalDateTime.now().minusDays(2));
         when(clusterManagerService.getAllNodes()).thenReturn(List.of(n1, n2));
 
         ResponseEntity<NodeDTO[]> resp =

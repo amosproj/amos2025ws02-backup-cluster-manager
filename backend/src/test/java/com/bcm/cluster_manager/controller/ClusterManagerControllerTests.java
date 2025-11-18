@@ -1,6 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
-import com.bcm.cluster_manager.ClusterManagerService;
+import com.bcm.cluster_manager.service.ClusterManagerService;
 import com.bcm.shared.model.api.NodeDTO;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;

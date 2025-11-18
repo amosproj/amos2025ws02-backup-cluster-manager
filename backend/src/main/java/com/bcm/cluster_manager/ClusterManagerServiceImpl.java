@@ -1,6 +1,7 @@
     package com.bcm.cluster_manager;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -8,73 +9,51 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.bcm.cluster_manager.service.ClusterManagerService;
+import com.bcm.shared.filter.FilterProvider;
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.sort.NodeComparators;
+import com.bcm.shared.sort.SortProvider;
 
 //this is the implementation of the ClusterManagerService interface which can be removed when using a real database data source
 @Service
-public class ClusterManagerServiceImpl implements ClusterManagerService {
+public class ClusterManagerServiceImpl implements ClusterManagerService{
+    public List<NodeDTO> exampleNodes;
+
+    public ClusterManagerServiceImpl(){
+        int numBackups = 1000;
+        List<NodeDTO> list = new ArrayList<>();
+        for (int i = 1; i <= numBackups; i++) {
+            list.add(new NodeDTO(
+                    (long) i,
+                    "Node " + i,
+                    "www.google.com",
+                    "active",
+                    LocalDateTime.now().minusDays(i)
+            ));
+        }
+        exampleNodes = list;
+    }
 
     public List<NodeDTO> findNodes(Boolean active, String search, String sortBy, String sortOrder) {
         List<NodeDTO> nodes = getAllNodes();
 
         // Filter by active status
-        if (Boolean.TRUE.equals(active)) {
-            nodes = nodes.stream()
-                .filter(node -> "Active".equalsIgnoreCase(node.getStatus()))
-                .toList();
-        }
+        nodes = FilterProvider.filterByActive(nodes, active, NodeDTO::getStatus);
 
         // Filter by search (match by id or name)
-        if (search != null && !search.isBlank()) {
-            final String term = search.trim().toLowerCase();
-            final boolean isNumeric = term.chars().allMatch(Character::isDigit);
-
-            nodes = nodes.stream().filter(node -> {
-                boolean nameMatch = node.getName() != null && node.getName().toLowerCase().contains(term);
-                boolean idMatch = false;
-                if (isNumeric && node.getId() != null) {
-                    // Use equals() for exact id match; use contains() for partial match
-                    idMatch = node.getId().toString().contains(term);
-                }
-                return nameMatch || idMatch;
-            }).toList();
-        }
+        nodes = FilterProvider.filterBySearchFields(nodes, search, List.of(
+            n -> n.getId() == null ? "" : n.getId().toString(),
+            NodeDTO::getName
+        ));
         
-        // Sorting logic can be added here based on sortBy and sortOrder parameters
-        if (sortBy != null && !sortBy.isBlank()) {
-            Comparator<NodeDTO> comparator = getComparator(sortBy);
-            
-            if (comparator != null) {
-                // Reverse if descending order
-                if ("desc".equalsIgnoreCase(sortOrder)) {
-                    comparator = comparator.reversed();
-                }
-                
-                nodes = nodes.stream()
-                    .sorted(comparator)
-                    .toList();
-            }
-        }
+        /// Sort using SortProvider
+        nodes = SortProvider.sort(nodes, sortBy, sortOrder, NodeComparators.COMPARATORS);
 
         return nodes;
-    }
-
-    private Comparator<NodeDTO> getComparator(String sortBy) {
-        return switch (sortBy.toLowerCase()) {
-            case "name" -> Comparator.comparing(NodeDTO::getName, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "status" -> Comparator.comparing(NodeDTO::getStatus, Comparator.nullsLast(String::compareToIgnoreCase));
-            case "createdat" -> Comparator.comparing(NodeDTO::getCreatedAt, Comparator.nullsLast(LocalDateTime::compareTo));
-            case "id" -> Comparator.comparing(NodeDTO::getId, Comparator.nullsLast(Long::compareTo));
-            default -> null;
-        };
     }
     
     public List<NodeDTO> getAllNodes() {
         // Mock data for nodes
-        return Arrays.asList(
-                new NodeDTO(1L, "Node A", "Active", LocalDateTime.now().minusDays(1)),
-                new NodeDTO(2L, "Node B", "Inactive", LocalDateTime.now().minusDays(2)),
-                new NodeDTO(3L, "Node C", "Active", LocalDateTime.now().minusDays(3))
-        );
+        return exampleNodes;
     }
 }

@@ -55,7 +55,8 @@ public class ClusterManagerController {
     public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination) {
         return userService.getPaginatedItems(
                 pagination.getPage(),
-                pagination.getItemsPerPage()
+                pagination.getItemsPerPage(),
+                pagination.getSearch()
         );
     }
 

@@ -12,6 +12,9 @@ import java.util.List;
 public class UserService extends PaginationProvider<UserDTO> {
     public List<UserDTO> exampleUsers;
 
+    // Define searchable columns - only changeable in backend
+    private static final List<String> SEARCHABLE_COLUMNS = List.of("name", "id");
+
     public UserService(){
         int numBackups = 1000;
         List<UserDTO> list = new ArrayList<>();
@@ -29,16 +32,58 @@ public class UserService extends PaginationProvider<UserDTO> {
 
     @Override
     protected long getTotalItemsCount() {
-        // Should make a call to the DB to get the actual count
         return exampleUsers.size();
     }
 
     @Override
+    protected long getTotalItemsCount(String search) {
+        if (search == null || search.trim().isEmpty()) {
+            return getTotalItemsCount();
+        }
+        return filterBySearch(exampleUsers, search).size();
+    }
+
+    @Override
     protected List<UserDTO> getDBItems(long page, long itemsPerPage) {
-        // Should make a call to the DB to get the actual items
         return exampleUsers.stream()
                 .skip((page - 1) * itemsPerPage)
                 .limit(itemsPerPage)
+                .toList();
+    }
+
+    @Override
+    protected List<UserDTO> getDBItems(long page, long itemsPerPage, String search) {
+        if (search == null || search.trim().isEmpty()) {
+            return getDBItems(page, itemsPerPage);
+        }
+
+        List<UserDTO> filtered = filterBySearch(exampleUsers, search);
+        return filtered.stream()
+                .skip((page - 1) * itemsPerPage)
+                .limit(itemsPerPage)
+                .toList();
+    }
+
+
+    // Filter users by searching in defined columns
+
+    private List<UserDTO> filterBySearch(List<UserDTO> users, String search) {
+        String searchLower = search.toLowerCase().trim();
+
+        return users.stream()
+                .filter(user -> {
+                    // Search in name column
+                    if (user.getName() != null &&
+                        user.getName().toLowerCase().contains(searchLower)) {
+                        return true;
+                    }
+                    // Search in id column (convert to string)
+                    if (user.getId() != null &&
+                        user.getId().toString().contains(searchLower)) {
+                        return true;
+                    }
+                    return false;
+                })
                 .toList();
     }
 }

@@ -1,1 +1,7 @@
-<p>users works!</p>
+<app-data-table
+  [fetchData]="fetchUsers"
+  [columns]="tableColumns()"
+  [searchColumns]="tableSearchColumns()"
+  [filters]="tableFilters()"
+  [enableBackendSearch]="true"
+/>

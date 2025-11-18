@@ -57,6 +57,7 @@ public class SortProvider {
     /**
      * Sort by multiple fields (for tie-breaking)
      */
+    @SafeVarargs
     public static <T> List<T> sortByMultiple(
             List<T> items,
             String sortOrder,

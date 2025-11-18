@@ -19,6 +19,7 @@ export class Nodes implements OnInit {
     {field: 'id', header: 'ID'},
     {field: 'name', header: 'Name'},
     {field: 'status', header: 'Status'},
+    {field: 'address', header: 'Address'},
     {field: 'createdAt', header: 'Created At'},
   ]);
 

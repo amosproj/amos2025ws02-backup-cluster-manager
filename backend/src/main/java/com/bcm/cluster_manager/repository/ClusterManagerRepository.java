@@ -1,4 +1,4 @@
-package com.bcm.cluster_manager;
+package com.bcm.cluster_manager.repository;
 
 
 import org.springframework.stereotype.Repository;

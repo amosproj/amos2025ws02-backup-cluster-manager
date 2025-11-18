@@ -1,16 +1,23 @@
 package com.bcm.backup_manager;
 
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.bcm.shared.model.api.BackupDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/backup-manager")
+@CrossOrigin(originPatterns = "*")
+@Profile("backup_manager")
 public class BackupManagerController {
 
-    @GetMapping("/backupManager/test")
-    public String test(){
-        return "This is a backup manager endpoint";
+    @Autowired
+    private BackupManagerService backupManagerService;
+
+    @PostMapping("/backups")
+    public ResponseEntity<Void> createBackup(@RequestBody BackupDTO dto) {
+        backupManagerService.distributeBackup(dto);
+        return ResponseEntity.ok().build();
     }
 }

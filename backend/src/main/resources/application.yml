@@ -36,6 +36,9 @@ application:
 
 mybatis:
   type-aliases-package: com.bcm.shared.model.database
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: OTHER
 
 
 
@@ -89,3 +92,7 @@ spring:
   h2:
     console:
       enabled: true
+
+backup:
+  manager:
+    url: http://node2:8082

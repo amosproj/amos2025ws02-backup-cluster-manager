@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController()
 @RequestMapping("/api/v1")
 public class ClusterManagerController {
@@ -23,8 +21,11 @@ public class ClusterManagerController {
 
 
     @GetMapping("/nodes")
-    public List<NodeDTO> getNodes() {
-        return clusterManagerService.getAllNodes();
+    public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination){
+        return clusterManagerService.getPaginatedItems(
+                pagination.getPage(),
+                pagination.getItemsPerPage()
+        );
     }
 
     @GetMapping("/backups")

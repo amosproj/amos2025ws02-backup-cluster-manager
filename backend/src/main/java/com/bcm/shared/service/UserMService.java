@@ -14,12 +14,12 @@ import java.util.List;
  * This class provides methods to handle CRUD operations for user data.
  */
 @Service
-public class UserService {
+public class UserMService {
 
     final UserMapper userMapper;
     final UserGroupRelationMapper userGroupRelationMapper;
 
-    public UserService(UserMapper userMapper, UserGroupRelationMapper userGroupRelationMapper) {
+    public UserMService(UserMapper userMapper, UserGroupRelationMapper userGroupRelationMapper) {
         this.userMapper = userMapper;
         this.userGroupRelationMapper = userGroupRelationMapper;
     }

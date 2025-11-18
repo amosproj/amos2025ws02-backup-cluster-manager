@@ -18,8 +18,9 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - FRONTEND_ORIGIN=http://localhost:4200
-      - APPLICATION_PORT=8080
+      # Default values are taken
+      - ALLOWED_ORIGINS=http://localhost:4200,http://node1:8081,http://node2:8082
+      #- APPLICATION_PORT=8080
       - SPRING_PROFILES_ACTIVE=cluster_manager
     ports:
       - "8080:8080"
@@ -39,9 +40,11 @@ services:
       - POSTGRES_PASSWORD=apppassword
       - SPRING_PROFILES_ACTIVE=backup_node
       - NODE_ID=node1
-      - APPLICATION_PORT=8080
+      - APPLICATION_PORT=8081
+      - CM_ADDRESS=cluster-manager:8080
+      - NODE_ADDRESS=node1:8081
     ports:
-      - "18081:8080"
+      - "8081:8081"
     networks:
       - app-network
     depends_on:
@@ -58,9 +61,11 @@ services:
       - POSTGRES_PASSWORD=apppassword
       - SPRING_PROFILES_ACTIVE=backup_node
       - NODE_ID=node2
-      - APPLICATION_PORT=8080
+      - APPLICATION_PORT=8082
+      - CM_ADDRESS=cluster-manager:8080
+      - NODE_ADDRESS=node2:8082
     ports:
-      - "18082:8080"
+      - "8082:8082"
     networks:
       - app-network
     depends_on:

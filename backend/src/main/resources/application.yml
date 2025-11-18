@@ -28,7 +28,11 @@ server:
   port: ${APPLICATION_PORT:8080}
 application:
   cors:
-    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:4200}
+    allowed-origin: ${ALLOWED_ORIGINS:http://localhost:4200}
+  cm:
+    public-address: ${CM_ADDRESS}
+  node:
+    public-address: ${NODE_ADDRESS}
 
 mybatis:
   type-aliases-package: com.bcm.shared.model.database
@@ -40,17 +44,19 @@ mybatis:
 spring:
   config:
     activate:
-      on-profile: cluster-manager
+      on-profile: cluster_manager
+
 ---
 spring:
   config:
     activate:
-      on-profile: backup-manager
+      on-profile: backup_manager
+
 ---
 spring:
   config:
     activate:
-      on-profile: backup-node
+      on-profile: backup_node
 
 ---
 # Prod profile

@@ -4,15 +4,16 @@ import com.bcm.cluster_manager.service.ClusterManagerService;
 import com.bcm.cluster_manager.service.BackupService;
 import com.bcm.cluster_manager.service.RegistryService;
 import com.bcm.cluster_manager.service.SyncService;
+import com.bcm.cluster_manager.service.UserService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
+import com.bcm.shared.model.api.UserDTO;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController()
 @RequestMapping("/api/v1")
@@ -24,11 +25,14 @@ public class ClusterManagerController {
     @Autowired
     private BackupService backupService;
 
+    @Autowired UserService userService;
+
     @Autowired
     private RegistryService registry;
 
     @Autowired
     private SyncService syncService;
+
 
 
     @GetMapping("/nodes")
@@ -42,6 +46,14 @@ public class ClusterManagerController {
     @GetMapping("/backups")
     public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
         return backupService.getPaginatedItems(
+                pagination.getPage(),
+                pagination.getItemsPerPage()
+        );
+    }
+
+    @GetMapping("/users")
+    public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination) {
+        return userService.getPaginatedItems(
                 pagination.getPage(),
                 pagination.getItemsPerPage()
         );

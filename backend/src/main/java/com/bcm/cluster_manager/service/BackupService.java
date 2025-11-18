@@ -1,4 +1,4 @@
-package com.bcm.cluster_manager;
+package com.bcm.cluster_manager.service;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;

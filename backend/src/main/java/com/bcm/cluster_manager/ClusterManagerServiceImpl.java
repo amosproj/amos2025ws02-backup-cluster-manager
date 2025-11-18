@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.bcm.cluster_manager.service.ClusterManagerService;
 import com.bcm.shared.model.api.NodeDTO;
 
 //this is the implementation of the ClusterManagerService interface which can be removed when using a real database data source

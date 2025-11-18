@@ -1,5 +1,4 @@
-package com.bcm.cluster_manager;
-
+package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
 import java.util.List;

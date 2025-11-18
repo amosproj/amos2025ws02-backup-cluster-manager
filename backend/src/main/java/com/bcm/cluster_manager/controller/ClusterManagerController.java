@@ -7,6 +7,8 @@ import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
+import com.bcm.shared.pagination.PaginationRequest;
+import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,13 +32,19 @@ public class ClusterManagerController {
 
 
     @GetMapping("/nodes")
-    public List<NodeDTO> getNodes() {
-        return clusterManagerService.getAllNodes();
+    public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination){
+        return clusterManagerService.getPaginatedItems(
+                pagination.getPage(),
+                pagination.getItemsPerPage()
+        );
     }
 
     @GetMapping("/backups")
-    public List<BackupDTO> getBackups() {
-        return backupService.getAllBackups();
+    public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
+        return backupService.getPaginatedItems(
+                pagination.getPage(),
+                pagination.getItemsPerPage()
+        );
     }
 
     @PostMapping("/register")

@@ -1,21 +1,45 @@
 package com.bcm.cluster_manager.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.bcm.shared.pagination.PaginationProvider;
 import org.springframework.stereotype.Service;
 
 import com.bcm.shared.model.api.BackupDTO;
 
 @Service
-public class BackupService {
-     public List<BackupDTO> getAllBackups() {
-        // Mock data for backups
-        return Arrays.asList(
-                new BackupDTO(1L, "Backup A", "Active", LocalDateTime.now().minusDays(1)),
-                new BackupDTO(2L, "Backup B", "Inactive", LocalDateTime.now().minusDays(2)),
-                new BackupDTO(3L, "Backup C", "Active", LocalDateTime.now().minusDays(3))
-        );
+public class BackupService extends PaginationProvider<BackupDTO> {
+    public List<BackupDTO> exampleBackups;
+
+    public BackupService(){
+        int numBackups = 1000;
+        List<BackupDTO> list = new ArrayList<>();
+        for (int i = 1; i <= numBackups; i++) {
+            list.add(new BackupDTO(
+                    (long) i,
+                    "Backup " + i,
+                    "active",
+                    LocalDateTime.now().minusDays(i)
+            ));
+        }
+        exampleBackups = list;
+    }
+
+    @Override
+    protected long getTotalItemsCount() {
+        // Should make a call to the DB to get the actual count
+        return exampleBackups.size();
+    }
+
+    @Override
+    protected List<BackupDTO> getDBItems(long page, long itemsPerPage) {
+        // Should make a call to the DB to get the actual items
+        return exampleBackups.stream()
+                .skip((page - 1) * itemsPerPage)
+                .limit(itemsPerPage)
+                .toList();
     }
 }

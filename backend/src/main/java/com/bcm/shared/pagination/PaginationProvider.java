@@ -2,11 +2,11 @@ package com.bcm.shared.pagination;
 
 import java.util.List;
 
-public abstract class PaginationProvider<T> {
-    protected abstract List<T> getDBItems(long page, long itemsPerPage);
-    protected abstract long getTotalItemsCount();
+public interface PaginationProvider<T> {
+    abstract List<T> getDBItems(long page, long itemsPerPage);
+    abstract long getTotalItemsCount();
 
-    public PaginationResponse<T> getPaginatedItems(long page, long itemsPerPage){
+    public default PaginationResponse<T> getPaginatedItems(long page, long itemsPerPage){
         long totalItems = getTotalItemsCount();
         List<T> items;
         long totalPages = (long) Math.ceil((double) totalItems / itemsPerPage);

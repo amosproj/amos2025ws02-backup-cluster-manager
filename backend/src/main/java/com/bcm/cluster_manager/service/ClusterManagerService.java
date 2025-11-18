@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class ClusterManagerService extends PaginationProvider<NodeDTO> {
+public class ClusterManagerService implements PaginationProvider<NodeDTO> {
     public List<NodeDTO> exampleNodes;
 
     public ClusterManagerService(){
@@ -30,13 +30,13 @@ public class ClusterManagerService extends PaginationProvider<NodeDTO> {
     }
 
     @Override
-    protected long getTotalItemsCount() {
+    public long getTotalItemsCount() {
         // Should make a call to the DB to get the actual count
         return exampleNodes.size();
     }
 
     @Override
-    protected List<NodeDTO> getDBItems(long page, long itemsPerPage) {
+    public List<NodeDTO> getDBItems(long page, long itemsPerPage) {
         // Should make a call to the DB to get the actual items
         return exampleNodes.stream()
                 .skip((page - 1) * itemsPerPage)

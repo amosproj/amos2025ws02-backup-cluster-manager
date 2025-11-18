@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class UserService extends PaginationProvider<UserDTO> {
+public class UserService implements PaginationProvider<UserDTO> {
     public List<UserDTO> exampleUsers;
 
     // Define searchable columns - only changeable in backend
@@ -31,12 +31,12 @@ public class UserService extends PaginationProvider<UserDTO> {
     }
 
     @Override
-    protected long getTotalItemsCount() {
+    public long getTotalItemsCount() {
         return exampleUsers.size();
     }
 
     @Override
-    protected long getTotalItemsCount(String search) {
+    public long getTotalItemsCount(String search) {
         if (search == null || search.trim().isEmpty()) {
             return getTotalItemsCount();
         }
@@ -44,7 +44,7 @@ public class UserService extends PaginationProvider<UserDTO> {
     }
 
     @Override
-    protected List<UserDTO> getDBItems(long page, long itemsPerPage) {
+    public List<UserDTO> getDBItems(long page, long itemsPerPage) {
         return exampleUsers.stream()
                 .skip((page - 1) * itemsPerPage)
                 .limit(itemsPerPage)
@@ -52,7 +52,7 @@ public class UserService extends PaginationProvider<UserDTO> {
     }
 
     @Override
-    protected List<UserDTO> getDBItems(long page, long itemsPerPage, String search) {
+    public List<UserDTO> getDBItems(long page, long itemsPerPage, String search) {
         if (search == null || search.trim().isEmpty()) {
             return getDBItems(page, itemsPerPage);
         }

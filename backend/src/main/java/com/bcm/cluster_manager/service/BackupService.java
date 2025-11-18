@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import com.bcm.shared.model.api.BackupDTO;
 
 @Service
-public class BackupService extends PaginationProvider<BackupDTO> {
+public class BackupService implements PaginationProvider<BackupDTO> {
     public List<BackupDTO> exampleBackups;
 
     public BackupService(){
@@ -29,13 +29,13 @@ public class BackupService extends PaginationProvider<BackupDTO> {
     }
 
     @Override
-    protected long getTotalItemsCount() {
+    public long getTotalItemsCount() {
         // Should make a call to the DB to get the actual count
         return exampleBackups.size();
     }
 
     @Override
-    protected List<BackupDTO> getDBItems(long page, long itemsPerPage) {
+    public List<BackupDTO> getDBItems(long page, long itemsPerPage) {
         // Should make a call to the DB to get the actual items
         return exampleBackups.stream()
                 .skip((page - 1) * itemsPerPage)

@@ -24,6 +24,7 @@ export class DataTable implements OnInit, OnChanges {
   @Input() filters: any[] = [];
   @Input() fetchData!: (page: number, itemsPerPage: number, search?: string) => Observable<PaginatedResponse>;
   @Input() enableBackendSearch: boolean = false; // Enable backend search (default: false for backward compatibility)
+  @Input() showFilters: boolean = true; // Show/hide filters section (default: true)
   // @Input() loading: boolean | null = false;
 
   data: any[] = [];

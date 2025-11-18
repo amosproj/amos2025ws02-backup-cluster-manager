@@ -27,30 +27,32 @@
           Add Node
         </button>
         <!--Filter-->
-        <div class="flex items-center w-full md:w-auto">
-          <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
-                  class="flex items-center justify-center hover:bg-primary-3 gap-2 w-full px-4 py-2 h-10 text-sm font-medium text-foreground  rounded-lg bg-primary-2 "
-                  type="button">
-            <img src="filter.svg" class="w-6 h-6"/>
-            Filter
-            <img src="chevron-down.svg" class="w-6 h-6"/>
-          </button>
-          <!-- Dropdown menu -->
-          <div id="filterDropdown" class="z-10 hidden w-48 p-3 rounded-lg bg-primary-2 text-primary">
-            <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
-              @for (filter of tableFilters(); track filter.label) {
-                <li class="flex items-center">
-                  <input id="apple" type="checkbox" value=""
-                         (change)="toggleFilter(filter)"
-                         class="w-4 h-4 rounded text-foreground"/>
-                  <label for="apple" class="ml-2 text-sm font-medium text-foreground">
-                    {{ filter.label }}
-                  </label>
-                </li>
-              }
-            </ul>
+        @if (showFilters) {
+          <div class="flex items-center w-full md:w-auto">
+            <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
+                    class="flex items-center justify-center hover:bg-primary-3 gap-2 w-full px-4 py-2 h-10 text-sm font-medium text-foreground  rounded-lg bg-primary-2 "
+                    type="button">
+              <img src="filter.svg" class="w-6 h-6"/>
+              Filter
+              <img src="chevron-down.svg" class="w-6 h-6"/>
+            </button>
+            <!-- Dropdown menu -->
+            <div id="filterDropdown" class="z-10 hidden w-48 p-3 rounded-lg bg-primary-2 text-primary">
+              <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
+                @for (filter of tableFilters(); track filter.label) {
+                  <li class="flex items-center">
+                    <input id="apple" type="checkbox" value=""
+                           (change)="toggleFilter(filter)"
+                           class="w-4 h-4 rounded text-foreground"/>
+                    <label for="apple" class="ml-2 text-sm font-medium text-foreground">
+                      {{ filter.label }}
+                    </label>
+                  </li>
+                }
+              </ul>
+            </div>
           </div>
-        </div>
+        }
       </div>
     </div>
   </div>

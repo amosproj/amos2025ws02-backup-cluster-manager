@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class UserService implements PaginationProvider<UserDTO> {
+public class UserServiceM implements PaginationProvider<UserDTO> {
     public List<UserDTO> exampleUsers;
 
     // Define searchable columns - only changeable in backend
     private static final List<String> SEARCHABLE_COLUMNS = List.of("name", "id");
 
-    public UserService(){
+    public UserServiceM(){
         int numBackups = 1000;
         List<UserDTO> list = new ArrayList<>();
         for (int i = 1; i <= numBackups; i++) {

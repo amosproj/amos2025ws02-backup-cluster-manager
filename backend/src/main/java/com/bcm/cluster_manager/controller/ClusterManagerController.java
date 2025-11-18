@@ -4,7 +4,7 @@ import com.bcm.cluster_manager.service.ClusterManagerService;
 import com.bcm.cluster_manager.service.BackupService;
 import com.bcm.cluster_manager.service.RegistryService;
 import com.bcm.cluster_manager.service.SyncService;
-import com.bcm.cluster_manager.service.UserService;
+import com.bcm.cluster_manager.service.UserServiceM;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
@@ -25,7 +25,8 @@ public class ClusterManagerController {
     @Autowired
     private BackupService backupService;
 
-    @Autowired UserService userService;
+    @Autowired
+    UserServiceM userServiceM;
 
     @Autowired
     private RegistryService registry;
@@ -53,7 +54,7 @@ public class ClusterManagerController {
 
     @GetMapping("/users")
     public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination) {
-        return userService.getPaginatedItems(
+        return userServiceM.getPaginatedItems(
                 pagination.getPage(),
                 pagination.getItemsPerPage(),
                 pagination.getSearch()

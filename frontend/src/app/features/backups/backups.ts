@@ -7,21 +7,18 @@ import {DataTable} from '../../shared/components/data-table/data-table';
 @Component({
   selector: 'app-backups',
   imports: [
-    AsyncPipe,
     DataTable
   ],
   templateUrl: './backups.html',
   styleUrl: './backups.css',
 })
-export class Backups implements OnInit {
-  backups = signal<any[]>([]);
+export class Backups {
   tableColumns = signal([
     {field: 'id', header: 'ID'},
     {field: 'name', header: 'Name'},
     {field: 'status', header: 'Status'},
     {field: 'createdAt', header: 'Created At'},
   ]);
-
   // Columns to be included in search
   tableSearchColumns = signal(['name', 'status', 'id']);
 
@@ -33,25 +30,12 @@ export class Backups implements OnInit {
       active: false,
     }
   ]);
-  error = signal<string | null>(null);
-  loading$;
 
   constructor(
     private backupsService: BackupsService,
-    private apiService: ApiService
-  ) {
-    this.loading$ = this.apiService.loading$;
-  }
+  ) {}
 
-  ngOnInit() {
-    this.loadBackups();
-  }
-
-  loadBackups() {
-    this.error.set(null);
-    this.backupsService.getBackups().subscribe({
-      next: (data) => this.backups.set(data),
-      error: (error) => this.error.set(error.message)
-    })
+  fetchBackups = (page: number, itemsPerPage: number) => {
+    return this.backupsService.getBackups(page, itemsPerPage)
   }
 }

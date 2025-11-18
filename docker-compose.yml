@@ -13,7 +13,7 @@ services:
 
   cluster-manager:
     image: backend
-    container_name: cluster-manager
+    container_name: cluster_manager
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
       - POSTGRES_USER=appuser
@@ -59,11 +59,12 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node2
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - SPRING_PROFILES_ACTIVE=backup_node
+      - SPRING_PROFILES_ACTIVE=backup_manager
       - NODE_ID=node2
       - APPLICATION_PORT=8082
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node2:8082
+      - BACKUP_MANAGER_BASE_URL=http://node2:8082
     ports:
       - "8082:8082"
     networks:

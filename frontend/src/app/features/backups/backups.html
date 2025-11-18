@@ -7,7 +7,7 @@
   [searchColumns]="tableSearchColumns()"
   [filters]="tableFilters()"
   [loading]="loading$ | async"
-  (addClicked)="onAddBackup()"
+  (addClicked)="openAddModal()"
 />
 
 @if (showAddModal()){

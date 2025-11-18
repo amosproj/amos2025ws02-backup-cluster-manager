@@ -1,10 +1,9 @@
-@if(error()){
-  <div class="bg-red-600 text-white p-4 rounded-lg">Error: {{ error() }}</div>
-}
+<!--  [data]="backups()"-->
+<!--  [loading]="loading$ | async"-->
+<!--  [pagination]="pagination()"-->
 <app-data-table
-  [data]="backups()"
+  [fetchData]="fetchBackups"
   [columns]="tableColumns()"
   [searchColumns]="tableSearchColumns()"
   [filters]="tableFilters()"
-  [loading]="loading$ | async"
 />

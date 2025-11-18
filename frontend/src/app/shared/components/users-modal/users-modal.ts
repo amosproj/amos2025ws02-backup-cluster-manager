@@ -11,26 +11,54 @@ import { CommonModule } from '@angular/common';
 })
 export class UsersModal implements OnChanges {
   @Input() open: boolean = false;
-  @Input() mode: 'create' | 'update' | 'delete' = 'create';
+  @Input() mode: 'create' | 'edit' | 'delete' = 'create';
   @Input() user: any | null = null;
   @Output() closed = new EventEmitter<void>();
 
-  formData = {
+  formData: {
+    name: string;
+    passwordHash: string;
+    status: string;
+    createdAt: string | null;
+    updatedAt?: string | null;
+  } = {
     name: '',
     passwordHash: '',
-    status: 'enabled'
+    status: 'enabled',
+    createdAt: null,
+    updatedAt: null
   };
+  @Output() submitted = new EventEmitter<any>();
 
   ngOnChanges() {
-    if (this.mode === 'update' && this.user) {
+     if (this.mode === 'edit' && this.user) {
       this.formData.name = this.user.name;
       this.formData.status = this.user.status;
       this.formData.passwordHash = '';
+      this.formData.createdAt = this.user.createdAt || this.formData.createdAt;
+    }
+    if (this.mode === 'create') {
+      // reset timestamps for fresh create
+      this.formData.createdAt = null;
+      this.formData.updatedAt = null;
     }
   }
 
   onSubmit() {
-    // handle create, update, delete logic
+    // send the form data to the parent component or service
+   const now = new Date().toISOString();
+    if (this.mode === 'create') {
+      this.formData.createdAt = now;
+      // ensure updatedAt not sent for create
+      delete this.formData.updatedAt;
+    } else if (this.mode === 'edit') {
+      this.formData.updatedAt = now;
+      // keep existing createdAt if present
+      if (!this.formData.createdAt && this.user?.createdAt) {
+        this.formData.createdAt = this.user.createdAt;
+      }
+    }
+    this.submitted.emit({ ...this.formData });
     this.close();
   }
 

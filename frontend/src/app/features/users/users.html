@@ -2,7 +2,7 @@
   <button
     class="flex items-center gap-2 border border-gray-200 cursor-pointer font-small transition-all duration-200 px-6 py-3 rounded-lg hover:border-gray-400"
     type="button"
-    (click)="openAddUserModal('create')"
+    (click)="openCreateModal()"
   >
     <img src="/add_user.svg" alt="Add User" class="w-5 h-5" />
     Add Users
@@ -10,17 +10,17 @@
   <button
     class="flex items-center gap-2 border border-gray-200 cursor-pointer font-small transition-all duration-200 px-6 py-3 rounded-lg hover:border-gray-400"
     type="button"
-    (click)="openAddUserModal('update')"
+    (click)="openEditModal('edit')"
   >
-    <img src="/edit_user.svg" alt="Update User" class="w-5 h-5" />
-    Update Users
+    <img src="/edit_user.svg" alt="Edit User" class="w-5 h-5" />
+    Edit Users
   </button>
   <button
     class="flex items-center gap-2 border border-gray-200 cursor-pointer font-small transition-all duration-200 px-6 py-3 rounded-lg hover:border-gray-400"
     type="button"
-    (click)="openAddUserModal('delete')"
+    (click)="openDeleteModal('delete')"
   >
-    <img src="/edit_user.svg" alt="Update User" class="w-5 h-5" />
+    <img src="/delete_user.svg" alt="Delete User" class="w-5 h-5" />
     Delete Users
   </button>
 </div>
@@ -28,5 +28,7 @@
 <app-add-users-modal
   [open]="isAddUserModalOpen"
   [mode]="modalMode"
-  (closed)="isAddUserModalOpen = false"
-></app-add-users-modal>
+  [user]="selectedUser"
+  (submitted)="onUserSubmitted($event)"
+  (closed)="onModalClose()">
+</app-add-users-modal>

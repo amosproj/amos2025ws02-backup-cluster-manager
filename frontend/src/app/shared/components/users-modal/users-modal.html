@@ -11,7 +11,7 @@
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-default pb-4">
         <h3 class="text-lg font-medium text-heading">
-          {{ mode === 'create' ? 'Add User' : mode === 'update' ? 'Edit User' : 'Delete User' }}
+          {{ mode === 'create' ? 'Add User' : mode === 'edit' ? 'Edit User' : 'Delete User' }}
         </h3>
         <button
           (click)="close()"
@@ -66,7 +66,7 @@
         </div>
       </form>
 
-      <!-- Create / Update Form -->
+      <!-- Create / edit Form -->
       <form *ngIf="mode !== 'delete'" (ngSubmit)="onSubmit()">
         <div class="grid gap-4 py-4">
           <div>
@@ -106,7 +106,7 @@
         <!-- Footer -->
         <div class="flex items-center space-x-4 border-t border-default pt-4">
           <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">
-            {{ mode === 'create' ? 'Add User' : 'Update User' }}
+            {{ mode === 'create' ? 'Add User' : 'Edit User' }}
           </button>
           <button
             type="button"

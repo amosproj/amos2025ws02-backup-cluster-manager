@@ -2,6 +2,7 @@ import {BehaviorSubject, catchError, finalize, Observable, throwError} from 'rxj
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {environment} from '../../../environments/environment';
+import {Params} from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -13,9 +14,10 @@ export class ApiService {
 
   constructor(private http: HttpClient){}
 
-  get<T>(endpoint: string):Observable<T> {
+  get<T>(endpoint: string, params?: Params):Observable<T> {
     this.loadingSubject.next(true);
-    return this.http.get<T>(`${this.baseUrl}/${endpoint}`).pipe(
+
+    return this.http.get<T>(`${this.baseUrl}/${endpoint}`,{params}).pipe(
       catchError(this.handleError),
       finalize(()=>this.loadingSubject.next(false))
     )

@@ -7,7 +7,9 @@
 <app-data-table
   [data]="nodes()"
   [columns]="tableColumns()"
-  [searchColumns]="tableSearchColumns()"
   [filters]="tableFilters()"
   [loading]="loading$ | async"
+  (filtersChange)="onFiltersChange($event)"
+  (searchChange)="onSearchChange($event)"
+  (sortChange)="onSortChange($event)"
 />

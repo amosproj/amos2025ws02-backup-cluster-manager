@@ -7,9 +7,9 @@ describe('DataTable', () => {
   let fixture: ComponentFixture<DataTable>;
 
   const mockData = [
-    { id: 1, name: 'Node 1', status: 'running' },
-    { id: 2, name: 'Node 2', status: 'stopped' },
-    { id: 3, name: 'Test Node', status: 'running' }
+    { id: 1, name: 'Node 1', status: 'Active' },
+    { id: 2, name: 'Node 2', status: 'Inactive' },
+    { id: 3, name: 'Test Node', status: 'Active' }
   ];
 
   beforeEach(async () => {
@@ -28,29 +28,24 @@ describe('DataTable', () => {
   describe('ngOnChanges', () => {
     it('should update signals when inputs change', () => {
       const columns = [{ field: 'id', header: 'ID' }];
-      const filters = [{ label: 'Test', filterFn: () => true, active: false }];
+      const filters = [{ label: 'Active', active: false }];
 
-      // Set inputs first
       component.data = mockData;
       component.columns = columns;
       component.filters = filters;
       component.loading = true;
-      component.searchColumns = ['name'];
 
-      // Then trigger ngOnChanges
       component.ngOnChanges({
         data: new SimpleChange(null, mockData, true),
         columns: new SimpleChange(null, columns, true),
         filters: new SimpleChange(null, filters, true),
-        loading: new SimpleChange(null, true, true),
-        searchColumns: new SimpleChange(null, ['name'], true)
+        loading: new SimpleChange(null, true, true)
       });
 
       expect(component.tableData()).toEqual(mockData);
       expect(component.tableColumns()).toEqual(columns);
       expect(component.tableFilters()).toEqual(filters);
       expect(component.tableDataLoading()).toBe(true);
-      expect(component.tableSearchColumns()).toEqual(['name']);
     });
   });
 
@@ -63,80 +58,102 @@ describe('DataTable', () => {
   });
 
   describe('handleSearch', () => {
-    beforeEach(() => {
-      component.data = mockData;
-      component.searchColumns = ['name', 'status'];
-      component.ngOnChanges({
-        data: new SimpleChange(null, mockData, true),
-        searchColumns: new SimpleChange(null, ['name', 'status'], true)
-      });
+    it('should emit search query to parent', () => {
+      spyOn(component.searchChange, 'emit');
+      
+      const event = { target: { value: 'Node 1' } } as any;
+      component.handleSearch(event);
+      
+      expect(component.searchChange.emit).toHaveBeenCalledWith('Node 1');
     });
 
-    it('should filter data by search query (case insensitive)', () => {
-      component.handleSearch({ target: { value: 'node 1' } } as any);
-      expect(component.tableData().length).toBe(1);
-      expect(component.tableData()[0].name).toBe('Node 1');
+    it('should emit empty string when search is cleared', () => {
+      spyOn(component.searchChange, 'emit');
+      
+      const event = { target: { value: '   ' } } as any;
+      component.handleSearch(event);
+      
+      expect(component.searchChange.emit).toHaveBeenCalledWith('');
     });
 
-    it('should show all data when search is empty', () => {
-      component.handleSearch({ target: { value: '' } } as any);
-      expect(component.tableData().length).toBe(mockData.length);
-    });
-
-    it('should search across multiple columns', () => {
-      component.handleSearch({ target: { value: 'running' } } as any);
-      expect(component.tableData().length).toBe(2);
+    it('should trim whitespace from search query', () => {
+      spyOn(component.searchChange, 'emit');
+      
+      const event = { target: { value: '  Node 1  ' } } as any;
+      component.handleSearch(event);
+      
+      expect(component.searchChange.emit).toHaveBeenCalledWith('Node 1');
     });
   });
 
   describe('toggleFilter', () => {
-    beforeEach(() => {
-      component.data = mockData;
-      component.filters = [
-        { label: 'Running', filterFn: (item: any) => item.status === 'running', active: false }
-      ];
+    it('should toggle filter active state', () => {
+      component.filters = [{ label: 'Active', active: false }];
       component.ngOnChanges({
-        data: new SimpleChange(null, mockData, true),
         filters: new SimpleChange(null, component.filters, true)
       });
-    });
 
-    it('should toggle filter state and apply filtering', () => {
       const filter = component.tableFilters()[0];
+      expect(filter.active).toBe(false);
 
       component.toggleFilter(filter);
       expect(filter.active).toBe(true);
-      expect(component.tableData().length).toBe(2);
-      expect(component.tableData().every(item => item.status === 'running')).toBe(true);
+    });
 
+    it('should emit updated filters to parent', () => {
+      spyOn(component.filtersChange, 'emit');
+      
+      component.filters = [{ label: 'Active', active: false }];
+      component.ngOnChanges({
+        filters: new SimpleChange(null, component.filters, true)
+      });
+
+      const filter = component.tableFilters()[0];
       component.toggleFilter(filter);
-      expect(filter.active).toBe(false);
-      expect(component.tableData().length).toBe(mockData.length);
+
+      expect(component.filtersChange.emit).toHaveBeenCalled();
+      const emittedFilters = (component.filtersChange.emit as jasmine.Spy).calls.mostRecent().args[0];
+      expect(emittedFilters[0].active).toBe(true);
+    });
+
+    it('should update signal with new array reference', () => {
+      component.filters = [{ label: 'Active', active: false }];
+      component.ngOnChanges({
+        filters: new SimpleChange(null, component.filters, true)
+      });
+
+      const initialRef = component.tableFilters();
+      const filter = component.tableFilters()[0];
+      
+      component.toggleFilter(filter);
+      
+      const newRef = component.tableFilters();
+      expect(newRef).not.toBe(initialRef); // New reference created
+      expect(newRef[0].active).toBe(true);
     });
   });
 
-  describe('combined search and filters', () => {
-    beforeEach(() => {
+  describe('data binding', () => {
+    it('should display data passed from parent', () => {
       component.data = mockData;
-      component.searchColumns = ['name'];
-      component.filters = [
-        { label: 'Running', filterFn: (item: any) => item.status === 'running', active: false }
-      ];
       component.ngOnChanges({
-        data: new SimpleChange(null, mockData, true),
-        searchColumns: new SimpleChange(null, ['name'], true),
-        filters: new SimpleChange(null, component.filters, true)
+        data: new SimpleChange(null, mockData, true)
       });
+
+      expect(component.tableData()).toEqual(mockData);
+      expect(component.tableData().length).toBe(3);
     });
 
-    it('should combine search and active filters', () => {
-      component.handleSearch({ target: { value: 'Node' } } as any);
-      expect(component.tableData().length).toBe(3); // Node 1, Node 2, and Test Node
+    it('should update when parent provides filtered data', () => {
+      const filteredData = [{ id: 1, name: 'Node 1', status: 'Active' }];
+      
+      component.data = filteredData;
+      component.ngOnChanges({
+        data: new SimpleChange(mockData, filteredData, false)
+      });
 
-      component.toggleFilter(component.tableFilters()[0]);
-      expect(component.tableData().length).toBe(2); // Node 1 and Test Node (both running)
-      expect(component.tableData()[0].name).toBe('Node 1');
+      expect(component.tableData()).toEqual(filteredData);
+      expect(component.tableData().length).toBe(1);
     });
   });
 });
-

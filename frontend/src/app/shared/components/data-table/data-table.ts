@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, signal, SimpleChanges} from '@angular/core';
+import {Component, Input, Output, OnChanges, signal, SimpleChanges, EventEmitter} from '@angular/core';
 
 @Component({
   selector: 'app-data-table',
@@ -13,13 +13,18 @@ export class DataTable implements OnChanges {
   @Input() filters: any[] = [];
   @Input() loading: boolean | null = false;
 
+  @Output() searchChange = new EventEmitter<string>();
+  @Output() filtersChange = new EventEmitter<any[]>();
+  @Output() sortChange = new EventEmitter<{ sortBy: string, sortOrder: 'asc' | 'desc' }>();
+
+
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
-  tableSearchColumns = signal(this.searchColumns);
   tableDataLoading = signal(this.loading);
   tableFilters = signal(this.filters);
 
-  private currentSearchQuery: string = '';
+  currentSortBy = signal<string | null>(null);
+  currentSortOrder = signal<'asc' | 'desc'>('asc');
 
   // Lifecycle hook to detect changes in input properties
   ngOnChanges(changes: SimpleChanges) {
@@ -28,9 +33,6 @@ export class DataTable implements OnChanges {
     }
     if (changes['columns']) {
       this.tableColumns.set(this.columns);
-    }
-    if (changes['searchColumns']) {
-      this.tableSearchColumns.set(this.searchColumns);
     }
     if (changes['filters']) {
       this.tableFilters.set(this.filters);
@@ -44,41 +46,39 @@ export class DataTable implements OnChanges {
     return item[field];
   }
 
-  // Handle Search triggered by input event
+  // Handle Search triggered by input event - emit to parent
   handleSearch(event: Event) {
     const target = event.target as HTMLInputElement;
-    if (target && this.data) {
-      this.currentSearchQuery = target.value.toLowerCase();
-      this.applySearchAndFilters();
-    }
+    const searchQuery = target?.value?.trim() || '';
+    this.searchChange.emit(searchQuery);
   }
 
   // Handle Filter logic triggered by clicking on filter buttons
   toggleFilter(filter: any) {
     filter.active = !filter.active;
     this.tableFilters.set([...this.tableFilters()]);
-    this.applySearchAndFilters();
+    this.filtersChange.emit(this.tableFilters());
   }
 
-  // Apply both search and filters to the data
-  applySearchAndFilters() {
-    let filteredData = [...this.data];
-
-    // 1. Apply Search
-    if (this.currentSearchQuery) {
-      filteredData = filteredData.filter(item =>
-        this.searchColumns.some(column =>
-          item[column] && item[column].toString().toLowerCase().includes(this.currentSearchQuery)));
+  handleSort(field: string) {
+    let newOrder: 'asc' | 'desc' = 'asc';
+    
+    // If clicking the same column, toggle the order
+    if (this.currentSortBy() === field) {
+      newOrder = this.currentSortOrder() === 'asc' ? 'desc' : 'asc';
     }
+    
+    this.currentSortBy.set(field);
+    this.currentSortOrder.set(newOrder);
+    
+    this.sortChange.emit({ sortBy: field, sortOrder: newOrder });
+  }
 
-    // 2. Apply Filters
-    const activeFilters = this.tableFilters().filter(f => f.active);
-    if (activeFilters.length > 0) {
-      filteredData = filteredData.filter(item => {
-        return activeFilters.every(filter => filter.filterFn(item))
-      })
+  getSortIcon(field: string): string {
+    if (this.currentSortBy() !== field) {
+      return ''; // No icon for unsorted columns
     }
-    this.tableData.set(filteredData);
+    return this.currentSortOrder() === 'asc' ? '↑' : '↓';
   }
 
 }

@@ -1,4 +1,4 @@
-package com.bcm.shared;
+package com.bcm.shared.service;
 
 import org.springframework.stereotype.Service;
 

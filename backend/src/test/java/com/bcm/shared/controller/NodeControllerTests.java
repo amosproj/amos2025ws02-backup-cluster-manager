@@ -1,0 +1,64 @@
+package com.bcm.shared.controller;
+
+import com.bcm.shared.model.api.ClusterTablesDTO;
+import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.service.LocalTablesService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class NodeControllerTests {
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @MockBean
+    private LocalTablesService tables;
+
+    @Test
+    void testEndpointContainsString() {
+        String response = restTemplate.getForObject("/api/v1/example", String.class);
+        assert response.equals("Here is a string");
+    }
+
+    @Test
+    void pingEndpoint_returnsPong() {
+        String response = restTemplate.getForObject("/api/v1/ping", String.class);
+        assert response.equals("pong");
+    }
+
+    @Test
+    void syncEndpoint_callsReplaceAllOnLocalTablesService() {
+        ClusterTablesDTO dto = new ClusterTablesDTO();
+        dto.setActive(List.of(new NodeDTO(1L, "Node A","10.100.179.80:9300","Active", LocalDateTime.now().minusDays(1)),
+                new NodeDTO(2L, "Node B","10.100.179.80:9300","Active", LocalDateTime.now().minusDays(1))));
+        dto.setInactive(List.of(new NodeDTO(3L, "Node C","10.100.179.80:9300","Inactive", LocalDateTime.now().minusDays(1))));
+
+        HttpEntity<ClusterTablesDTO> request = new HttpEntity<>(dto);
+
+        ResponseEntity<Void> response = restTemplate.postForEntity("/api/v1/sync", request, Void.class);
+
+        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NO_CONTENT);
+
+        verify(tables, times(1)).replaceAll(
+                anyList(),
+                anyList()
+        );
+    }
+
+
+}

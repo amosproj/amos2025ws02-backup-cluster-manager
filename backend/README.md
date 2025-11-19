@@ -119,3 +119,19 @@ cd ..
 
 docker-compose up
 ```
+
+Start the test setup with multiple nodes (1 cluster manager, 2 backup nodes):
+"--profile test" to enable the test setup in docker-compose.yml. 
+This setup demonstrates features like multiple nodes and clustering with heartbeat checks, node table syncing and node registering.
+Fallout and revival handling can be tested by stopping and starting containers via the Docker Desktop UI.
+The creation of multiple databases inside the same postgres container only works with a clean volume.
+
+```bash
+docker compose --profile test up
+```
+
+To start the test setup with the current code base for the docker images:
+
+```bash
+docker compose --profile test up --build
+```

@@ -9,6 +9,8 @@ spring:
     name: bcm
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  flyway:
+    enabled: true
   datasource:
     url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
     username: ${POSTGRES_USER:appuser}
@@ -18,17 +20,6 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 5
       connection-timeout: 30000
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc:
-          lob:
-            non_contextual_creation: true
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
   logging:
     level:
       root: INFO
@@ -37,7 +28,14 @@ server:
   port: ${APPLICATION_PORT:8080}
 application:
   cors:
-    allowed-origin: ${FRONTEND_ORIGIN:http://localhost:4200}
+    allowed-origin: ${ALLOWED_ORIGINS:http://localhost:4200}
+  cm:
+    public-address: ${CM_ADDRESS}
+  node:
+    public-address: ${NODE_ADDRESS}
+
+mybatis:
+  type-aliases-package: com.bcm.shared.model.database
 
 
 
@@ -46,17 +44,19 @@ application:
 spring:
   config:
     activate:
-      on-profile: cluster-manager
+      on-profile: cluster_manager
+
 ---
 spring:
   config:
     activate:
-      on-profile: backup-manager
+      on-profile: backup_manager
+
 ---
 spring:
   config:
     activate:
-      on-profile: backup-node
+      on-profile: backup_node
 
 ---
 # Prod profile
@@ -89,7 +89,3 @@ spring:
   h2:
     console:
       enabled: true
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create-drop

@@ -21,10 +21,10 @@ public class FilterProvider {
      * Filter list by multiple search fields (more flexible)
      */
     public static <T> List<T> filterBySearchFields(
-            List<T> items, 
-            String search, 
+            List<T> items,
+            String search,
             List<Function<T, String>> fieldExtractors) {
-        
+
         if (search == null || search.isBlank()) {
             return items;
         }
@@ -36,7 +36,7 @@ public class FilterProvider {
             return fieldExtractors.stream()
                 .anyMatch(extractor -> {
                     String value = extractor.apply(item);
-                    return value != null && value.toLowerCase().matches(term);
+                    return value != null && value.toLowerCase().contains(term);
                 });
         }).toList();
     }

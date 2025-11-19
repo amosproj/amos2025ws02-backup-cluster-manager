@@ -18,9 +18,9 @@ assignees: ''
 * ...
 
 ## Definition of done (DoD)
-* Added only after week 5
-* The same for all features
-* Here goes the project specific part
+* New feature code has been documented
+* Component builds with build pipeline
+* Component tests have been written and pass
 
 ## DoD general criteria
 * Feature has been fully implemented

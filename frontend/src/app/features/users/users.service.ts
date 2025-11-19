@@ -3,18 +3,23 @@ import {ApiService} from '../../core/services/api.service';
 import {Observable} from 'rxjs';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 
-
 @Injectable({
   providedIn: 'root',
 })
-export class NodesService {
+export class UsersService {
   constructor(private apiService: ApiService){}
 
-  getNodes(page: number = 1, itemsPerPage: number = 15): Observable<PaginatedResponse>{
-    const params = {
+  getUsers(page: number = 1, itemsPerPage: number = 15, search: string = ''): Observable<PaginatedResponse>{
+    const params: any = {
       page: page.toString(),
       itemsPerPage: itemsPerPage.toString(),
+    };
+
+    // Only add search parameter if it's not empty
+    if (search && search.trim() !== '') {
+      params.search = search;
     }
-    return this.apiService.get<PaginatedResponse>('nodes', params);
+
+    return this.apiService.get<PaginatedResponse>('users', params);
   }
 }

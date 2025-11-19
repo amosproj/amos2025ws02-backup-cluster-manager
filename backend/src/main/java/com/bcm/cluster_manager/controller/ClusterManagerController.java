@@ -4,13 +4,16 @@ import com.bcm.cluster_manager.service.ClusterManagerService;
 import com.bcm.cluster_manager.service.BackupService;
 import com.bcm.cluster_manager.service.RegistryService;
 import com.bcm.cluster_manager.service.SyncService;
+import com.bcm.cluster_manager.service.UserServiceM;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
+import com.bcm.shared.model.api.UserDTO;
+import com.bcm.shared.pagination.PaginationRequest;
+import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController()
 @RequestMapping("/api/v1")
@@ -23,20 +26,39 @@ public class ClusterManagerController {
     private BackupService backupService;
 
     @Autowired
+    UserServiceM userServiceM;
+
+    @Autowired
     private RegistryService registry;
 
     @Autowired
     private SyncService syncService;
 
 
+
     @GetMapping("/nodes")
-    public List<NodeDTO> getNodes() {
-        return clusterManagerService.getAllNodes();
+    public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination){
+        return clusterManagerService.getPaginatedItems(
+                pagination.getPage(),
+                pagination.getItemsPerPage()
+        );
     }
 
     @GetMapping("/backups")
-    public List<BackupDTO> getBackups() {
-        return backupService.getAllBackups();
+    public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
+        return backupService.getPaginatedItems(
+                pagination.getPage(),
+                pagination.getItemsPerPage()
+        );
+    }
+
+    @GetMapping("/users")
+    public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination) {
+        return userServiceM.getPaginatedItems(
+                pagination.getPage(),
+                pagination.getItemsPerPage(),
+                pagination.getSearch()
+        );
     }
 
     @PostMapping("/register")

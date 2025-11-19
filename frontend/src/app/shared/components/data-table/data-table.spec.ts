@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DataTable } from './data-table';
 import { SimpleChange } from '@angular/core';
+import { of } from 'rxjs';
 
 describe('DataTable', () => {
   let component: DataTable;
@@ -12,6 +13,14 @@ describe('DataTable', () => {
     { id: 3, name: 'Test Node', status: 'running' }
   ];
 
+  const mockFetchData = (page: number, _itemsPerPage: number) => {
+    return of({
+      items: mockData,
+      currentPage: page,
+      totalPages: 1
+    });
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DataTable]
@@ -19,6 +28,7 @@ describe('DataTable', () => {
 
     fixture = TestBed.createComponent(DataTable);
     component = fixture.componentInstance;
+    component.fetchData = mockFetchData;
   });
 
   it('should create', () => {
@@ -31,25 +41,19 @@ describe('DataTable', () => {
       const filters = [{ label: 'Test', filterFn: () => true, active: false }];
 
       // Set inputs first
-      component.data = mockData;
       component.columns = columns;
       component.filters = filters;
-      component.loading = true;
       component.searchColumns = ['name'];
 
       // Then trigger ngOnChanges
       component.ngOnChanges({
-        data: new SimpleChange(null, mockData, true),
         columns: new SimpleChange(null, columns, true),
         filters: new SimpleChange(null, filters, true),
-        loading: new SimpleChange(null, true, true),
         searchColumns: new SimpleChange(null, ['name'], true)
       });
 
-      expect(component.tableData()).toEqual(mockData);
       expect(component.tableColumns()).toEqual(columns);
       expect(component.tableFilters()).toEqual(filters);
-      expect(component.tableDataLoading()).toBe(true);
       expect(component.tableSearchColumns()).toEqual(['name']);
     });
   });
@@ -64,12 +68,11 @@ describe('DataTable', () => {
 
   describe('handleSearch', () => {
     beforeEach(() => {
-      component.data = mockData;
       component.searchColumns = ['name', 'status'];
       component.ngOnChanges({
-        data: new SimpleChange(null, mockData, true),
         searchColumns: new SimpleChange(null, ['name', 'status'], true)
       });
+      component.ngOnInit(); // Initialize and load data
     });
 
     it('should filter data by search query (case insensitive)', () => {
@@ -91,14 +94,13 @@ describe('DataTable', () => {
 
   describe('toggleFilter', () => {
     beforeEach(() => {
-      component.data = mockData;
       component.filters = [
         { label: 'Running', filterFn: (item: any) => item.status === 'running', active: false }
       ];
       component.ngOnChanges({
-        data: new SimpleChange(null, mockData, true),
         filters: new SimpleChange(null, component.filters, true)
       });
+      component.ngOnInit(); // Initialize and load data
     });
 
     it('should toggle filter state and apply filtering', () => {
@@ -117,16 +119,15 @@ describe('DataTable', () => {
 
   describe('combined search and filters', () => {
     beforeEach(() => {
-      component.data = mockData;
       component.searchColumns = ['name'];
       component.filters = [
         { label: 'Running', filterFn: (item: any) => item.status === 'running', active: false }
       ];
       component.ngOnChanges({
-        data: new SimpleChange(null, mockData, true),
         searchColumns: new SimpleChange(null, ['name'], true),
         filters: new SimpleChange(null, component.filters, true)
       });
+      component.ngOnInit(); // Initialize and load data
     });
 
     it('should combine search and active filters', () => {

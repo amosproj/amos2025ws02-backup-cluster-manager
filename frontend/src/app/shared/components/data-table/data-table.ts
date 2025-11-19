@@ -1,31 +1,92 @@
-import {Component, Input, OnChanges, signal, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, OnInit, signal, SimpleChanges} from '@angular/core';
+import {Observable, Subject} from 'rxjs';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
+import {NgClass} from '@angular/common';
+
+interface PaginatedResponse {
+  items: any[];
+  currentPage: number;
+  totalPages: number;
+}
 
 @Component({
   selector: 'app-data-table',
-  imports: [],
+  imports: [
+    NgClass
+  ],
   templateUrl: './data-table.html',
   styleUrl: './data-table.css',
 })
-export class DataTable implements OnChanges {
-  @Input() data: any[] = [];
+export class DataTable implements OnInit, OnChanges {
+  // @Input() data: any[] = [];
   @Input() columns: { field: string, header: string }[] = [];
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
-  @Input() loading: boolean | null = false;
+  @Input() fetchData!: (page: number, itemsPerPage: number, search?: string) => Observable<PaginatedResponse>;
+  @Input() enableBackendSearch: boolean = false; // Enable backend search (default: false for backward compatibility)
+  @Input() showFilters: boolean = true; // Show/hide filters section (default: true)
+  // @Input() loading: boolean | null = false;
+
+  data: any[] = [];
+  currentPage: number = 1;
+  itemsPerPage: number = 15;
+  totalPages: number = 1;
+  loading: boolean = false;
+  availablePageSizes = [15, 25, 50, 100];
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
   tableSearchColumns = signal(this.searchColumns);
   tableDataLoading = signal(this.loading);
   tableFilters = signal(this.filters);
+  error = signal(<string | null>null);
 
   private currentSearchQuery: string = '';
+  private searchSubject = new Subject<string>();
+  private searchDebounceTime = 300; // 300ms debounce
+
+  ngOnInit() {
+    // Setup debounced search for backend search
+    this.searchSubject.pipe(
+      debounceTime(this.searchDebounceTime),
+      distinctUntilChanged()
+    ).subscribe(searchQuery => {
+      this.currentSearchQuery = searchQuery;
+      this.currentPage = 1; // Reset to first page on new search
+      this.loadData();
+    });
+
+    this.loadData();
+  }
+
+  loadData(){
+    this.loading = true;
+
+    // Pass search query to backend if backend search is enabled
+    const searchParam = this.enableBackendSearch ? this.currentSearchQuery : undefined;
+
+    this.fetchData(this.currentPage, this.itemsPerPage, searchParam).subscribe({
+      next: (response: any) => {
+        this.data = response.items;
+        this.totalPages = response.totalPages;
+        this.tableData.set(response.items);
+        console.log("Should load data: ", response.items);
+        this.loading = false;
+
+        // Only apply frontend filters if backend search is disabled
+        if (!this.enableBackendSearch) {
+          this.applySearchAndFilters();
+        }
+      },
+      error: (error)=> {
+        this.loading = false;
+        this.error.set("Error: " + error.message);
+      }
+    })
+  }
 
   // Lifecycle hook to detect changes in input properties
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['data']) {
-      this.tableData.set(this.data);
-    }
     if (changes['columns']) {
       this.tableColumns.set(this.columns);
     }
@@ -35,9 +96,66 @@ export class DataTable implements OnChanges {
     if (changes['filters']) {
       this.tableFilters.set(this.filters);
     }
-    if (changes['loading']) {
-      this.tableDataLoading.set(this.loading);
+  }
+
+  nextPage() {
+    if(this.currentPage < this.totalPages){
+      this.currentPage++;
+      this.loadData();
     }
+  }
+
+  previousPage() {
+    if(this.currentPage > 1){
+      this.currentPage--;
+      this.loadData();
+    }
+  }
+
+  goToPage(page: number) {
+    if(page >= 1 && page <= this.totalPages){
+      this.currentPage = page;
+      this.loadData();
+    }
+  }
+
+  getPageNumbers(): number[]{
+    const pages: number[] = [];
+    const maxVisible = 5;
+
+    if(this.totalPages <= maxVisible){
+      for(let i = 1; i <= this.totalPages; i++){
+        pages.push(i);
+      }
+    }else{
+      if (this.currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push(-1);
+        pages.push(this.totalPages);
+      } else if (this.currentPage >= this.totalPages - 2) {
+        pages.push(1);
+        pages.push(-1);
+        for (let i = this.totalPages - 3; i <= this.totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push(-1);
+        pages.push(this.currentPage - 1);
+        pages.push(this.currentPage);
+        pages.push(this.currentPage + 1);
+        pages.push(-1);
+        pages.push(this.totalPages);
+      }
+    }
+    return pages;
+  }
+
+
+
+  onPageSizeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.itemsPerPage = Number(target.value);
+    this.currentPage = 1; // Go back to first page
+    this.loadData();
   }
 
   getColumnValue(item: any, field: string): any {
@@ -47,9 +165,17 @@ export class DataTable implements OnChanges {
   // Handle Search triggered by input event
   handleSearch(event: Event) {
     const target = event.target as HTMLInputElement;
-    if (target && this.data) {
-      this.currentSearchQuery = target.value.toLowerCase();
-      this.applySearchAndFilters();
+    if (target) {
+      const searchValue = target.value.toLowerCase();
+
+      if (this.enableBackendSearch) {
+        // Use debounced search for backend
+        this.searchSubject.next(searchValue);
+      } else {
+        // Apply immediate frontend search
+        this.currentSearchQuery = searchValue;
+        this.applySearchAndFilters();
+      }
     }
   }
 
@@ -62,7 +188,7 @@ export class DataTable implements OnChanges {
 
   // Apply both search and filters to the data
   applySearchAndFilters() {
-    let filteredData = [...this.data];
+    let filteredData = Array.isArray(this.data)? [...this.data]:[];
 
     // 1. Apply Search
     if (this.currentSearchQuery) {

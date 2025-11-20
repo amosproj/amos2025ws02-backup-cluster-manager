@@ -1,3 +1,6 @@
+@if(error()){
+  <div class="bg-red-600 text-white p-4 rounded-lg">Error: {{ error() }}</div>
+}
 <section class="h-full flex flex-col overflow-auto gap-2">
 
   <div class="relative flex-col flex-0">
@@ -81,7 +84,10 @@
 
         </tbody>
       </table>
-      @if (tableData().length == 0 && !tableDataLoading()) {
+
+      @for (row of (tableData()); track row.id) {
+      }
+      @empty{
         <div class="w-full flex justify-center items-center bg-primary-1 p-4 rounded-b-lg">
           No data found
         </div>
@@ -93,6 +99,61 @@
       }
     </div>
   </div>
+  <nav class="flex items-center flex-column flex-wrap md:flex-row justify-between p-2 gap-2"
+       aria-label="Table navigation">
+      <span class="text-foreground md:w-auto">Showing Page <span
+        class="font-semibold ">{{ currentPage }}</span> of <span
+        class="font-semibold ">{{ totalPages }}</span> Pages </span>
+    <div class="flex items-center gap-2">
+      <select
+        id="pageSize"
+        [value]="itemsPerPage"
+        (change)="onPageSizeChange($event)"
+        class="appearance-none px-2 py-1 cursor-pointer text-foreground bg-primary-2 border-none rounded-lg focus:ring-0 outline-none hover:bg-primary-1"
+        style="
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          background-image: none;
+        ">
+        @for (size of availablePageSizes; track size) {
+          <option [value]="size">{{ size }}</option>
+        }
+      </select>
+    </div>
+    <ul class="inline-flex -space-x-px rtl:space-x-reverse bg-primary h-8">
+      <li>
+        <button
+          (click)="previousPage()"
+          [disabled]="currentPage===1"
+          class="flex items-center justify-center px-3 h-8 ms-0 leading-tight bg-primary-2 hover:bg-primary-1 rounded-s-lg disabled:text-foreground-muted disabled:bg-primary-4">
+          Previous
+        </button>
+      </li>
+      @for (page of getPageNumbers(); track page) {
+        <li>
+          <button
+            (click)="page > 0 && goToPage(page)"
+            [class.active]="page === currentPage"
+            [disabled]="page === -1"
+            [ngClass]="{
+            'bg-primary-1 text-foreground font-bold': page === currentPage,
+            }"
+            class="flex items-center justify-center px-3 h-8 ms-0 leading-tight bg-primary-2 hover:bg-primary-1">
+            {{ page === -1 ? '...' : page }}
+          </button>
+        </li>
+      }
+      <li>
+        <button
+          (click)="nextPage()"
+          [disabled]="currentPage===totalPages"
+          class="flex items-center justify-center px-3 h-8 ms-0 leading-tight bg-primary-2 hover:bg-primary-1 disabled:text-foreground-muted disabled:bg-primary-4  rounded-r-lg ">
+          Next
+        </button>
+      </li>
+    </ul>
+  </nav>
 </section>
 
 

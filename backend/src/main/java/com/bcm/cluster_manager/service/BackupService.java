@@ -1,21 +1,28 @@
 package com.bcm.cluster_manager.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.bcm.shared.filter.Filter;
+import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.pagination.PaginationProvider;
 import org.springframework.stereotype.Service;
 
 import com.bcm.shared.model.api.BackupDTO;
 
 @Service
-public class BackupService {
-     public List<BackupDTO> getAllBackups() {
-        // Mock data for backups
-        return Arrays.asList(
-                new BackupDTO(1L, "Backup A", "Active", LocalDateTime.now().minusDays(1)),
-                new BackupDTO(2L, "Backup B", "Inactive", LocalDateTime.now().minusDays(2)),
-                new BackupDTO(3L, "Backup C", "Active", LocalDateTime.now().minusDays(3))
-        );
+public class BackupService implements PaginationProvider<BackupDTO> {
+    @Override
+    public long getTotalItemsCount(Filter filter) {
+        // Add SQL query with filter to get the actual count
+        return 5;
+    }
+
+    @Override
+    public List<BackupDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
+        // Add SQL query with filter and pagination to get the actual items
+        return new ArrayList<>(List.of());
     }
 }

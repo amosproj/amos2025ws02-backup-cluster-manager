@@ -4,7 +4,10 @@ import com.bcm.shared.filter.Filter;
 import com.bcm.shared.filter.FilterProvider;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.PaginationProvider;
+import com.bcm.shared.sort.NodeComparators;
 import com.bcm.shared.sort.SortProvider;
+
+import ch.qos.logback.core.pattern.parser.Node;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +31,7 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
     public List<NodeDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
         // Add SQL query with filter and pagination to get the actual items
         List<NodeDTO> filtered = FilterProvider.filterNodes(new ArrayList<>(registry.getAllNodes()), filter);
-        List<NodeDTO> sorted = SortProvider.sort(filtered, filter.getSortBy(), filter.getSortOrder().toString(), null); // Add sorting logic if needed
+        List<NodeDTO> sorted = SortProvider.sort(filtered, filter.getSortBy(), filter.getSortOrder().toString(), NodeComparators.COMPARATORS);
         return sorted;
     }
 }

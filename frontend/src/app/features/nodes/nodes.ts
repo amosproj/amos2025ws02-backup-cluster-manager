@@ -3,8 +3,7 @@ import {NodesService} from './nodes.service';
 import {ApiService} from '../../core/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
-import {BackupsService} from '../backups/backups.service';
-import {SortOrder} from '../../shared/types/FilterTypes';
+import {SortOrder} from '../../shared/types/SortTypes';
 
 @Component({
   selector: 'app-nodes',
@@ -36,7 +35,13 @@ export class Nodes {
     private nodesService: NodesService,
   ) {}
 
-  fetchNodes = (page: number, itemsPerPage: number,search:string, orderBy: string, sortOrder:SortOrder) => {
-    return this.nodesService.getNodes(page, itemsPerPage,search, orderBy, sortOrder);
+  fetchNodes = (page: number, itemsPerPage: number, tableFilters: any, search:string, sortBy: string, sortOrder:SortOrder) => {
+    let active = false;
+    tableFilters.forEach((filter: any) => {
+      if(filter.label === 'Active' && filter.active){
+        active = true;
+      }
+    });
+    return this.nodesService.getNodes(page, itemsPerPage, active, search, sortBy, sortOrder);
   }
 }

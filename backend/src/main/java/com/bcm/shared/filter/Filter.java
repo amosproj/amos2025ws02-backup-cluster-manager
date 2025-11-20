@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class Filter {
-    Boolean active = false;
+    String active = "false";
     String search = null;
     String sortBy = null;
     SortOrder sortOrder = SortOrder.ASC;

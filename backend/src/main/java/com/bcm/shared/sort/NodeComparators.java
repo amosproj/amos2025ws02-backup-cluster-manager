@@ -14,7 +14,6 @@ public class NodeComparators {
         "name", SortProvider.comparingIgnoreCase(NodeDTO::getName),
         "status", SortProvider.comparingIgnoreCase(NodeDTO::getStatus),
         "address", SortProvider.comparingIgnoreCase(NodeDTO::getAddress),
-        "createdat", SortProvider.comparing(NodeDTO::getCreatedAt),
-        "created_at", SortProvider.comparing(NodeDTO::getCreatedAt)
+        "createdat", SortProvider.comparing(NodeDTO::getCreatedAt)
     );
 }

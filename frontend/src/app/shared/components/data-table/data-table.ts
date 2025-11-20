@@ -1,7 +1,7 @@
 import {Component, Input, OnChanges, OnInit, signal, SimpleChanges} from '@angular/core';
 import {Observable} from 'rxjs';
 import {NgClass} from '@angular/common';
-import {SortOrder} from '../../types/FilterTypes';
+import {SortOrder} from '../../types/SortTypes';
 
 interface PaginatedResponse {
   items: any[];
@@ -22,9 +22,8 @@ export class DataTable implements OnInit, OnChanges {
   @Input() columns: { field: string, header: string }[] = [];
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
-  @Input() fetchData!: (page: number, itemsPerPage: number, search:string, sortBy:string, orderBy:SortOrder) => Observable<PaginatedResponse>;
-  // @Input() loading: boolean | null = false;
-
+  @Input() fetchData!: (page: number, itemsPerPage: number, filter:any, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
+  
   data: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 15;
@@ -50,14 +49,13 @@ export class DataTable implements OnInit, OnChanges {
 
   loadData() {
     this.loading = true;
-    this.fetchData(this.currentPage, this.itemsPerPage, this.currentSearchQuery, this.currentSortBy(),this.currentSortOrder()).subscribe({
+    this.fetchData(this.currentPage, this.itemsPerPage, this.tableFilters(), this.currentSearchQuery, this.currentSortBy(),this.currentSortOrder()).subscribe({
       next: (response: any) => {
         this.data = response.items;
         this.totalPages = response.totalPages;
         this.tableData.set(response.items);
         console.log("Should load data: ", response.items);
         this.loading = false;
-        // this.applySearchAndFilters();
       },
       error: (error) => {
         this.loading = false;
@@ -154,7 +152,7 @@ export class DataTable implements OnInit, OnChanges {
     this.currentSortBy.set(field);
     this.currentSortOrder.set(newOrder);
 
-    this.applySearchAndFilters();
+    this.loadData();
   }
 
   getSortIcon(field: string): string {
@@ -169,7 +167,7 @@ export class DataTable implements OnInit, OnChanges {
     const target = event.target as HTMLInputElement;
     if (target && this.data) {
       this.currentSearchQuery = target.value.toLowerCase();
-      this.applySearchAndFilters();
+      this.loadData();
     }
   }
 
@@ -177,11 +175,6 @@ export class DataTable implements OnInit, OnChanges {
   toggleFilter(filter: any) {
     filter.active = !filter.active;
     this.tableFilters.set([...this.tableFilters()]);
-    this.applySearchAndFilters();
-  }
-
-  // Apply both search and filters to the data
-  applySearchAndFilters() {
     this.loadData();
   }
 }

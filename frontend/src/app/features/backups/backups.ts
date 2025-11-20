@@ -3,7 +3,7 @@ import {ApiService} from '../../core/services/api.service';
 import {BackupsService} from './backups.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
-import {SortOrder} from '../../shared/types/FilterTypes';
+import {SortOrder} from '../../shared/types/SortTypes';
 
 @Component({
   selector: 'app-backups',
@@ -34,7 +34,13 @@ export class Backups {
     private backupsService: BackupsService,
   ) {}
 
-  fetchBackups = (page: number, itemsPerPage: number, search: string, sortBy: string, sortOrder:SortOrder) => {
-    return this.backupsService.getBackups(page, itemsPerPage, search, sortBy, sortOrder);
+  fetchBackups = (page: number, itemsPerPage: number, tableFilters: any, search: string, sortBy: string, sortOrder:SortOrder) => {
+    let active = false;
+    tableFilters.forEach((filter: any) => {
+      if(filter.label === 'Active' && filter.active){
+        active = true;
+      }
+    });
+    return this.backupsService.getBackups(page, itemsPerPage, active, search, sortBy, sortOrder);
   }
 }

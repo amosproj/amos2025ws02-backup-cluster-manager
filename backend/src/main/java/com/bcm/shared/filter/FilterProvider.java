@@ -22,17 +22,14 @@ public class FilterProvider extends Filter {
 			.filter(node -> {
 				// Filter by enabled if set
 				if (filter.getActive() != null) {
-                    if (filter.getActive()) {
-                        // If active filter is true, only include ACTIVE nodes
-                        if (!Objects.equals(node.getStatus(), "Active")) {
-                            return false;
-                        }
-                    } else {
-                        // If active filter is false, only include INACTIVE nodes
-                        if (Objects.equals(node.getStatus(), "Inactive")) {
-                            return false;
-                        }
-                    }
+					if (filter.getActive().equals("true")) {
+						// If active filter is true, only include ACTIVE nodes
+						if (!Objects.equals(node.getStatus(), "Active")) {
+							return false;
+						}
+					} else {
+						return true;
+					}
                 }
 				// Filter by search (matches id, name, address, status)
 				if (filter.getSearch() != null && !filter.getSearch().isBlank()) {

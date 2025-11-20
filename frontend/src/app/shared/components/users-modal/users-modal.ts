@@ -21,12 +21,14 @@ export class UsersModal implements OnChanges {
     status: string;
     createdAt: string | null;
     updatedAt?: string | null;
+    role: string;
   } = {
     name: '',
     passwordHash: '',
     status: 'enabled',
     createdAt: null,
-    updatedAt: null
+    updatedAt: null,
+    role: '',
   };
   @Output() submitted = new EventEmitter<any>();
 

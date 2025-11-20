@@ -45,8 +45,7 @@
         </div>
         <p class="text-sm text-body mb-4">
           Are you sure you want to delete user
-          <span class="font-semibold text-heading">{{ user?.name }}</span
-          >?
+          <span class="font-semibold text-heading">{{ user?.name }}</span>?
         </p>
         <div class="flex justify-end space-x-3">
           <button
@@ -56,18 +55,18 @@
           >
             Delete
           </button>
-          <button
-            type="button"
-            (click)="close()"
-            class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base"
-          >
-            Cancel
-          </button>
+            <button
+              type="button"
+              (click)="close()"
+              class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base"
+            >
+              Cancel
+            </button>
         </div>
       </form>
 
-      <!-- Create / edit Form -->
-      <form *ngIf="mode !== 'delete'" (ngSubmit)="onSubmit()">
+      <!-- Create Form -->
+      <form *ngIf="mode === 'create'" (ngSubmit)="onSubmit()">
         <div class="grid gap-4 py-4">
           <div>
             <label class="block mb-2 text-sm font-medium text-heading">Name</label>
@@ -88,10 +87,9 @@
               name="passwordHash"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Password"
-              [required]="mode === 'create'"
+              required
             />
           </div>
-          <!-- Status Radios -->
           <div class="flex gap-6">
             <label class="flex items-center gap-2 text-sm">
               <input type="radio" [(ngModel)]="formData.status" name="status" value="disabled" />
@@ -102,19 +100,71 @@
               Enabled
             </label>
           </div>
+          <div class="col-span-2 sm:col-span-1">
+            <label for="category" class="block mb-2.5 text-sm font-medium text-heading">Select Group</label>
+            <select id="category" class="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" [(ngModel)]="formData.role" name="role" required>
+                <option value="Superuser" selected>Superuser</option>
+                <option value="Administrators">Administrators</option>
+                <option value="Operators">Operators</option>
+                <option value="RestoreUsers">Restore Users</option>
+                <option value="BackupUsers">Backup Users</option>
+            </select>
+          </div>
         </div>
-        <!-- Footer -->
         <div class="flex items-center space-x-4 border-t border-default pt-4">
-          <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">
-            {{ mode === 'create' ? 'Add User' : 'Edit User' }}
-          </button>
-          <button
-            type="button"
-            (click)="close()"
-            class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base"
-          >
-            Cancel
-          </button>
+          <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Add User</button>
+          <button type="button" (click)="close()" class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Edit Form -->
+      <form *ngIf="mode === 'edit'" (ngSubmit)="onSubmit()">
+        <div class="grid gap-4 py-4">
+          <div>
+            <label class="block mb-2 text-sm font-medium text-heading">Name</label>
+            <input
+              type="text"
+              [(ngModel)]="formData.name"
+              name="name"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+              placeholder="Username"
+              required
+            />
+          </div>
+          <div>
+            <label class="block mb-2 text-sm font-medium text-heading">Password (optional)</label>
+            <input
+              type="password"
+              [(ngModel)]="formData.passwordHash"
+              name="passwordHash"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+              placeholder="Leave blank to keep current password"
+            />
+          </div>
+          <div class="flex gap-6">
+            <label class="flex items-center gap-2 text-sm">
+              <input type="radio" [(ngModel)]="formData.status" name="status" value="disabled" />
+              Disabled
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input type="radio" [(ngModel)]="formData.status" name="status" value="enabled" />
+              Enabled
+            </label>
+          </div>
+          <div class="col-span-2 sm:col-span-1">
+            <label for="category" class="block mb-2.5 text-sm font-medium text-heading">Select Group</label>
+            <select id="category" class="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" [(ngModel)]="formData.role" name="role" required>
+                <option value="Superuser">Superuser</option>
+                <option value="Administrators">Administrators</option>
+                <option value="Operators">Operators</option>
+                <option value="RestoreUsers">Restore Users</option>
+                <option value="BackupUsers">Backup Users</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4 border-t border-default pt-4">
+          <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Edit User</button>
+          <button type="button" (click)="close()" class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
       </form>
     </div>

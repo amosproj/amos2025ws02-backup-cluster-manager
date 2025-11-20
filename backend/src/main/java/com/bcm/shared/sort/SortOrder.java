@@ -1,4 +1,4 @@
-package com.bcm.shared.filter;
+package com.bcm.shared.sort;
 
 public enum SortOrder {
     ASC,

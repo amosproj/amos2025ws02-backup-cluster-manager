@@ -26,7 +26,10 @@ export class Nodes {
   tableFilters = signal([
     {
       label: 'Active',
-      filterFn: (item: any) => item.status.toLowerCase() === "active",
+      active: false,
+    },
+    {
+      label: 'Inactive',
       active: false,
     }
   ]);
@@ -35,13 +38,7 @@ export class Nodes {
     private nodesService: NodesService,
   ) {}
 
-  fetchNodes = (page: number, itemsPerPage: number, tableFilters: any, search:string, sortBy: string, sortOrder:SortOrder) => {
-    let active = false;
-    tableFilters.forEach((filter: any) => {
-      if(filter.label === 'Active' && filter.active){
-        active = true;
-      }
-    });
-    return this.nodesService.getNodes(page, itemsPerPage, active, search, sortBy, sortOrder);
+  fetchNodes = (page: number, itemsPerPage: number, filters: string, search:string, sortBy: string, sortOrder:SortOrder) => {
+    return this.nodesService.getNodes(page, itemsPerPage, filters, search, sortBy, sortOrder);
   }
 }

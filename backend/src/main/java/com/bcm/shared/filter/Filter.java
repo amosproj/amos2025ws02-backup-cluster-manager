@@ -12,4 +12,5 @@ public abstract class Filter {
     String search = null;
     String sortBy = null;
     SortOrder sortOrder = SortOrder.ASC;
+    String filters = null;
 }

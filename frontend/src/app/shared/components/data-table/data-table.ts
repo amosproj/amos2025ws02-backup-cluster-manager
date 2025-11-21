@@ -24,7 +24,7 @@ export class DataTable implements OnInit, OnChanges {
   @Input() columns: { field: string, header: string }[] = [];
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
-  @Input() fetchData!: (page: number, itemsPerPage: number, filter:any, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
+  @Input() fetchData!: (page: number, itemsPerPage: number, filter:string, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
 
   data: any[] = [];
   currentPage: number = 1;
@@ -32,6 +32,7 @@ export class DataTable implements OnInit, OnChanges {
   totalPages: number = 1;
   loading: boolean = false;
   availablePageSizes = [1,2,3,15, 25, 50, 100];
+  filterParam = "";
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
@@ -51,7 +52,7 @@ export class DataTable implements OnInit, OnChanges {
 
   loadData() {
     this.loading = true;
-    this.fetchData(this.currentPage, this.itemsPerPage, this.tableFilters(), this.currentSearchQuery, this.currentSortBy(),this.currentSortOrder()).subscribe({
+    this.fetchData(this.currentPage, this.itemsPerPage, this.filterParam, this.currentSearchQuery, this.currentSortBy(),this.currentSortOrder()).subscribe({
       next: (response: any) => {
         this.data = response.items;
         this.totalPages = response.totalPages;
@@ -177,6 +178,7 @@ export class DataTable implements OnInit, OnChanges {
   toggleFilter(filter: any) {
     filter.active = !filter.active;
     this.tableFilters.set([...this.tableFilters()]);
+    this.filterParam = this.tableFilters().filter(f => f.active).map(f => f.label).join(",");
     this.loadData();
   }
 }

@@ -4,6 +4,7 @@ import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.NodeStatus;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.util.StringUtils;
 import java.util.stream.Collectors;
 
 public class FilterProvider extends Filter {
@@ -22,13 +23,11 @@ public class FilterProvider extends Filter {
 		return nodes.stream()
 			.filter(node -> {
 				// Active filter: expect a boolean-like string ("true"/"false")
-				if (filter.getActive() != null) {
-					boolean activeOnly = filter.getActive().equalsIgnoreCase("true");
-					if (activeOnly && node.getStatus() != NodeStatus.ACTIVE) return false;
-					if (!activeOnly && node.getStatus() == NodeStatus.ACTIVE) return false; // assuming false means exclude active
-				}
+				boolean activeOnly = filter.getActive().equalsIgnoreCase("true");
+				if (activeOnly && node.getStatus() != NodeStatus.ACTIVE) return false;
+				if (!activeOnly && node.getStatus() == NodeStatus.ACTIVE) return false; // assuming false means exclude active
 				// Search across id, name, address, status enum name
-				if (filter.getSearch() != null && !filter.getSearch().isBlank()) {
+				if (StringUtils.hasText(filter.getSearch())) {
 					String search = filter.getSearch().toLowerCase();
 					boolean matches = (node.getId() != null && node.getId().toString().toLowerCase().contains(search))
 						|| (node.getName() != null && node.getName().toLowerCase().contains(search))

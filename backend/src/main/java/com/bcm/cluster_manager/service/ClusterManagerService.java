@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.util.StringUtils;
 
 @Service
 public class ClusterManagerService implements PaginationProvider<NodeDTO> {
@@ -48,7 +49,7 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
 
     // Helper Methods goes here
     private List<NodeDTO> applyFilters(List<NodeDTO> nodes, Filter filter) {
-        if (filter == null || filter.getFilters() == null || filter.getFilters().isBlank()) {
+        if (filter == null || !StringUtils.hasText(filter.getFilters())) {
             return nodes;
         }
 
@@ -77,7 +78,7 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
     // Search implementation
     // Searches in name, address, status and id fields
     private List<NodeDTO> applySearch(List<NodeDTO> nodes, Filter filter){
-        if (filter != null && filter.getSearch() != null && !filter.getSearch().isBlank()) {
+        if (filter != null && StringUtils.hasText(filter.getSearch())) {
             String searchTerm = filter.getSearch().toLowerCase();
             return nodes.stream()
                     .filter(node ->

@@ -7,12 +7,10 @@ import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.sort.NodeComparators;
 import com.bcm.shared.sort.SortProvider;
 
-import ch.qos.logback.core.pattern.parser.Node;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,29 +47,33 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
 
     // Helper Methods goes here
     private List<NodeDTO> applyFilters(List<NodeDTO> nodes, Filter filter) {
-        if (filter != null && filter.getFilters() != null) {
-            // Filters are available, now all of them as a list
-            List<String> filters = new ArrayList<>(List.of(filter.getFilters().toLowerCase().split(",")));
-
-            List<NodeDTO> filteredNodes = nodes;
-            // Build a pipe to apply all filters after another to the nodes list
-            // 1. Active filter
-            if( filters.contains("active")) {
-                filteredNodes = filteredNodes.stream()
-                        .filter(node -> node.getStatus().equalsIgnoreCase("active"))
-                        .toList();
-            }
-            // 2. Inactive filter
-            if( filters.contains("inactive")) {
-                filteredNodes = filteredNodes.stream()
-                        .filter(node -> node.getStatus().equalsIgnoreCase("inactive"))
-                        .toList();
-            }
-            // Add additional filters here if needed
-
-            return filteredNodes;
+        if (filter == null || filter.getFilters() == null || filter.getFilters().isBlank()) {
+            return nodes;
         }
-        return nodes;
+
+        // Normalize filters to a set (lowercase, trimmed) to avoid duplicates
+        List<String> raw = List.of(filter.getFilters().split(","));
+        var normalized = raw.stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toLowerCase)
+                .toList();
+
+        boolean hasActive = normalized.contains("active");
+        boolean hasInactive = normalized.contains("inactive");
+        // If both active & inactive are requested, no status exclusion is needed (include all matching those two)
+        boolean filterStatus = hasActive ^ hasInactive; // true if exactly one of them present
+
+        return nodes.stream()
+                .filter(node -> {
+                    if (filterStatus) {
+                        if (hasActive && !node.getStatus().equalsIgnoreCase("active")) return false;
+                        if (hasInactive && !node.getStatus().equalsIgnoreCase("inactive")) return false;
+                    }
+                    // Future filter types can be added here without extra passes over the list.
+                    return true;
+                })
+                .toList();
     }
 
     // Search implementation

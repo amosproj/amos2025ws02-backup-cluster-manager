@@ -109,7 +109,7 @@ public interface BackupMapper {
             #{startTime},
             #{stopTime},
             #{sizeBytes},
-            #{state},
+            #{state}::backup_state,
             #{message},
             #{createdAt}
         )

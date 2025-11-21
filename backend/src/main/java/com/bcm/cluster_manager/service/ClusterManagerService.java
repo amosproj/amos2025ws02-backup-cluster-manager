@@ -25,7 +25,10 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
     @Override
     public long getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
-        List<NodeDTO> filtered = FilterProvider.filterNodes(new ArrayList<>(registry.getAllNodes()), filter);
+        List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
+        List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
+        List<NodeDTO> filtered = applySearch(filteredNodes, filter);
+
         return filtered.size();
     }
 
@@ -49,12 +52,12 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
 
     // Helper Methods goes here
     private List<NodeDTO> applyFilters(List<NodeDTO> nodes, Filter filter) {
-        if (filter == null || !StringUtils.hasText(filter.getFilters())) {
+        if (filter == null || filter.getFilters() == null || filter.getFilters().isEmpty()) {
             return nodes;
         }
 
-        var requested = List.of(filter.getFilters().split(",")).stream()
-                .map(String::trim)
+        var requested = List.copyOf(filter.getFilters()).stream()
+                .map(Object::toString)
                 .filter(s -> !s.isEmpty())
                 .map(String::toUpperCase)
                 .map(s -> {
@@ -84,7 +87,6 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
                     .filter(node ->
                         (node.getName() != null && node.getName().toLowerCase().contains(searchTerm)) ||
                         (node.getAddress() != null && node.getAddress().toLowerCase().contains(searchTerm)) ||
-                        (node.getStatus() != null && node.getStatus().toJson().contains(searchTerm)) ||
                         (node.getId() != null && node.getId().toString().contains(searchTerm))
                     )
                     .toList();

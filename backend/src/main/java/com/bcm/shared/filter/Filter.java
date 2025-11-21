@@ -1,5 +1,8 @@
 package com.bcm.shared.filter;
 
+import java.util.Set;
+
+import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.sort.SortOrder;
 
 import lombok.Getter;
@@ -12,5 +15,5 @@ public abstract class Filter {
     String search = null;
     String sortBy = null;
     SortOrder sortOrder = SortOrder.ASC;
-    String filters = null;
+    Set<NodeStatus> filters = null;
 }

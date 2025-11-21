@@ -1,7 +1,9 @@
 package com.bcm.shared.repository;
 
-import com.bcm.shared.model.database.Client;
-import com.bcm.shared.model.database.Task;
+import com.bcm.cluster_manager.repository.ClientRepository;
+import com.bcm.cluster_manager.repository.TaskRepository;
+import com.bcm.cluster_manager.model.database.Client;
+import com.bcm.cluster_manager.model.database.Task;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -20,10 +22,10 @@ import static org.assertj.core.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = Replace.ANY)
 @Transactional
 @Rollback
-class TaskMapperTest {
+class TaskRepositoryTest {
 
     @Autowired
-    private TaskMapper taskMapper;
+    private TaskRepository taskMapper;
 
     private Task createTestTask(Long clientId) {
         Task t = new Task();
@@ -41,7 +43,7 @@ class TaskMapperTest {
     }
 
     @Autowired
-    private ClientMapper clientMapper;
+    private ClientRepository clientRepository;
 
     private Client createTestClient() {
         Client c = new Client();
@@ -50,7 +52,7 @@ class TaskMapperTest {
         Instant now = Instant.now();
         c.setCreatedAt(now);
         c.setUpdatedAt(now);
-        clientMapper.insert(c);
+        clientRepository.insert(c);
         return c;
     }
 

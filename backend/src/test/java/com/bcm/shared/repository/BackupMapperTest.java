@@ -1,8 +1,10 @@
 package com.bcm.shared.repository;
 
+import com.bcm.cluster_manager.repository.ClientRepository;
+import com.bcm.cluster_manager.repository.TaskRepository;
 import com.bcm.shared.model.database.Backup;
-import com.bcm.shared.model.database.Client;
-import com.bcm.shared.model.database.Task;
+import com.bcm.cluster_manager.model.database.Client;
+import com.bcm.cluster_manager.model.database.Task;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -51,7 +53,7 @@ class BackupMapperTest {
     }
 
     @Autowired
-    private ClientMapper clientMapper;
+    private ClientRepository clientRepository;
 
     /**
      * Creates and persists a new test client instance.
@@ -67,12 +69,12 @@ class BackupMapperTest {
         Instant now = Instant.now();
         client.setCreatedAt(now);
         client.setUpdatedAt(now);
-        clientMapper.insert(client);
+        clientRepository.insert(client);
         return client;
     }
 
     @Autowired
-    private TaskMapper taskMapper;
+    private TaskRepository taskRepository;
 
     /**
      * Creates and persists a new test Task instance.
@@ -93,7 +95,7 @@ class BackupMapperTest {
         Instant now = Instant.now();
         task.setCreatedAt(now);
         task.setUpdatedAt(now);
-        taskMapper.insert(task);
+        taskRepository.insert(task);
         return task;
     }
 

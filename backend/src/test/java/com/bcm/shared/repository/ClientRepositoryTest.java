@@ -1,6 +1,7 @@
 package com.bcm.shared.repository;
 
-import com.bcm.shared.model.database.Client;
+import com.bcm.cluster_manager.model.database.Client;
+import com.bcm.cluster_manager.repository.ClientRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -22,10 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = Replace.ANY)
 @Transactional
 @Rollback
-class ClientMapperTest {
+class ClientRepositoryTest {
 
     @Autowired
-    private ClientMapper clientMapper;
+    private ClientRepository clientRepository;
 
     /**
      * Creates and persists a new test client instance.
@@ -41,7 +42,7 @@ class ClientMapperTest {
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         client.setCreatedAt(now);
         client.setUpdatedAt(now);
-        clientMapper.insert(client);
+        clientRepository.insert(client);
         return client;
     }
 
@@ -51,7 +52,7 @@ class ClientMapperTest {
         Client createdClient = createTestClient();
 
         // Act
-        Client foundClient = clientMapper.findById(createdClient.getId());
+        Client foundClient = clientRepository.findById(createdClient.getId());
 
         // Assert
         assertThat(foundClient).isNotNull();
@@ -65,7 +66,7 @@ class ClientMapperTest {
     @Test
     void findById_shouldReturnNullForInvalidId() {
         // Act
-        Client foundClient = clientMapper.findById(-1L); // Non-existent ID
+        Client foundClient = clientRepository.findById(-1L); // Non-existent ID
 
         // Assert
         assertThat(foundClient).isNull();

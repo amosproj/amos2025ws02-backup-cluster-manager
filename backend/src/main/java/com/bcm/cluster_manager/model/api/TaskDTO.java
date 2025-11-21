@@ -1,19 +1,16 @@
-package com.bcm.shared.model.database;
+package com.bcm.cluster_manager.model.api;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 
 @Getter
 @Setter
-public class Task {
+public class TaskDTO {
     private Long id;
     private String name;
     private Long clientId;
     private String source;     // TEXT
     private boolean enabled;
-    private Instant createdAt;
-    private Instant updatedAt;
-
+    private String interval;
 }

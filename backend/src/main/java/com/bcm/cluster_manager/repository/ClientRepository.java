@@ -1,12 +1,12 @@
-package com.bcm.shared.repository;
+package com.bcm.cluster_manager.repository;
 
-import com.bcm.shared.model.database.Client;
+import com.bcm.cluster_manager.model.database.Client;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
-public interface ClientMapper {
+public interface ClientRepository {
 
     @Select("""
             SELECT id, name_or_ip AS nameOrIp, enabled, created_at AS createdAt, updated_at AS updatedAt

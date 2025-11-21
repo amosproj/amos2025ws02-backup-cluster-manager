@@ -33,6 +33,8 @@ application:
     public-address: ${CM_ADDRESS}
   node:
     public-address: ${NODE_ADDRESS}
+  bm:
+    public-address: ${BM_ADDRESS}
 
 mybatis:
   type-aliases-package: com.bcm.shared.model.database
@@ -92,7 +94,3 @@ spring:
   h2:
     console:
       enabled: true
-
-backup:
-  manager:
-    url: http://node2:8082

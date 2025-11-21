@@ -1,6 +1,6 @@
 package com.bcm.cluster_manager.service;
 
-import com.bcm.cluster_manager.controller.ClusterManagerController.CreateBackupRequest;
+import com.bcm.cluster_manager.dto.CreateBackupRequest;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.database.BackupState;
@@ -35,7 +35,7 @@ class BackupServiceCreateTest {
     private RestTemplate restTemplate;
 
     @InjectMocks
-    private BackupService backupService;
+    private ClusterManagerService clusterManagerService;
 
     @Test
     void createBackup_withActiveNodes_shouldCreateBackupDTO() {
@@ -49,7 +49,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
         // Act
-        BackupDTO result = backupService.createBackup(request);
+        BackupDTO result = clusterManagerService.createBackup(request);
 
         // Assert
         assertThat(result).isNotNull();
@@ -75,7 +75,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
         // Act
-        BackupDTO result = backupService.createBackup(request);
+        BackupDTO result = clusterManagerService.createBackup(request);
 
         // Assert
         assertThat(result.getReplicationNodes()).hasSize(3);
@@ -94,7 +94,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(5L, 10L, 500L);
 
         // Act
-        BackupDTO result = backupService.createBackup(request);
+        BackupDTO result = clusterManagerService.createBackup(request);
 
         // Assert
         assertThat(result.getStatus()).isEqualTo(BackupState.QUEUED);
@@ -111,7 +111,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, null);
 
         // Act
-        BackupDTO result = backupService.createBackup(request);
+        BackupDTO result = clusterManagerService.createBackup(request);
 
         // Assert
         assertThat(result).isNotNull();
@@ -131,7 +131,7 @@ class BackupServiceCreateTest {
         ArgumentCaptor<BackupDTO> dtoCaptor = ArgumentCaptor.forClass(BackupDTO.class);
 
         // Act
-        backupService.createBackup(request);
+        clusterManagerService.createBackup(request);
 
         // Assert
         verify(restTemplate, times(1)).postForEntity(
@@ -153,7 +153,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
         // Act & Assert
-        assertThatThrownBy(() -> backupService.createBackup(request))
+        assertThatThrownBy(() -> clusterManagerService.createBackup(request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("No active nodes available");
 
@@ -173,7 +173,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
         // Act & Assert
-        assertThatThrownBy(() -> backupService.createBackup(request))
+        assertThatThrownBy(() -> clusterManagerService.createBackup(request))
                 .isInstanceOf(RuntimeException.class);
     }
 }

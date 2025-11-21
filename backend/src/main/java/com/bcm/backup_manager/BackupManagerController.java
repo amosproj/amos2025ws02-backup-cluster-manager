@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/backup-manager")
+@RequestMapping("/api/bm")
 @CrossOrigin(originPatterns = "*")
 @Profile("backup_manager")
 public class BackupManagerController {

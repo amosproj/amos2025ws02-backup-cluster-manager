@@ -15,7 +15,6 @@ export interface BackupRequest {
 export class BackupsService {
   constructor(private apiService: ApiService){}
 
-  // Now using cluster manager endpoints (v1)
   getBackups(): Observable<any[]> {
     return this.apiService.get<any[]>('backups');
   }

@@ -41,7 +41,7 @@ public class BackupManagerService {
                 try {
                     String url = "http://" + nodeAddress + "/api/v1/backups/sync";
                     restTemplate.postForEntity(url, dto, Void.class);
-                    System.out.println("Distributed backup to node: " + nodeAddress);
+                    //System.out.println("Distributed backup to node: " + nodeAddress);
                 } catch (Exception e) {
                     System.out.println("Failed to distribute to " + nodeAddress + ": " + e.getMessage());
                 }

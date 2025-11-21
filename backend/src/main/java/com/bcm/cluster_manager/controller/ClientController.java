@@ -17,8 +17,8 @@ public class ClientController {
     @Autowired
     ClientService clientService;
 
-    @GetMapping("/tasks")
-    public List<ClientDTO> getTasks() {
+    @GetMapping("/clients")
+    public List<ClientDTO> getClients() {
         return clientService.getAllClients().stream()
                 .map(this::toDto)
                 .toList();

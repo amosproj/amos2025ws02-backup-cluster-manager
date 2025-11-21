@@ -111,6 +111,6 @@ class RegistryServiceTests {
         assertThat(registry.getActiveNodes()).hasSize(1);
 
         NodeDTO node = registry.getActiveNodes().iterator().next();
-        assertThat(node.getStatus()).isEqualTo("Active");
+        assertThat(node.getStatus()).isEqualTo(com.bcm.shared.model.api.NodeStatus.ACTIVE);
     }
 }

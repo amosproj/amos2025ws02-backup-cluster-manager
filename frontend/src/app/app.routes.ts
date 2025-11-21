@@ -6,6 +6,7 @@ import { Permissions } from './features/permissions/permissions';
 import { Clusters } from './features/clusters/clusters';
 import { Nodes } from './features/nodes/nodes';
 import { Backups } from './features/backups/backups';
+import {Tasks} from './features/tasks/tasks';
 
 export const routes: Routes = [
   {
@@ -43,5 +44,10 @@ export const routes: Routes = [
     path: 'backups',
     component: Backups,
     title: 'Backups',
+  },
+  {
+    path: 'tasks',
+    component: Tasks,
+    title: 'Tasks',
   },
 ];

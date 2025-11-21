@@ -39,7 +39,12 @@ export class App implements OnInit{
       label:"Backups",
       icon: "/database.svg",
       route: "backups"
-    }
+    },
+    {
+      label: "Tasks",
+      icon: "/tasks.svg",
+      route: "tasks"
+    },
   ]);
 
   ngOnInit(): void {

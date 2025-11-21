@@ -1,6 +1,7 @@
 package com.bcm.shared.filter;
 
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.model.api.NodeStatus;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -20,27 +21,20 @@ public class FilterProvider extends Filter {
 
 		return nodes.stream()
 			.filter(node -> {
-				// Filter by enabled if set
+				// Active filter: expect a boolean-like string ("true"/"false")
 				if (filter.getActive() != null) {
-					if (filter.getActive().equals("true")) {
-						// If active filter is true, only include ACTIVE nodes
-						if (!Objects.equals(node.getStatus(), "Active")) {
-							return false;
-						}
-					} else {
-						return true;
-					}
-                }
-				// Filter by search (matches id, name, address, status)
+					boolean activeOnly = filter.getActive().equalsIgnoreCase("true");
+					if (activeOnly && node.getStatus() != NodeStatus.ACTIVE) return false;
+					if (!activeOnly && node.getStatus() == NodeStatus.ACTIVE) return false; // assuming false means exclude active
+				}
+				// Search across id, name, address, status enum name
 				if (filter.getSearch() != null && !filter.getSearch().isBlank()) {
 					String search = filter.getSearch().toLowerCase();
 					boolean matches = (node.getId() != null && node.getId().toString().toLowerCase().contains(search))
 						|| (node.getName() != null && node.getName().toLowerCase().contains(search))
 						|| (node.getAddress() != null && node.getAddress().toLowerCase().contains(search))
-						|| (node.getStatus() != null && node.getStatus().toLowerCase().contains(search));
-					if (!matches) {
-						return false;
-					}
+						|| (node.getStatus() != null && node.getStatus().toJson().contains(search));
+					if (!matches) return false;
 				}
 				return true;
 			})

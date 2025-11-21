@@ -19,6 +19,6 @@ public class NodeDTO {
     private Long id;
     private String name;
     private String address;
-    private String status;
+    private NodeStatus status;
     private LocalDateTime createdAt;
 }

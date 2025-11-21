@@ -41,8 +41,8 @@ class HeartbeatServiceTests {
 
     @Test
     void heartbeatAll_callsPingForActiveAndInactive_andPushesTables() {
-        NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000","Active", LocalDateTime.now());
-        NodeDTO i1 = new NodeDTO(2L, "B","10.1.1.2:9000","Inactive", LocalDateTime.now());
+    NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, LocalDateTime.now());
+    NodeDTO i1 = new NodeDTO(2L, "B","10.1.1.2:9000", com.bcm.shared.model.api.NodeStatus.INACTIVE, LocalDateTime.now());
 
         when(registry.getActiveNodes()).thenReturn(List.of(a1));
         when(registry.getInactiveNodes()).thenReturn(List.of(i1));

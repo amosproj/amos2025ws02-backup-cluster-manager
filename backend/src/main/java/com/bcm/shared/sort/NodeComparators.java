@@ -12,7 +12,7 @@ public class NodeComparators {
     public static final Map<String, Comparator<NodeDTO>> COMPARATORS = Map.of(
         "id", SortProvider.comparing(NodeDTO::getId),
         "name", SortProvider.comparingIgnoreCase(NodeDTO::getName),
-        "status", SortProvider.comparingIgnoreCase(NodeDTO::getStatus),
+        "status", SortProvider.comparing(NodeDTO::getStatus),
         "address", SortProvider.comparingIgnoreCase(NodeDTO::getAddress),
         "createdat", SortProvider.comparing(NodeDTO::getCreatedAt)
     );

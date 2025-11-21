@@ -103,11 +103,7 @@
           <div class="col-span-2 sm:col-span-1">
             <label for="category" class="block mb-2.5 text-sm font-medium text-heading">Select Group</label>
             <select id="category" class="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" [(ngModel)]="formData.role" name="role" required>
-                <option value="Superuser" selected>Superuser</option>
-                <option value="Administrators">Administrators</option>
-                <option value="Operators">Operators</option>
-                <option value="RestoreUsers">Restore Users</option>
-                <option value="BackupUsers">Backup Users</option>
+              <option *ngFor="let g of groups" [ngValue]="g.id">{{ g.name }}</option>
             </select>
           </div>
         </div>

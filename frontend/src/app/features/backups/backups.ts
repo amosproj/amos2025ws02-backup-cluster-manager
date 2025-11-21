@@ -34,13 +34,7 @@ export class Backups {
     private backupsService: BackupsService,
   ) {}
 
-  fetchBackups = (page: number, itemsPerPage: number, tableFilters: any, search: string, sortBy: string, sortOrder:SortOrder) => {
-    let active = false;
-    tableFilters.forEach((filter: any) => {
-      if(filter.label === 'Active' && filter.active){
-        active = true;
-      }
-    });
-    return this.backupsService.getBackups(page, itemsPerPage, active, search, sortBy, sortOrder);
+  fetchBackups = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder:SortOrder) => {
+    return this.backupsService.getBackups(page, itemsPerPage, filters, search, sortBy, sortOrder);
   }
 }

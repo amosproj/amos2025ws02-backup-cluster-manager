@@ -11,11 +11,11 @@ export class BackupsService {
   constructor(private apiService: ApiService) {
   }
 
-  getBackups(page: number = 1, itemsPerPage: number = 15,active: boolean = false, search:string="", sortBy:string="", sortOrder:SortOrder=SortOrder.ASC): Observable<PaginatedResponse> {
+  getBackups(page: number = 1, itemsPerPage: number = 15,filters:string="", search:string="", sortBy:string="", sortOrder:SortOrder=SortOrder.ASC): Observable<PaginatedResponse> {
     const params = {
       page: page.toString(),
       itemsPerPage: itemsPerPage.toString(),
-      active: active.toString(),
+      filters: filters.toString(),
       search: search.toString(),
       sortBy: sortBy.toString(),
       sortOrder: sortOrder.toString(),

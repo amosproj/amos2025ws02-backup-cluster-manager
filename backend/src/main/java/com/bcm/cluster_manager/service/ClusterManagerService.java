@@ -32,6 +32,12 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
         // Add SQL query with filter and pagination to get the actual items
         List<NodeDTO> filtered = FilterProvider.filterNodes(new ArrayList<>(registry.getAllNodes()), filter);
         List<NodeDTO> sorted = SortProvider.sort(filtered, filter.getSortBy(), filter.getSortOrder().toString(), NodeComparators.COMPARATORS);
+        int fromIndex = (int) ((page - 1) * itemsPerPage);
+        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+        if (fromIndex > toIndex) {
+            return new ArrayList<>();
+        }
+        sorted = sorted.subList(fromIndex, toIndex);
         return sorted;
     }
 }

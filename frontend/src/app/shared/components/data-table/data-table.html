@@ -108,6 +108,8 @@
       <select
         id="pageSize"
         [value]="itemsPerPage"
+        [(ngModel)]="itemsPerPage"
+        (ngModelChange)="onPageSizeChange($event)"
         (change)="onPageSizeChange($event)"
         class="appearance-none px-2 py-1 cursor-pointer text-foreground bg-primary-2 border-none rounded-lg focus:ring-0 outline-none hover:bg-primary-1"
         style="

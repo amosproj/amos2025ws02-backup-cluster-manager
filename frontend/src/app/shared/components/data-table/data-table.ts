@@ -2,6 +2,7 @@ import {Component, Input, OnChanges, OnInit, signal, SimpleChanges} from '@angul
 import {Observable} from 'rxjs';
 import {NgClass} from '@angular/common';
 import {SortOrder} from '../../types/SortTypes';
+import {FormsModule} from '@angular/forms';
 
 interface PaginatedResponse {
   items: any[];
@@ -12,7 +13,8 @@ interface PaginatedResponse {
 @Component({
   selector: 'app-data-table',
   imports: [
-    NgClass
+    NgClass,
+    FormsModule
   ],
   templateUrl: './data-table.html',
   styleUrl: './data-table.css',
@@ -23,13 +25,13 @@ export class DataTable implements OnInit, OnChanges {
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
   @Input() fetchData!: (page: number, itemsPerPage: number, filter:any, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
-  
+
   data: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 15;
   totalPages: number = 1;
   loading: boolean = false;
-  availablePageSizes = [15, 25, 50, 100];
+  availablePageSizes = [1,2,3,15, 25, 50, 100];
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);

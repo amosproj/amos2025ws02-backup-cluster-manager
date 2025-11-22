@@ -1,7 +1,6 @@
 package com.bcm.cluster_manager.service;
 
 
-import com.bcm.cluster_manager.controller.ClusterManagerController;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.database.BackupState;
@@ -40,6 +39,8 @@ public class ClusterManagerService {
                 .map(NodeDTO::getAddress)
                 .toList();
 
+        //System.out.println("Active nodes: " + activeNodes);
+
         if (activeNodes.isEmpty()) {
             throw new RuntimeException("No active nodes available");
         }
@@ -59,7 +60,7 @@ public class ClusterManagerService {
 
         try {
             restTemplate.postForEntity(
-                    "http://" + backupManagerBaseUrl + "/api/bm/backups",
+                    "http://" + backupManagerBaseUrl + "/api/v1/backups",
                     dto,
                     Void.class
             );

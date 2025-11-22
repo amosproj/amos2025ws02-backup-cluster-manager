@@ -12,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 @ComponentScan(basePackages = {
 		"com.bcm.shared",
-        "com.bcm"
 		// Add other packages you want Spring to scan per default here
 })
 @MapperScan("com.bcm.shared.repository")

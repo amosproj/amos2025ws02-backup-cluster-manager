@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   frontend:
@@ -66,6 +64,90 @@ services:
       - NODE_ADDRESS=node2:8082
     ports:
       - "8082:8082"
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+    build: ./backend
+
+  node3:
+    profiles: [ 'test' ]
+    image: backend
+    container_name: node3
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node3
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+      - SPRING_PROFILES_ACTIVE=backup_node
+      - NODE_ID=node3
+      - APPLICATION_PORT=8083
+      - CM_ADDRESS=cluster-manager:8080
+      - NODE_ADDRESS=node3:8083
+    ports:
+      - "8083:8083"
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+    build: ./backend
+
+  node4:
+    profiles: [ 'test' ]
+    image: backend
+    container_name: node4
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node4
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+      - SPRING_PROFILES_ACTIVE=backup_node
+      - NODE_ID=node4
+      - APPLICATION_PORT=8084
+      - CM_ADDRESS=cluster-manager:8080
+      - NODE_ADDRESS=node4:8084
+    ports:
+      - "8084:8084"
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+    build: ./backend
+
+  node5:
+    profiles: [ 'test' ]
+    image: backend
+    container_name: node5
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node5
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+      - SPRING_PROFILES_ACTIVE=backup_node
+      - NODE_ID=node5
+      - APPLICATION_PORT=8085
+      - CM_ADDRESS=cluster-manager:8080
+      - NODE_ADDRESS=node5:8085
+    ports:
+      - "8085:8085"
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+    build: ./backend
+
+  node6:
+    profiles: [ 'test' ]
+    image: backend
+    container_name: node6
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node6
+      - POSTGRES_USER=appuser
+      - POSTGRES_PASSWORD=apppassword
+      - SPRING_PROFILES_ACTIVE=backup_node
+      - NODE_ID=node6
+      - APPLICATION_PORT=8086
+      - CM_ADDRESS=cluster-manager:8080
+      - NODE_ADDRESS=node6:8086
+    ports:
+      - "8086:8086"
     networks:
       - app-network
     depends_on:

@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -18,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test suite for the ClientMapper class to ensure proper database access functionality.
  * This focuses on validating the `findById` method, which retrieves a client by its ID.
  */
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.ANY)
 @Transactional

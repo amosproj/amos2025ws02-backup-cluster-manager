@@ -33,9 +33,14 @@ application:
     public-address: ${CM_ADDRESS}
   node:
     public-address: ${NODE_ADDRESS}
+  bm:
+    public-address: ${BM_ADDRESS}
 
 mybatis:
   type-aliases-package: com.bcm.shared.model.database
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: OTHER
 
 
 

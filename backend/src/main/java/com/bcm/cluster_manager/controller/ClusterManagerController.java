@@ -8,8 +8,11 @@ import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.bcm.cluster_manager.dto.CreateBackupRequest;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController()
@@ -35,8 +38,27 @@ public class ClusterManagerController {
     }
 
     @GetMapping("/backups")
-    public List<BackupDTO> getBackups() {
-        return backupService.getAllBackups();
+    public ResponseEntity<List<BackupDTO>> getBackups() {
+        try {
+            List<BackupDTO> backups = clusterManagerService.getAllBackups();
+            return ResponseEntity.ok(backups);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    @PostMapping("/backups")
+    public ResponseEntity<BackupDTO> createBackup(@RequestBody CreateBackupRequest request) {
+        try {
+
+            BackupDTO result = clusterManagerService.createBackup(request);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/register")
@@ -45,4 +67,5 @@ public class ClusterManagerController {
         // push updated tables to all nodes
         syncService.pushTablesToAllNodes();
     }
+
 }

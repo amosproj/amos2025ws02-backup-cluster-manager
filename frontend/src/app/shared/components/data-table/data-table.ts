@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, signal, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output, signal, SimpleChanges} from '@angular/core';
 
 @Component({
   selector: 'app-data-table',
@@ -12,6 +12,8 @@ export class DataTable implements OnChanges {
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
   @Input() loading: boolean | null = false;
+
+  @Output() addClicked = new EventEmitter<void>();
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
@@ -79,6 +81,10 @@ export class DataTable implements OnChanges {
       })
     }
     this.tableData.set(filteredData);
+  }
+
+  onAddClick() {
+    this.addClicked.emit();
   }
 
 }

@@ -19,17 +19,13 @@ export class UsersModal implements OnChanges, OnInit {
 
   formData: {
     name: string;
-    passwordHash: string;
+    password: string;
     status: string;
-    createdAt: string | null;
-    updatedAt?: string | null;
     role: string | number; // can be group name or id depending on backend usage
   } = {
     name: '',
-    passwordHash: '',
+    password: '',
     status: 'enabled',
-    createdAt: null,
-    updatedAt: null,
     role: '',
   };
   @Output() submitted = new EventEmitter<any>();
@@ -62,30 +58,12 @@ export class UsersModal implements OnChanges, OnInit {
      if (this.mode === 'edit' && this.user) {
       this.formData.name = this.user.name;
       this.formData.status = this.user.status;
-      this.formData.passwordHash = '';
-      this.formData.createdAt = this.user.createdAt || this.formData.createdAt;
-    }
-    if (this.mode === 'create') {
-      // reset timestamps for fresh create
-      this.formData.createdAt = null;
-      this.formData.updatedAt = null;
-    }
+      this.formData.password = '';
+      this.formData.role = this.user.role || '';}
   }
 
   onSubmit() {
     // send the form data to the parent component or service
-   const now = new Date().toISOString();
-    if (this.mode === 'create') {
-      this.formData.createdAt = now;
-      // ensure updatedAt not sent for create
-      delete this.formData.updatedAt;
-    } else if (this.mode === 'edit') {
-      this.formData.updatedAt = now;
-      // keep existing createdAt if present
-      if (!this.formData.createdAt && this.user?.createdAt) {
-        this.formData.createdAt = this.user.createdAt;
-      }
-    }
     this.submitted.emit({ ...this.formData });
     this.close();
   }

@@ -83,22 +83,25 @@
             <label class="block mb-2 text-sm font-medium text-heading">Password</label>
             <input
               type="password"
-              [(ngModel)]="formData.passwordHash"
-              name="passwordHash"
+              [(ngModel)]="formData.password"
+              name="password"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Password"
               required
             />
           </div>
-          <div class="flex gap-6">
-            <label class="flex items-center gap-2 text-sm">
-              <input type="radio" [(ngModel)]="formData.status" name="status" value="disabled" />
-              Disabled
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input type="radio" [(ngModel)]="formData.status" name="status" value="enabled" />
-              Enabled
-            </label>
+          <div>
+            <label class="block mb-2 text-sm font-medium text-heading">Status</label>
+            <div class="flex gap-6">  
+              <label class="flex items-center gap-2 text-sm">
+                <input type="radio" [(ngModel)]="formData.status" name="status" value="disabled" />
+                Disabled
+              </label>
+              <label class="flex items-center gap-2 text-sm">
+                <input type="radio" [(ngModel)]="formData.status" name="status" value="enabled" />
+                Enabled
+              </label>
+            </div>
           </div>
           <div class="col-span-2 sm:col-span-1">
             <label for="category" class="block mb-2.5 text-sm font-medium text-heading">Select Group</label>
@@ -131,21 +134,24 @@
             <label class="block mb-2 text-sm font-medium text-heading">Password (optional)</label>
             <input
               type="password"
-              [(ngModel)]="formData.passwordHash"
-              name="passwordHash"
+              [(ngModel)]="formData.password"
+              name="password"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Leave blank to keep current password"
             />
           </div>
-          <div class="flex gap-6">
-            <label class="flex items-center gap-2 text-sm">
-              <input type="radio" [(ngModel)]="formData.status" name="status" value="disabled" />
-              Disabled
-            </label>
-            <label class="flex items-center gap-2 text-sm">
-              <input type="radio" [(ngModel)]="formData.status" name="status" value="enabled" />
-              Enabled
-            </label>
+          <div>
+            <label class="block mb-2 text-sm font-medium text-heading">Status</label>
+            <div class="flex gap-6">  
+              <label class="flex items-center gap-2 text-sm">
+                <input type="radio" [(ngModel)]="formData.status" name="status" value="disabled" />
+                Disabled
+              </label>
+              <label class="flex items-center gap-2 text-sm">
+                <input type="radio" [(ngModel)]="formData.status" name="status" value="enabled" />
+                Enabled
+              </label>
+            </div>
           </div>
           <div class="col-span-2 sm:col-span-1">
             <label for="category" class="block mb-2.5 text-sm font-medium text-heading">Select Group</label>

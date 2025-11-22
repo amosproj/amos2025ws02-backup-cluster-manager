@@ -4,23 +4,20 @@ import { Observable } from 'rxjs';
 
 export interface User {
   name: string;
+  password: string;
   status: 'enabled' | 'disabled';
-  createdAt: string;
-  updatedAt?: string | null;
 }
 
 export interface CreateUserPayload {
   name: string;
   passwordHash: string;
   status: 'enabled' | 'disabled';
-  createdAt: string; // set by modal when mode === 'create'
 }
 
 export interface UpdateUserPayload {
   name?: string;
   passwordHash?: string;
   status?: 'enabled' | 'disabled';
-  updatedAt: string; // set by modal when mode === 'edit'
 }
 
 @Injectable({
@@ -31,6 +28,7 @@ export class UsersService {
 
   // Create (POST /users)
   createUser(payload: CreateUserPayload): Observable<User> {
+    console.log('Creating user with payload:', payload);
     return this.api.post<User>('users', payload);
   }
 

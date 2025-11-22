@@ -15,7 +15,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class UserMServiceTest {
 
     @Mock
     private UserMapper userMapper;
@@ -24,7 +24,7 @@ class UserServiceTest {
     private UserGroupRelationMapper userGroupRelationMapper;
 
     @InjectMocks
-    private UserService userService; // nimmt den Konstruktor und injiziert Mocks
+    private UserMService userMService; // nimmt den Konstruktor und injiziert Mocks
 
     @Test
     void addUserAndAssignGroup_insertsUser_andCreatesRelation() {
@@ -54,7 +54,7 @@ class UserServiceTest {
         ))).thenReturn(1);
 
         // Act
-        User result = userService.addUserAndAssignGroup(newUser, groupId);
+        User result = userMService.addUserAndAssignGroup(newUser, groupId);
 
         // Assert – Ergebnis
         assertNotNull(result);

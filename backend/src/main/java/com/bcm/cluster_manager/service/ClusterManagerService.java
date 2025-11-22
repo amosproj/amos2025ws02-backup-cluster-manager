@@ -1,7 +1,6 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.filter.Filter;
-import com.bcm.shared.filter.FilterProvider;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.model.api.NodeStatus;
@@ -56,8 +55,7 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
             return nodes;
         }
 
-        var requested = List.copyOf(filter.getFilters()).stream()
-                .map(Object::toString)
+        var requested = filter.getFilters().stream()
                 .filter(s -> !s.isEmpty())
                 .map(String::toUpperCase)
                 .map(s -> {

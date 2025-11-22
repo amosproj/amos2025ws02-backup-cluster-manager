@@ -5,19 +5,19 @@ import { Observable } from 'rxjs';
 export interface User {
   name: string;
   password: string;
-  status: 'enabled' | 'disabled';
+  enabled: boolean;
 }
 
 export interface CreateUserPayload {
   name: string;
-  passwordHash: string;
-  status: 'enabled' | 'disabled';
+  passwordHash: string; // hashed or plain to be hashed server-side
+  enabled: boolean;
 }
 
 export interface UpdateUserPayload {
   name?: string;
   passwordHash?: string;
-  status?: 'enabled' | 'disabled';
+  enabled: boolean;
 }
 
 @Injectable({
@@ -27,9 +27,9 @@ export class UsersService {
   constructor(private api: ApiService) {}
 
   // Create (POST /users)
-  createUser(payload: CreateUserPayload): Observable<User> {
-    console.log('Creating user with payload:', payload);
-    return this.api.post<User>('users', payload);
+  createUser(roleId: number | string, payload: CreateUserPayload): Observable<User> {
+    console.log('Creating user with roleId:', roleId, 'and payload:', payload); 
+    return this.api.post<User>(`users/${roleId}`, payload);
   }
 
   // Update (PUT /users/:id)

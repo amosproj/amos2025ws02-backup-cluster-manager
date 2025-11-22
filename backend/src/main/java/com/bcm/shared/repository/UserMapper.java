@@ -15,14 +15,12 @@ public interface UserMapper {
     User findById(@Param("id") Long id);
 
     @Select("""
-            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt " +
-            "FROM users WHERE name = #{name}
+            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users WHERE name = #{name}
             """)
     User findByName(String name);
 
     @Select("""
-            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt " +
-            "FROM users
+            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users
             """)
     List<User> findAll();
 

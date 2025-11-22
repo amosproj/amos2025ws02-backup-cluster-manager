@@ -2,11 +2,14 @@ import { Component, Input, Output, EventEmitter, OnChanges, OnInit } from '@angu
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
+import { UsersService } from '../../../features/users/users.service';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 type Group = { id: number; name: string; enabled?: boolean };
 
 @Component({
-  selector: 'app-add-users-modal',
+  selector: 'app-users-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './users-modal.html',
@@ -31,11 +34,21 @@ export class UsersModal implements OnChanges, OnInit {
   @Output() submitted = new EventEmitter<any>();
 
   groups: Group[] = [];
+  suggestions: string[] = [];
+  private nameInput$ = new Subject<string>();
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private usersService: UsersService) {}
 
   ngOnInit() {
     this.loadGroups();
+    // setup debounced search stream
+    this.nameInput$
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged(),
+        switchMap(term => this.usersService.searchUsernames(term))
+      )
+      .subscribe(results => this.suggestions = results);
   }
 
   private loadGroups() {
@@ -60,6 +73,20 @@ export class UsersModal implements OnChanges, OnInit {
       this.formData.status = this.user.status;
       this.formData.password = '';
       this.formData.role = this.user.role || '';}
+  }
+
+  onNameInput(value: string) {
+    this.formData.name = value;
+    if (value && value.length >= 2) {
+      this.nameInput$.next(value.trim());
+    } else {
+      this.suggestions = [];
+    }
+  }
+
+  pickSuggestion(name: string) {
+    this.formData.name = name;
+    this.suggestions = [];
   }
 
   onSubmit() {

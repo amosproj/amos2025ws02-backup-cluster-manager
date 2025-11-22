@@ -48,6 +48,16 @@ public class UserMService {
     }
 
     /**
+     * Retrieves a user by their name substring.
+     *
+     * @param text will be compared to the name of the user to retrieve
+     * @return the user with the specified name, or null if no user is found
+     */
+    @Transactional
+    public List<String> getUserByNameSearch(String text){
+        return userMapper.searchByName(text).stream().map(User::getName).toList();
+    }
+    /**
      * Retrieves a list of all users.
      *
      * @return a list of User objects representing all users stored in the repository

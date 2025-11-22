@@ -29,7 +29,10 @@ public class UserController {
     public User getUser(@PathVariable String name) {
         return userMService.getUserByName(name);
     }
-
+    @GetMapping("/search/{name}")
+    public List<String> getUserByNameSearch(@PathVariable String name) {
+        return userMService.getUserByNameSearch(name);
+    }
     @PostMapping("/{group_id}")
     public User createUser(@PathVariable Long group_id, @RequestBody User user) {
         user.setCreatedAt(Instant.now());

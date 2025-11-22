@@ -32,6 +32,14 @@ export class UsersService {
     return this.api.post<User>(`users/${roleId}`, payload);
   }
 
+  // Username search (GET /users/search/term) - returns array of matching names
+  searchUsernames(query: string): Observable<string[]> {
+    if (!query || query.trim().length === 0) {
+      return new Observable<string[]>(sub => { sub.next([]); sub.complete(); });
+    }
+    return this.api.get<string[]>(`users/search/${query}`);
+  }
+
   // Update (PUT /users/:id)
   updateUser(id: number | string, payload: UpdateUserPayload): 
   Observable<User> {

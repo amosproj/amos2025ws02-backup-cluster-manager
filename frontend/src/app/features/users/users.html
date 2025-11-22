@@ -25,10 +25,10 @@
   </button>
 </div>
 
-<app-add-users-modal
+<app-users-modal
   [open]="isAddUserModalOpen"
   [mode]="modalMode"
   [user]="selectedUser"
   (submitted)="onUserSubmitted($event)"
   (closed)="onModalClose()">
-</app-add-users-modal>
+</app-users-modal>

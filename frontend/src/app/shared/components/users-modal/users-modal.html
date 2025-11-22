@@ -73,11 +73,16 @@
             <input
               type="text"
               [(ngModel)]="formData.name"
+              (input)="onNameInput($event.target.value)"
               name="name"
+              autocomplete="off"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Username"
               required
             />
+            <ul *ngIf="suggestions.length" class="mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium max-h-40 overflow-auto text-sm">
+              <li *ngFor="let s of suggestions" (click)="pickSuggestion(s)" class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft">{{ s }}</li>
+            </ul>
           </div>
           <div>
             <label class="block mb-2 text-sm font-medium text-heading">Password</label>
@@ -124,31 +129,26 @@
             <input
               type="text"
               [(ngModel)]="formData.name"
+              (input)="onNameInput($event.target.value)"
               name="name"
+              autocomplete="off"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Username"
               required
             />
-          </div>
-          <div>
-            <label class="block mb-2 text-sm font-medium text-heading">Password (optional)</label>
-            <input
-              type="password"
-              [(ngModel)]="formData.password"
-              name="password"
-              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
-              placeholder="Leave blank to keep current password"
-            />
+            <ul *ngIf="suggestions.length" class="mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium max-h-40 overflow-auto text-sm">
+              <li *ngFor="let s of suggestions" (click)="pickSuggestion(s)" class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft">{{ s }}</li>
+            </ul>
           </div>
           <div>
             <label class="block mb-2 text-sm font-medium text-heading">Status</label>
             <div class="flex gap-6">  
               <label class="flex items-center gap-2 text-sm">
-                <input type="radio" [(ngModel)]="formData.status" name="status" value="disabled" />
+                <input type="radio" [(ngModel)]="formData.status" name="status" [value]="false" />
                 Disabled
               </label>
               <label class="flex items-center gap-2 text-sm">
-                <input type="radio" [(ngModel)]="formData.status" name="status" value="enabled" />
+                <input type="radio" [(ngModel)]="formData.status" name="status" [value]="true" />
                 Enabled
               </label>
             </div>
@@ -156,11 +156,7 @@
           <div class="col-span-2 sm:col-span-1">
             <label for="category" class="block mb-2.5 text-sm font-medium text-heading">Select Group</label>
             <select id="category" class="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body" [(ngModel)]="formData.role" name="role" required>
-                <option value="Superuser">Superuser</option>
-                <option value="Administrators">Administrators</option>
-                <option value="Operators">Operators</option>
-                <option value="RestoreUsers">Restore Users</option>
-                <option value="BackupUsers">Backup Users</option>
+              <option *ngFor="let g of groups" [ngValue]="g.id">{{ g.name }}</option>
             </select>
           </div>
         </div>

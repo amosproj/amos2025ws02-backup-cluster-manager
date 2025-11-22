@@ -1,0 +1,52 @@
+Title	URL	Assignees	Status	Estimated size	Real size
+Basic Backup Schedules	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/112		Product Backlog		
+Mock Backup Tasks	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/113		Product Backlog		
+Mid Project Release	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/63		Product Backlog		
+Frontend: Active List updates	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/67		Product Backlog		
+Task: Update dependecies	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/84		Product Backlog		
+Handle multiple request	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/70		Product Backlog		
+Create Tests for frontend	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/33		Product Backlog		
+List permissions	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/77		Product Backlog		
+Backend: Implement Cluster Manager Failover	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/69		Product Backlog		
+Create Backup Nodes & Manager	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/31		Product Backlog		
+Create Client Manager Node	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/48		Product Backlog		
+List Backups dynamically from nodes	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/110		Product Backlog		
+Create Documentation	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/26	fe27hity, robinrj6	Sprint Backlog	2	
+Create Backup	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/71	ervinn09	Sprint Backlog	5	
+Delete Backup	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/82	ervinn09	Sprint Backlog	3	
+Filter / Sort Backups	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/78	robinrj6	Sprint Backlog	3	
+Create / Update / Delete User	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/79	HansKiller-TH, robinrj6	In Progress	3	
+Filter / Sort Nodes	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/80	robinrj6	In Progress	3	
+Bug: Main is not building	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/83	ervinn09	Awaiting Review	2	
+Create a test setup with 3 nodes	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/52	ervinn09	Awaiting Review	3	
+Backend: Create Database	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/30	fe27hity, HansKiller-TH	Awaiting Review	3	
+Backend: Implement node (un)registration process	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/66	fe27hity	Awaiting Review	5	
+Backend: Add Pagination To APIs	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/75	krueger-hash	Awaiting Review	3	
+Create Build process video	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/106	krueger-hash	Awaiting Review	2	
+List Users	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/76	krueger-hash	Awaiting Review	3	
+Implement functions for DB	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/47	HansKiller-TH	Awaiting Review	3	
+Backend: Create Cluster Manager	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/49	fe27hity	Feature Archive	3	3
+Frontend: Create Node Tab	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/50	krueger-hash	Feature Archive	3	3
+Backend: Get Nodes API	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/54	robinrj6	Feature Archive	3	3
+Backend: Get Backups API	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/58	robinrj6	Feature Archive	3	3
+Frontend: Create Backup Tab	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/51	krueger-hash	Feature Archive	3	3
+Frontend: Header moving while scrolling	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/56	krueger-hash	Feature Archive	0	0
+Add Jacoco To Build And Integrate As Badge	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/16	ervinn09	Feature Archive	3	2
+Build Pipeline should run without changes in respected folders	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/43	HansKiller-TH	Feature Archive	0	0
+Define entities for DBs	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/34	HansKiller-TH	Feature Archive	3	3
+Create Docker Compose Configuration	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/18	fe27hity	Feature Archive	3	2
+Setup Database and Integrate it	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/15	fe27hity	Feature Archive	2	1
+Setup Dockerfile (Backend)	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/17	ervinn09	Feature Archive	3	2
+Create Basic UI Layout	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/23	krueger-hash	Feature Archive	3	2
+Create Overview page	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/25	ervinn09	Feature Archive	3	3
+Add functionallity to sidebar	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/29	robinrj6	Feature Archive	1	1
+Create multiple pages for Router Outlet	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/24	robinrj6	Feature Archive	3	2
+Deciding our Tshirt design	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/2	Stringrimm	Feature Archive	1	1
+Setup Build Process For Backend	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/10	HansKiller-TH	Feature Archive	3	2
+Setup Basic Angular Project (Frontend)	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/3	krueger-hash	Feature Archive	2	2
+Create first architecture draft	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/8	fe27hity	Feature Archive	3	3
+Setup Build Process For Frontend	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/11	robinrj6	Feature Archive	3	2
+Create Basic Spring Boot Project	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/9	ervinn09	Feature Archive	2	2
+Deciding our team logo	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/1	Stringrimm	Feature Archive	1	1
+Familiarize with {insert REST/Zookeeper/...} Tech	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/7		Feature Archive		
+Backend Techstack	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/4		Feature Archive		

@@ -3,18 +3,17 @@ import {NodesService} from './nodes.service';
 import {ApiService} from '../../core/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
+import {SortOrder} from '../../shared/types/SortTypes';
 
 @Component({
   selector: 'app-nodes',
   imports: [
-    AsyncPipe,
     DataTable
   ],
   templateUrl: './nodes.html',
   styleUrl: './nodes.css',
 })
-export class Nodes implements OnInit {
-  nodes = signal<any[]>([]);
+export class Nodes {
   tableColumns = signal([
     {field: 'id', header: 'ID'},
     {field: 'name', header: 'Name'},
@@ -23,36 +22,23 @@ export class Nodes implements OnInit {
     {field: 'createdAt', header: 'Created At'},
   ]);
 
-  // Columns to be included in search
-  tableSearchColumns = signal(['name', 'status', 'id']);
-
-  // Example filter: filter nodes by 'active' status
+  // Example filter: filter backups by 'active' status
   tableFilters = signal([
     {
       label: 'Active',
-      filterFn: (item:any) => item.status.toLowerCase() === "active",
+      active: false,
+    },
+    {
+      label: 'Inactive',
       active: false,
     }
   ]);
-  error = signal<string | null>(null);
-  loading$;
 
   constructor(
     private nodesService: NodesService,
-    private apiService: ApiService
-  ) {
-    this.loading$ = this.apiService.loading$;
-  }
+  ) {}
 
-  ngOnInit() {
-    this.loadNodes();
-  }
-
-  loadNodes() {
-    this.error.set(null);
-    this.nodesService.getNodes().subscribe({
-      next: (data) => this.nodes.set(data),
-      error: (error) => this.error.set(error.message)
-    })
+  fetchNodes = (page: number, itemsPerPage: number, filters: string, search:string, sortBy: string, sortOrder:SortOrder) => {
+    return this.nodesService.getNodes(page, itemsPerPage, filters, search, sortBy, sortOrder);
   }
 }

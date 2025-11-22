@@ -13,20 +13,20 @@ export class ApiService {
 
   constructor(private http: HttpClient){}
 
-  get<T>(endpoint: string):Observable<T> {
+  get<T>(endpoint: string, options?: { params?: any; headers?: any }): Observable<T> {
     this.loadingSubject.next(true);
-    return this.http.get<T>(`${this.baseUrl}/${endpoint}`).pipe(
+    return this.http.get<T>(`${this.baseUrl}/${endpoint}`, options).pipe(
       catchError(this.handleError),
-      finalize(()=>this.loadingSubject.next(false))
-    )
+      finalize(() => this.loadingSubject.next(false))
+    );
   }
 
-  post<T>(endpoint: string, data: any):Observable<T> {
+  post<T>(endpoint: string, data: any, options?: { params?: any; headers?: any }): Observable<T> {
     this.loadingSubject.next(true);
-    return this.http.post<T>(`${this.baseUrl}/${endpoint}`, data).pipe(
+    return this.http.post<T>(`${this.baseUrl}/${endpoint}`, data, options).pipe(
       catchError(this.handleError),
-      finalize(()=>this.loadingSubject.next(false))
-    )
+      finalize(() => this.loadingSubject.next(false))
+    );
   }
 
   put<T>(endpoint: string, data: any):Observable<T> {
@@ -52,7 +52,7 @@ export class ApiService {
     }else{
       errorMessage = `Server-side error: ${error.status} - ${error.message}`;
     }
-    console.error(error.message);
-    return throwError(()=>new Error(errorMessage))
+    console.error(errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }

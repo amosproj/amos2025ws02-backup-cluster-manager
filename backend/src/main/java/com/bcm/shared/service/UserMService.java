@@ -7,6 +7,7 @@ import com.bcm.shared.repository.UserMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -70,6 +71,7 @@ public class UserMService {
         UserGroupRelation userGroupRelation = new UserGroupRelation();
         userGroupRelation.setUserId(user.getId());
         userGroupRelation.setGroupId(groupID);
+        userGroupRelation.setAddedAt(Instant.now());
         userGroupRelationMapper.insert(userGroupRelation);
         return userMapper.findById(user.getId());
     }

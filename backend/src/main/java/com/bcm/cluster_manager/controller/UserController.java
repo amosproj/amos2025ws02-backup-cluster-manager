@@ -5,6 +5,7 @@ import com.bcm.shared.service.UserMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController()
@@ -31,6 +32,8 @@ public class UserController {
 
     @PostMapping("/{group_id}")
     public User createUser(@PathVariable Long group_id, @RequestBody User user) {
+        user.setCreatedAt(Instant.now());
+        user.setUpdatedAt(Instant.now());
         return userMService.addUserAndAssignGroup(user, group_id);
     }
 

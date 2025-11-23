@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { UsersModal } from '../../shared/components/users-modal/users-modal';
+
 
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [UsersModal],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -17,6 +19,13 @@ export class Dashboard {
   memoryUsage = 54;
 
   constructor(private router: Router) {}
+  isAddUserModalOpen = false;
+  modalMode: 'create' | 'update' | 'delete' = 'create';
+
+  openAddUserModal(mode: 'create' | 'update' | 'delete') {
+    this.modalMode = mode;
+    this.isAddUserModalOpen = true;
+  }
 
   onButtonClick(action: string) {
     console.log(`Button clicked: ${action}`);

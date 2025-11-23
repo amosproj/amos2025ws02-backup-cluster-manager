@@ -125,6 +125,7 @@ export class UsersModal implements OnChanges, OnInit {
   onEditSubmit() {
     this.user = this.formData;
     const payload = { ...this.user };
+    payload.passwordHash = undefined; // only include if set
     console.log("payload", payload);
     this.api.put(`users/${this.user.id}`, payload).subscribe({
       next: () => {
@@ -137,8 +138,17 @@ export class UsersModal implements OnChanges, OnInit {
   }
 
   onDeleteSubmit() {
+    this.user = this.formData;
     if (this.user) {
       const userId = this.user.id;
+      this.api.delete(`users/${userId}`).subscribe({
+        next: () => {
+          this.close();
+        },
+        error: (err: any) => {
+          console.error('Failed to delete user', err);
+        }
+      });
     }
   }
 

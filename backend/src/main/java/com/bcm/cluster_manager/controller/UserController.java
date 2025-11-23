@@ -20,14 +20,20 @@ public class UserController {
         return userMService.getAllUsers();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public User getUser(@PathVariable Long id) {
         return userMService.getUserById(id);
     }
 
-    @GetMapping("/{name}")
-    public User getUser(@PathVariable String name) {
-        return userMService.getUserByName(name);
+    // Commented out to avoid ambiguity with getUserById
+    // @GetMapping("/{name}")
+    // public User getUser(@PathVariable String name) {
+    //     return userMService.getUserByName(name);
+    // }
+
+    @GetMapping("search/{name}")
+    public List<User> getUserBySubtext(@PathVariable String name) {
+        return userMService.getUserBySubtext(name);
     }
 
     @PostMapping("/{group_id}")
@@ -37,9 +43,10 @@ public class UserController {
         return userMService.addUserAndAssignGroup(user, group_id);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     public User updateUser(@PathVariable Long id, @RequestBody User user) {
-        user.setId(id);
+        user.setUpdatedAt(Instant.now());
+        user.setPasswordHash(null);
         return userMService.editUser(user);
     }
 

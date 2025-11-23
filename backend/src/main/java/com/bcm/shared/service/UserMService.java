@@ -48,6 +48,17 @@ public class UserMService {
     }
 
     /**
+     * Retrieves a user by their name.
+     *
+     * @param name the name of the user to retrieve
+     * @return the user with the specified name, or null if no user is found
+     */
+    @Transactional
+    public List<User> getUserBySubtext(String name){
+        return userMapper.findByNameSubtext(name);
+    }
+
+    /**
      * Retrieves a list of all users.
      *
      * @return a list of User objects representing all users stored in the repository

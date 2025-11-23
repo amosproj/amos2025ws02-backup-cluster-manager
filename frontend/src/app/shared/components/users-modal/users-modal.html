@@ -82,9 +82,17 @@
       <!-- Edit Form -->
       <form *ngIf="mode === 'edit'" (ngSubmit)="onEditSubmit()">
         <div class="grid gap-4 py-4">
-          <div>
+          <div class="relative">
             <label class="block mb-2 text-sm font-medium text-heading" for="edit-name">Name</label>
-            <input id="edit-name" type="text" [(ngModel)]="formData.name" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Username" required />
+            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Search username" autocomplete="off" required />
+            <!-- Suggestions Dropdown -->
+            <div *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1" class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
+              <div *ngIf="loadingUsers" class="px-3 py-2 text-xs text-body">Searching…</div>
+              <ul *ngIf="!loadingUsers && chooseUsers.length" class="max-h-40 overflow-auto text-sm" role="listbox">
+                <li *ngFor="let user of chooseUsers; trackBy: trackByUserName" (click)="selectedUser(user)" class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft" role="option">{{ user.name }}</li>
+              </ul>
+              <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed" class="px-3 py-2 text-xs text-body">No matches</div>
+            </div>
           </div>
           <div class="flex gap-6">
             <label class="flex items-center gap-2 text-sm">
@@ -96,6 +104,12 @@
               Enabled
             </label>
           </div>
+          <!-- <div>  For future group assignment change feature 
+            <select [(ngModel)]="formData.groupId" name="groupId" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
+              <option [ngValue]="undefined" disabled>Select Group</option>
+              <option *ngFor="let g of groups" [ngValue]="g.id">{{ g.name }}</option>
+            </select>
+          </div>-->
         </div>
         <div class="flex items-center space-x-4 border-t border-default pt-4">
           <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Save Changes</button>

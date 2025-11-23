@@ -32,7 +32,7 @@ class RegistryServiceTests {
 
         NodeDTO node = active.iterator().next();
         assertThat(node.getAddress()).isEqualTo(addr);
-        assertThat(node.getStatus()).isEqualTo("Active");
+    assertThat(node.getStatus()).isEqualTo(com.bcm.shared.model.api.NodeStatus.ACTIVE);
     }
 
     @Test
@@ -46,7 +46,7 @@ class RegistryServiceTests {
         assertThat(registry.getInactiveNodes()).hasSize(1);
 
         NodeDTO node = registry.getInactiveNodes().iterator().next();
-        assertThat(node.getStatus()).isEqualTo("Inactive");
+    assertThat(node.getStatus()).isEqualTo(com.bcm.shared.model.api.NodeStatus.INACTIVE);
     }
 
     @Test
@@ -60,7 +60,7 @@ class RegistryServiceTests {
 
         NodeDTO node = registry.getActiveNodes().iterator().next();
         assertThat(node.getAddress()).isEqualTo(addr);
-        assertThat(node.getStatus()).isEqualTo("Active");
+    assertThat(node.getStatus()).isEqualTo(com.bcm.shared.model.api.NodeStatus.ACTIVE);
     }
 
     @Test
@@ -73,7 +73,7 @@ class RegistryServiceTests {
         assertThat(registry.getActiveNodes()).isEmpty();
 
         NodeDTO node = registry.getInactiveNodes().iterator().next();
-        assertThat(node.getStatus()).isEqualTo("Inactive");
+    assertThat(node.getStatus()).isEqualTo(com.bcm.shared.model.api.NodeStatus.INACTIVE);
     }
 
     @Test
@@ -98,7 +98,7 @@ class RegistryServiceTests {
         assertThat(registry.getInactiveNodes()).isEmpty();
 
         NodeDTO node = registry.getActiveNodes().iterator().next();
-        assertThat(node.getStatus()).isEqualTo("Active");
+    assertThat(node.getStatus()).isEqualTo(com.bcm.shared.model.api.NodeStatus.ACTIVE);
     }
 
     @Test
@@ -111,6 +111,6 @@ class RegistryServiceTests {
         assertThat(registry.getActiveNodes()).hasSize(1);
 
         NodeDTO node = registry.getActiveNodes().iterator().next();
-        assertThat(node.getStatus()).isEqualTo("Active");
+        assertThat(node.getStatus()).isEqualTo(com.bcm.shared.model.api.NodeStatus.ACTIVE);
     }
 }

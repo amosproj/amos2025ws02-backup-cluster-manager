@@ -20,9 +20,9 @@ export class Dashboard {
 
   constructor(private router: Router) {}
   isAddUserModalOpen = false;
-  modalMode: 'create' | 'update' | 'delete' = 'create';
+  modalMode: 'create' | 'edit' | 'delete' = 'create';
 
-  openAddUserModal(mode: 'create' | 'update' | 'delete') {
+  openAddUserModal(mode: 'create' | 'edit' | 'delete') {
     this.modalMode = mode;
     this.isAddUserModalOpen = true;
   }

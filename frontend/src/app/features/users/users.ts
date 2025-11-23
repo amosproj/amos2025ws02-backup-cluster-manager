@@ -9,9 +9,9 @@ import { UsersModal } from '../../shared/components/users-modal/users-modal';
 })
 export class Users {
   isAddUserModalOpen = false;
-  modalMode: 'create' | 'update' | 'delete' = 'create';
+  modalMode: 'create' | 'edit' | 'delete' = 'create';
 
-  openAddUserModal(mode: 'create' | 'update' | 'delete') {
+  openAddUserModal(mode: 'create' | 'edit' | 'delete') {
     this.modalMode = mode;
     this.isAddUserModalOpen = true;
   }

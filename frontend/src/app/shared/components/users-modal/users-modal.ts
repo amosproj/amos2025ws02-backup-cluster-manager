@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class UsersModal implements OnChanges {
   @Input() open: boolean = false;
-  @Input() mode: 'create' | 'update' | 'delete' = 'create';
+  @Input() mode: 'create' | 'edit' | 'delete' = 'create';
   @Input() user: any | null = null;
   @Output() closed = new EventEmitter<void>();
 
@@ -22,7 +22,7 @@ export class UsersModal implements OnChanges {
   };
 
   ngOnChanges() {
-    if (this.mode === 'update' && this.user) {
+    if (this.mode === 'edit' && this.user) {
       this.formData.name = this.user.name;
       this.formData.status = this.user.status;
       this.formData.passwordHash = '';

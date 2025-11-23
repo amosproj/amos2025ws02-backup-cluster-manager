@@ -11,7 +11,7 @@
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-default pb-4">
         <h3 class="text-lg font-medium text-heading">
-          {{ mode === 'create' ? 'Add User' : mode === 'update' ? 'Edit User' : 'Delete User' }}
+          {{ mode === 'create' ? 'Add User' : mode === 'edit' ? 'Edit User' : 'Delete User' }}
         </h3>
         <button
           (click)="close()"
@@ -32,89 +32,67 @@
 
       <!-- Delete Confirmation -->
       <form *ngIf="mode === 'delete'" (ngSubmit)="onSubmit()">
-        <div class="grid gap-4 py-4">
-          <label class="block mb-2 text-sm font-medium text-heading">Name</label>
-          <input
-            type="text"
-            [(ngModel)]="formData.name"
-            name="name"
-            class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
-            placeholder="Username"
-            required
-          />
+        <div class="py-4">
+          <p class="text-sm text-body mb-4">
+            Are you sure you want to delete user
+            <span class="font-semibold text-heading">{{ user?.name }}</span>?
+          </p>
         </div>
-        <p class="text-sm text-body mb-4">
-          Are you sure you want to delete user
-          <span class="font-semibold text-heading">{{ user?.name }}</span
-          >?
-        </p>
-        <div class="flex justify-end space-x-3">
-          <button
-            type="button"
-            class="px-4 py-2 text-sm bg-red-600 text-white rounded-base"
-            (click)="onSubmit()"
-          >
-            Delete
-          </button>
-          <button
-            type="button"
-            (click)="close()"
-            class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base"
-          >
-            Cancel
-          </button>
+        <div class="flex justify-end space-x-3 border-t border-default pt-4">
+          <button type="submit" class="px-4 py-2 text-sm bg-red-600 text-white rounded-base">Delete</button>
+          <button type="button" (click)="close()" class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
       </form>
 
-      <!-- Create / Update Form -->
-      <form *ngIf="mode !== 'delete'" (ngSubmit)="onSubmit()">
+      <!-- Create Form -->
+      <form *ngIf="mode === 'create'" (ngSubmit)="onSubmit()">
         <div class="grid gap-4 py-4">
           <div>
-            <label class="block mb-2 text-sm font-medium text-heading">Name</label>
-            <input
-              type="text"
-              [(ngModel)]="formData.name"
-              name="name"
-              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
-              placeholder="Username"
-              required
-            />
+            <label class="block mb-2 text-sm font-medium text-heading" for="create-name">Name</label>
+            <input id="create-name" type="text" [(ngModel)]="formData.name" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Username" required />
           </div>
           <div>
-            <label class="block mb-2 text-sm font-medium text-heading">Password</label>
-            <input
-              type="password"
-              [(ngModel)]="formData.passwordHash"
-              name="passwordHash"
-              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
-              placeholder="Password"
-              [required]="mode === 'create'"
-            />
+            <label class="block mb-2 text-sm font-medium text-heading" for="create-password">Password</label>
+            <input id="create-password" type="password" [(ngModel)]="formData.passwordHash" name="passwordHash" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Password" required />
           </div>
-          <!-- Status Radios -->
           <div class="flex gap-6">
             <label class="flex items-center gap-2 text-sm">
-              <input type="radio" [(ngModel)]="formData.status" name="status" value="disabled" />
+              <input type="radio" [(ngModel)]="formData.status" name="status" [value]="false" />
               Disabled
             </label>
             <label class="flex items-center gap-2 text-sm">
-              <input type="radio" [(ngModel)]="formData.status" name="status" value="enabled" />
+              <input type="radio" [(ngModel)]="formData.status" name="status" [value]="true" />
               Enabled
             </label>
           </div>
         </div>
-        <!-- Footer -->
         <div class="flex items-center space-x-4 border-t border-default pt-4">
-          <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">
-            {{ mode === 'create' ? 'Add User' : 'Update User' }}
-          </button>
-          <button
-            type="button"
-            (click)="close()"
-            class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base"
-          >
-            Cancel
-          </button>
+          <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Add User</button>
+          <button type="button" (click)="close()" class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Edit Form -->
+      <form *ngIf="mode === 'edit'" (ngSubmit)="onSubmit()">
+        <div class="grid gap-4 py-4">
+          <div>
+            <label class="block mb-2 text-sm font-medium text-heading" for="edit-name">Name</label>
+            <input id="edit-name" type="text" [(ngModel)]="formData.name" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Username" required />
+          </div>
+          <div class="flex gap-6">
+            <label class="flex items-center gap-2 text-sm">
+              <input type="radio" [(ngModel)]="formData.status" name="status" [value]="false" />
+              Disabled
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input type="radio" [(ngModel)]="formData.status" name="status" [value]="true" />
+              Enabled
+            </label>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4 border-t border-default pt-4">
+          <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Save Changes</button>
+          <button type="button" (click)="close()" class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
       </form>
     </div>

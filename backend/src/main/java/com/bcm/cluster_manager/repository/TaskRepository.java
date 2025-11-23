@@ -9,25 +9,25 @@ import java.util.List;
 public interface TaskRepository {
 
     @Select("""
-            SELECT id, name, client_id AS clientId, source, enabled, created_at AS createdAt, updated_at AS updatedAt, interval
+            SELECT id, name, client_id AS clientId, source, enabled, created_at AS createdAt, updated_at AS updatedAt, "interval"
             FROM tasks WHERE id = #{id}
             """)
     Task findById(Long id);
 
     @Select("""
-            SELECT id, name, client_id AS clientId, source, enabled, created_at AS createdAt, updated_at AS updatedAt, interval
+            SELECT id, name, client_id AS clientId, source, enabled, created_at AS createdAt, updated_at AS updatedAt, "interval"
             FROM tasks WHERE client_id = #{clientId}
             """)
     List<Task> findByClient(Long clientId);
 
     @Select("""
-            SELECT id, name, client_id AS clientId, source, enabled, created_at AS createdAt, updated_at AS updatedAt, interval
+            SELECT id, name, client_id AS clientId, source, enabled, created_at AS createdAt, updated_at AS updatedAt, "interval"
             FROM tasks;
             """)
     List<Task> findAll();
 
     @Insert("""
-            INSERT INTO tasks (name, client_id, source, enabled, created_at, updated_at, interval)
+            INSERT INTO tasks (name, client_id, source, enabled, created_at, updated_at, "interval")
             VALUES (#{name}, #{clientId}, #{source}, #{enabled}, #{createdAt}, #{updatedAt}, #{interval})
             """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
@@ -39,8 +39,8 @@ public interface TaskRepository {
                 client_id = #{clientId},
                 source = #{source},
                 enabled = #{enabled},
-                updated_at = #{updatedAt}
-                interval = #{interval}
+                updated_at = #{updatedAt},
+                "interval" = #{interval}
             WHERE id = #{id}
             """)
     int update(Task t);

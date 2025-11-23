@@ -35,12 +35,18 @@
         <div class="py-4">
           <div class="relative">
             <label class="block mb-2 text-sm font-medium text-heading" for="edit-name">Name</label>
-            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Search username" autocomplete="off" required />
+            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)" (keydown)="onNameKeyDown($event)" [attr.aria-activedescendant]="getActiveDescendantId()" aria-autocomplete="list" aria-haspopup="listbox" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Search username" autocomplete="off" required />
             <!-- Suggestions Dropdown -->
             <div *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1" class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
               <div *ngIf="loadingUsers" class="px-3 py-2 text-xs text-body">Searching…</div>
               <ul *ngIf="!loadingUsers && chooseUsers.length" class="max-h-40 overflow-auto text-sm" role="listbox">
-                <li *ngFor="let user of chooseUsers; trackBy: trackByUserName" (click)="selectedUser(user)" class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft" role="option">{{ user.name }}</li>
+                <li *ngFor="let user of chooseUsers; let i = index; trackBy: trackByUserName"
+                    (click)="selectedUser(user)"
+                    [id]="'user-option-' + i"
+                    [class.bg-neutral-primary-soft]="i === selectedSuggestionIndex"
+                    [attr.aria-selected]="i === selectedSuggestionIndex"
+                    class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft"
+                    role="option">{{ user.name }}</li>
               </ul>
               <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed" class="px-3 py-2 text-xs text-body">No matches</div>
             </div>
@@ -96,12 +102,18 @@
         <div class="grid gap-4 py-4">
           <div class="relative">
             <label class="block mb-2 text-sm font-medium text-heading" for="edit-name">Name</label>
-            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Search username" autocomplete="off" required />
+            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)" (keydown)="onNameKeyDown($event)" [attr.aria-activedescendant]="getActiveDescendantId()" aria-autocomplete="list" aria-haspopup="listbox" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Search username" autocomplete="off" required />
             <!-- Suggestions Dropdown -->
             <div *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1" class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
               <div *ngIf="loadingUsers" class="px-3 py-2 text-xs text-body">Searching…</div>
               <ul *ngIf="!loadingUsers && chooseUsers.length" class="max-h-40 overflow-auto text-sm" role="listbox">
-                <li *ngFor="let user of chooseUsers; trackBy: trackByUserName" (click)="selectedUser(user)" class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft" role="option">{{ user.name }}</li>
+                <li *ngFor="let user of chooseUsers; let i = index; trackBy: trackByUserName"
+                    (click)="selectedUser(user)"
+                    [id]="'user-option-' + i"
+                    [class.bg-neutral-primary-soft]="i === selectedSuggestionIndex"
+                    [attr.aria-selected]="i === selectedSuggestionIndex"
+                    class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft"
+                    role="option">{{ user.name }}</li>
               </ul>
               <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed" class="px-3 py-2 text-xs text-body">No matches</div>
             </div>

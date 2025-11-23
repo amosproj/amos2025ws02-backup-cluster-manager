@@ -20,7 +20,7 @@ public interface UserMapper {
     User findByName(String name);
 
     @Select("""
-            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users WHERE name LIKE CONCAT('%', #{name}, '%')
+            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users WHERE name ILIKE CONCAT('%', #{name}, '%')
             """)
     List<User> findByNameSubtext(String name);
 

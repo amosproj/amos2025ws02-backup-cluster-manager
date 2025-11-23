@@ -39,6 +39,7 @@ export class UsersModal implements OnChanges, OnInit {
   chooseUsers: User[] = [];
   loadingUsers = false;
   usersSearchPerformed = false; // to differentiate between 'not searched yet' and 'no results'
+  selectedSuggestionIndex: number = -1; // keyboard navigation index
 
   private nameInput$ = new Subject<string>();
 
@@ -58,11 +59,13 @@ export class UsersModal implements OnChanges, OnInit {
           this.chooseUsers = results;
           this.loadingUsers = false;
           this.usersSearchPerformed = true;
+          this.selectedSuggestionIndex = -1; // reset index after new results
         },
         error: err => {
           console.error('User search failed', err);
           this.loadingUsers = false;
           this.usersSearchPerformed = true;
+          this.selectedSuggestionIndex = -1;
         }
       });
   }
@@ -105,10 +108,12 @@ export class UsersModal implements OnChanges, OnInit {
       this.loadingUsers = true;
       this.usersSearchPerformed = false;
       this.nameInput$.next(value.trim());
+      this.selectedSuggestionIndex = -1;
     } else {
       this.chooseUsers = [];
       this.loadingUsers = false;
       this.usersSearchPerformed = false;
+      this.selectedSuggestionIndex = -1;
     }
   }
 
@@ -120,6 +125,7 @@ export class UsersModal implements OnChanges, OnInit {
     this.chooseUsers = [];
     this.loadingUsers = false;
     this.usersSearchPerformed = false; // reset suggestions display
+    this.selectedSuggestionIndex = -1;
   }
 
   onEditSubmit() {
@@ -154,5 +160,60 @@ export class UsersModal implements OnChanges, OnInit {
 
   close() {
     this.closed.emit();
+  }
+
+  onNameKeyDown(event: KeyboardEvent) {
+    // Only handle when suggestions list is visible
+    const hasSuggestions = this.chooseUsers && this.chooseUsers.length > 0 && !this.loadingUsers;
+    if (!hasSuggestions && event.key !== 'Escape') { return; }
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.selectedSuggestionIndex = (this.selectedSuggestionIndex + 1) % this.chooseUsers.length;
+        this.scrollActiveIntoView();
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.selectedSuggestionIndex =
+          this.selectedSuggestionIndex <= 0
+            ? this.chooseUsers.length - 1
+            : this.selectedSuggestionIndex - 1;
+        this.scrollActiveIntoView();
+        break;
+      case 'Enter':
+        if (this.selectedSuggestionIndex >= 0) {
+          event.preventDefault();
+          this.selectedUser(this.chooseUsers[this.selectedSuggestionIndex]);
+        }
+        break;
+      case 'Tab':
+        if (this.selectedSuggestionIndex >= 0) {
+          this.selectedUser(this.chooseUsers[this.selectedSuggestionIndex]);
+        }
+        break;
+      case 'Escape':
+        if (this.chooseUsers.length) {
+          this.chooseUsers = [];
+          this.usersSearchPerformed = false;
+          this.selectedSuggestionIndex = -1;
+        }
+        break;
+      default:
+        return;
+    }
+  }
+
+  private scrollActiveIntoView() {
+    const id = this.getActiveDescendantId();
+    if (!id) return;
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el?.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
+  getActiveDescendantId(): string | null {
+    return this.selectedSuggestionIndex >= 0 ? `user-option-${this.selectedSuggestionIndex}` : null;
   }
 }

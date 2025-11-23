@@ -30,7 +30,7 @@ public class UserController {
         return userMService.getUserByName(name);
     }
     @GetMapping("/search/{name}")
-    public List<String> getUserByNameSearch(@PathVariable String name) {
+    public List<User> getUserByNameSearch(@PathVariable String name) {
         return userMService.getUserByNameSearch(name);
     }
     @PostMapping("/{group_id}")

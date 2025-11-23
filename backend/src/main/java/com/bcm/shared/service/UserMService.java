@@ -54,8 +54,8 @@ public class UserMService {
      * @return the user with the specified name, or null if no user is found
      */
     @Transactional
-    public List<String> getUserByNameSearch(String text){
-        return userMapper.searchByName(text).stream().map(User::getName).toList();
+    public List<User> getUserByNameSearch(String text){
+        return userMapper.searchByName(text);
     }
     /**
      * Retrieves a list of all users.

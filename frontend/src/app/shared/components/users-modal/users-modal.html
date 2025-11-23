@@ -73,16 +73,12 @@
             <input
               type="text"
               [(ngModel)]="formData.name"
-              (input)="onNameInput($event.target.value)"
               name="name"
               autocomplete="off"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Username"
               required
             />
-            <ul *ngIf="suggestions.length" class="mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium max-h-40 overflow-auto text-sm">
-              <li *ngFor="let s of suggestions" (click)="pickSuggestion(s)" class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft">{{ s }}</li>
-            </ul>
           </div>
           <div>
             <label class="block mb-2 text-sm font-medium text-heading">Password</label>

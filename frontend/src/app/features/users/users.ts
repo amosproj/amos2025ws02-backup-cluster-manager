@@ -35,14 +35,8 @@ export class Users {
 
   onUserSubmitted(payload: any) {
     if (this.modalMode === 'create') {
-      // Extract role/group id and map password -> passwordHash
-      const roleId = payload.role;
-      const createPayload: CreateUserPayload = {
-        name: payload.name,
-        passwordHash: payload.password, // adjust if hashing client-side later
-        enabled: payload.status==='enabled' ? true : false,
-      };
-      this.usersService.createUser(roleId, createPayload).subscribe({
+      // Call the service and SUBSCRIBE
+      this.usersService.createUser(payload as CreateUserPayload).subscribe({
         next: (response) => {
           // console.log('[Users Component] User created successfully:', response);
           // Reload users list or add to local array

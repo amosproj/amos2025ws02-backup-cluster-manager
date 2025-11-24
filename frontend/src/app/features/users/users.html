@@ -1,1 +1,6 @@
-<p>users works!</p>
+<app-data-table
+  [fetchData]="fetchUsers"
+  [columns]="tableColumns()"
+  [filters]="tableFilters()"
+  [isNodeButtonEnabled]="false"
+/>

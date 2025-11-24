@@ -33,7 +33,7 @@ public interface UserMapper {
             SELECT COUNT(*) FROM users
             <where>
                 <if test="search != null and search != ''">
-                    (name LIKE CONCAT('%', #{search}, '%') OR CAST(id AS TEXT) LIKE CONCAT('%', #{search}, '%'))
+                    (name ILIKE CONCAT('%', #{search}, '%') OR CAST(id AS TEXT) ILIKE CONCAT('%', #{search}, '%'))
                 </if>
                 <if test="isUserEnabled != null">
                     AND enabled = #{isUserEnabled}
@@ -49,7 +49,7 @@ public interface UserMapper {
             FROM users
             <where>
                 <if test="search != null and search != ''">
-                    (name LIKE CONCAT('%', #{search}, '%') OR CAST(id AS TEXT) LIKE CONCAT('%', #{search}, '%'))
+                    (name ILIKE CONCAT('%', #{search}, '%') OR CAST(id AS TEXT) ILIKE CONCAT('%', #{search}, '%'))
                 </if>
                 <if test="isUserEnabled != null">
                     AND enabled = #{isUserEnabled}

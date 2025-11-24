@@ -7,9 +7,12 @@ import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
+import com.bcm.shared.model.database.Group;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
+import com.bcm.shared.service.GroupService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +26,9 @@ public class ClusterManagerController {
     private ClusterManagerService clusterManagerService;
 
     @Autowired
+    private GroupService groupService;
+
+    @Autowired
     private BackupService backupService;
 
     @Autowired
@@ -34,6 +40,11 @@ public class ClusterManagerController {
     @GetMapping("/nodes")
     public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination) {
         return clusterManagerService.getPaginatedItems(pagination);
+    }
+
+    @GetMapping("/groups")
+    public List<Group> getGroups() {
+        return groupService.getAllGroups();
     }
 
     @GetMapping("/backups")

@@ -15,14 +15,17 @@ public interface UserMapper {
     User findById(@Param("id") Long id);
 
     @Select("""
-            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt " +
-            "FROM users WHERE name = #{name}
+            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users WHERE name = #{name}
             """)
     User findByName(String name);
 
     @Select("""
-            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt " +
-            "FROM users
+            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users WHERE name ILIKE CONCAT('%', #{name}, '%')
+            """)
+    List<User> findByNameSubtext(String name);
+
+    @Select("""
+            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users
             """)
     List<User> findAll();
 
@@ -34,8 +37,16 @@ public interface UserMapper {
     int insert(User user);
 
     @Update("""
-            UPDATE users SET name = #{name}, password_hash = #{passwordHash}, enabled = #{enabled}, updated_at = #{updatedAt}
+            <script>
+            UPDATE users
+            <set>
+                <if test="name != null">name = #{name},</if>
+                <if test="passwordHash != null">password_hash = #{passwordHash},</if>
+                <if test="enabled != null">enabled = #{enabled},</if>
+                updated_at = #{updatedAt}
+            </set>
             WHERE id = #{id}
+            </script>
             """)
     int update(User user);
 

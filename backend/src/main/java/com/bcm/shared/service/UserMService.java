@@ -7,6 +7,7 @@ import com.bcm.shared.repository.UserMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -14,12 +15,12 @@ import java.util.List;
  * This class provides methods to handle CRUD operations for user data.
  */
 @Service
-public class UserService {
+public class UserMService {
 
     final UserMapper userMapper;
     final UserGroupRelationMapper userGroupRelationMapper;
 
-    public UserService(UserMapper userMapper, UserGroupRelationMapper userGroupRelationMapper) {
+    public UserMService(UserMapper userMapper, UserGroupRelationMapper userGroupRelationMapper) {
         this.userMapper = userMapper;
         this.userGroupRelationMapper = userGroupRelationMapper;
     }
@@ -47,6 +48,17 @@ public class UserService {
     }
 
     /**
+     * Retrieves a user by their name.
+     *
+     * @param name the name of the user to retrieve
+     * @return the user with the specified name, or null if no user is found
+     */
+    @Transactional
+    public List<User> getUserBySubtext(String name){
+        return userMapper.findByNameSubtext(name);
+    }
+
+    /**
      * Retrieves a list of all users.
      *
      * @return a list of User objects representing all users stored in the repository
@@ -70,6 +82,7 @@ public class UserService {
         UserGroupRelation userGroupRelation = new UserGroupRelation();
         userGroupRelation.setUserId(user.getId());
         userGroupRelation.setGroupId(groupID);
+        userGroupRelation.setAddedAt(Instant.now());
         userGroupRelationMapper.insert(userGroupRelation);
         return userMapper.findById(user.getId());
     }

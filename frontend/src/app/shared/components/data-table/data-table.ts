@@ -24,6 +24,7 @@ export class DataTable implements OnInit, OnChanges {
   @Input() columns: { field: string, header: string }[] = [];
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
+  @Input() isNodeButtonEnabled = true;
   @Input() fetchData!: (page: number, itemsPerPage: number, filter:string, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
 
   data: any[] = [];

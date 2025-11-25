@@ -5,6 +5,11 @@ import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
+
+/*
+
+ * Store actual backup data, not metadata. Used on backup manager and backupnode.
+ */
 @Mapper
 public interface BackupDataMapper {
 

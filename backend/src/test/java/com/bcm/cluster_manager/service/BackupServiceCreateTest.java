@@ -1,5 +1,6 @@
 package com.bcm.cluster_manager.service;
 
+import com.bcm.backup_manager.BackupManagerService;
 import com.bcm.cluster_manager.dto.CreateBackupRequest;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
@@ -36,6 +37,9 @@ class BackupServiceCreateTest {
     @InjectMocks
     private ClusterManagerService clusterManagerService;
 
+    @InjectMocks
+    private BackupService backupService;
+
     @BeforeEach
     void wirePrivateFields() {
         ReflectionTestUtils.setField(clusterManagerService, "registry", registryService);
@@ -65,7 +69,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
         // Act
-        BackupDTO returned = clusterManagerService.createBackup(request);
+        BackupDTO returned = backupService.createBackup(request);
 
         // Assert: stored once
         ArgumentCaptor<BackupDTO> builtCaptor = ArgumentCaptor.forClass(BackupDTO.class);
@@ -110,7 +114,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
         // Act
-        BackupDTO returned = clusterManagerService.createBackup(request);
+        BackupDTO returned = backupService.createBackup(request);
 
         // Assert
         assertThat(returned.getReplicationNodes())
@@ -126,7 +130,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
         // Act & Assert
-        assertThatThrownBy(() -> clusterManagerService.createBackup(request))
+        assertThatThrownBy(() -> backupService.createBackup(request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("No active nodes available");
 
@@ -149,7 +153,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
         // Act & Assert
-        assertThatThrownBy(() -> clusterManagerService.createBackup(request))
+        assertThatThrownBy(() -> backupService.createBackup(request))
                 .isInstanceOf(RestClientException.class);
 
         verify(backupStorageService, times(1)).store(any());
@@ -174,7 +178,7 @@ class BackupServiceCreateTest {
         CreateBackupRequest request = new CreateBackupRequest(5L, 15L, 512L);
 
         // Act
-        clusterManagerService.createBackup(request);
+        backupService.createBackup(request);
 
         // Assert
         ArgumentCaptor<BackupDTO> dtoCaptor = ArgumentCaptor.forClass(BackupDTO.class);

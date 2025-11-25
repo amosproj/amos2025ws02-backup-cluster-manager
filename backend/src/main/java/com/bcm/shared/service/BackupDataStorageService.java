@@ -17,6 +17,10 @@ public class BackupDataStorageService {
         this.backupDataMapper = backupDataMapper;
     }
 
+    /*
+
+        * Store actual backup data, not metadata. Used on backup manager and backupnode.
+     */
     @Transactional
     public void storeBackupData(BackupDTO dto) {
         BackupData data = new BackupData();

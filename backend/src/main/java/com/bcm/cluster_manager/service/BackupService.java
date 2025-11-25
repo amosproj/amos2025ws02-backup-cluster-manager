@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import com.bcm.cluster_manager.dto.CreateBackupRequest;
+import com.bcm.cluster_manager.repository.BackupMapper;
 import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.BackupDTO;
@@ -28,7 +29,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
 
     private final RegistryService registryService;
     private final RestTemplate restTemplate;
-    private final TaskMapper.BackupMapper backupMapper;
+    private final BackupMapper backupMapper;
 
     @Autowired
     private BackupStorageService backupStorageService;
@@ -37,7 +38,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
     private String backupManagerBaseUrl;
 
     public BackupService(RegistryService registryService,
-                         TaskMapper.BackupMapper backupMapper,
+                         BackupMapper backupMapper,
                          RestTemplate restTemplate) {
         this.registryService = registryService;
         this.backupMapper = backupMapper;

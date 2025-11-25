@@ -9,12 +9,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1")
 public class BackupManagerController {
 
-    private final BackupStorageService backupStorageService;
     private final BackupManagerService backupManagerService;
 
-    public BackupManagerController(BackupStorageService backupStorageService,
-                                   BackupManagerService backupManagerService) {
-        this.backupStorageService = backupStorageService;
+    public BackupManagerController(BackupManagerService backupManagerService) {
         this.backupManagerService = backupManagerService;
     }
 

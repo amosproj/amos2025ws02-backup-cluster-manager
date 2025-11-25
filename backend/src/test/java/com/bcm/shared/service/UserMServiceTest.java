@@ -1,8 +1,8 @@
 package com.bcm.shared.service;
 
-import com.bcm.cluster_manager.repository.ClientMapper;
-import com.bcm.cluster_manager.repository.TaskMapper;
-import com.bcm.cluster_manager.service.SyncService;
+import com.bcm.cluster_manager.repository.UserGroupRelationMapper;
+import com.bcm.cluster_manager.repository.UserMapper;
+import com.bcm.cluster_manager.service.UserMService;
 import com.bcm.shared.model.database.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,13 +19,13 @@ import static org.mockito.Mockito.when;
 class UserMServiceTest {
 
     @Mock
-    private TaskMapper.UserMapper userMapper;
+    private UserMapper userMapper;
 
     @Mock
-    private ClientMapper.UserGroupRelationMapper userGroupRelationMapper;
+    private UserGroupRelationMapper userGroupRelationMapper;
 
     @InjectMocks
-    private SyncService.UserMService userMService; // nimmt den Konstruktor und injiziert Mocks
+    private UserMService userMService; // nimmt den Konstruktor und injiziert Mocks
 
     @Test
     void addUserAndAssignGroup_insertsUser_andCreatesRelation() {

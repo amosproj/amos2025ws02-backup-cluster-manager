@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.*;
 import java.util.List;
 
 @Mapper
-interface GroupMapper {
+public interface GroupMapper {
 
     @Select("""
                 SELECT id, name, enabled, created_at AS createdAt, updated_at AS updatedAt

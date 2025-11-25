@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.*;
 import java.util.List;
 
 @Mapper
-interface UserGroupRelationMapper {
+public interface UserGroupRelationMapper {
 
     @Select("""
                 SELECT user_id AS userId, group_id AS groupId, added_at AS addedAt

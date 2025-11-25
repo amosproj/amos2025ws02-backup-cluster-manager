@@ -1,5 +1,6 @@
 package com.bcm.cluster_manager.service;
 
+import com.bcm.cluster_manager.repository.BackupMapper;
 import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.database.Backup;
@@ -14,9 +15,9 @@ import java.time.ZoneOffset;
 @Service
 public class BackupStorageService {
 
-    private final TaskMapper.BackupMapper backupMapper;
+    private final BackupMapper backupMapper;
 
-    public BackupStorageService(TaskMapper.BackupMapper backupMapper) {
+    public BackupStorageService(BackupMapper backupMapper) {
         this.backupMapper = backupMapper;
     }
 

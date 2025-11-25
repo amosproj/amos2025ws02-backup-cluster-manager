@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Mapper
-interface BackupMapper {
+public interface BackupMapper {
 
     @Select("""
                 SELECT

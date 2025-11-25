@@ -1,4 +1,4 @@
-INSERT INTO groups (name,enabled,created_at,updated_at)
+INSERT INTO "groups" (name,enabled,created_at,updated_at)
 VALUES ('Superuser', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
        ('Administrators', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
        ('Operators', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),

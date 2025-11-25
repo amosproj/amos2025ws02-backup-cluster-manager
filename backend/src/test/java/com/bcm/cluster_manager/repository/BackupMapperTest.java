@@ -1,9 +1,9 @@
 package com.bcm.cluster_manager.repository;
 
-import com.bcm.shared.model.database.Backup;
+import com.bcm.cluster_manager.model.database.Backup;
 import com.bcm.cluster_manager.model.database.Client;
 import com.bcm.cluster_manager.model.database.Task;
-import com.bcm.shared.model.database.BackupState;
+import com.bcm.cluster_manager.model.database.BackupState;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

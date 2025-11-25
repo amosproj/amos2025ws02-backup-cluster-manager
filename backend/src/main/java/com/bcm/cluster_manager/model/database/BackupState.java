@@ -1,4 +1,4 @@
-package com.bcm.shared.model.database;
+package com.bcm.cluster_manager.model.database;
 
 public enum BackupState {
     QUEUED,

@@ -7,7 +7,7 @@ import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
-import com.bcm.shared.model.database.Group;
+import com.bcm.cluster_manager.model.database.Group;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import com.bcm.cluster_manager.service.GroupService;
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.bcm.cluster_manager.dto.CreateBackupRequest;
+import com.bcm.cluster_manager.model.api.CreateBackupRequest;
 
 import java.util.List;
 

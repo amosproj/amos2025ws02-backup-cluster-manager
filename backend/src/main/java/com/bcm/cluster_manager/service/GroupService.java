@@ -1,8 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.repository.GroupMapper;
-import com.bcm.cluster_manager.repository.TaskMapper;
-import com.bcm.shared.model.database.Group;
+import com.bcm.cluster_manager.model.database.Group;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

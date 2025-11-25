@@ -1,6 +1,6 @@
 package com.bcm.cluster_manager.repository;
 
-import com.bcm.shared.model.database.Backup;
+import com.bcm.cluster_manager.model.database.Backup;
 import org.apache.ibatis.annotations.*;
 
 import java.time.Instant;

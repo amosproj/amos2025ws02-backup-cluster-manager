@@ -1,8 +1,7 @@
 package com.bcm.cluster_manager.controller;
 
-import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.cluster_manager.service.UserMService;
-import com.bcm.shared.model.database.User;
+import com.bcm.cluster_manager.model.database.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,9 +1,9 @@
-package com.bcm.shared.service;
+package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.repository.UserGroupRelationMapper;
 import com.bcm.cluster_manager.repository.UserMapper;
 import com.bcm.cluster_manager.service.UserMService;
-import com.bcm.shared.model.database.User;
+import com.bcm.cluster_manager.model.database.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

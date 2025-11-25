@@ -2,18 +2,12 @@ package com.bcm.backup_node;
 
 
 import com.bcm.shared.model.api.BackupDTO;
-import com.bcm.cluster_manager.service.BackupStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
 public class BackupNodeController {
-
-    @Autowired
-    private BackupStorageService backupStorageService;
 
     @Autowired
     private BackupNodeService backupNodeService;

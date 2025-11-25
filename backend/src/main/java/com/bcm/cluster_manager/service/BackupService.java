@@ -3,14 +3,13 @@ package com.bcm.cluster_manager.service;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import com.bcm.cluster_manager.dto.CreateBackupRequest;
+import com.bcm.cluster_manager.model.api.CreateBackupRequest;
 import com.bcm.cluster_manager.repository.BackupMapper;
-import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
-import com.bcm.shared.model.database.Backup;
-import com.bcm.shared.model.database.BackupState;
+import com.bcm.cluster_manager.model.database.Backup;
+import com.bcm.cluster_manager.model.database.BackupState;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.sort.BackupComparators;
 import com.bcm.shared.sort.SortProvider;
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.util.StringUtils;
 
-import static com.bcm.cluster_manager.service.BackupStorageService.toLdt;
+import static com.bcm.cluster_manager.service.BackupMetadataService.toLdt;
 
 @Profile("cluster_manager")
 @Service
@@ -32,7 +31,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
     private final BackupMapper backupMapper;
 
     @Autowired
-    private BackupStorageService backupStorageService;
+    private BackupMetadataService backupMetadataService;
 
     @Value("${application.bm.public-address:localhost:8082}")
     private String backupManagerBaseUrl;
@@ -167,9 +166,9 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         );
 
         try {
-            BackupDTO savedDto = backupStorageService.store(dto);
+            BackupDTO savedDto = backupMetadataService.store(dto);
             restTemplate.postForEntity(
-                    "http://" + backupManagerBaseUrl + "/api/v1/backups",
+                    "http://" + backupManagerBaseUrl + "/api/v1/backupsData",
                     savedDto,
                     Void.class
             );

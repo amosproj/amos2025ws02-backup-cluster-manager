@@ -1,4 +1,4 @@
-package com.bcm.shared.model.database;
+package com.bcm.cluster_manager.model.database;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -3,7 +3,7 @@ package com.bcm.backup_manager.controller;
 import com.bcm.backup_manager.BackupManagerService;
 import com.bcm.backup_node.BackupNodeService;
 import com.bcm.shared.model.api.BackupDTO;
-import com.bcm.shared.model.database.BackupState;
+import com.bcm.cluster_manager.model.database.BackupState;
 import com.bcm.shared.service.BackupDataStorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

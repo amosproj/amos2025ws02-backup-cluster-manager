@@ -1,10 +1,9 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.repository.BackupMapper;
-import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.shared.model.api.BackupDTO;
-import com.bcm.shared.model.database.Backup;
-import com.bcm.shared.model.database.BackupState;
+import com.bcm.cluster_manager.model.database.Backup;
+import com.bcm.cluster_manager.model.database.BackupState;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,11 +12,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 @Service
-public class BackupStorageService {
+public class BackupMetadataService {
 
     private final BackupMapper backupMapper;
 
-    public BackupStorageService(BackupMapper backupMapper) {
+    public BackupMetadataService(BackupMapper backupMapper) {
         this.backupMapper = backupMapper;
     }
 

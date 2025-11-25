@@ -11,21 +11,21 @@ import java.util.List;
 @Service
 public class BackupManagerService {
 
-    private final BackupDataStorageService storage;
+    private final BackupDataStorageService backupDataStorageService;
     private final RestTemplate restTemplate;
 
     @Value("${server.port}")
     private int serverPort;
 
-    public BackupManagerService(BackupDataStorageService storage, RestTemplate restTemplate) {
-        this.storage = storage;
+    public BackupManagerService(BackupDataStorageService backupDataStorageService, RestTemplate restTemplate) {
+        this.backupDataStorageService = backupDataStorageService;
         this.restTemplate = restTemplate;
     }
 
     public void distributeBackup(BackupDTO dto) {
 
         try {
-            storage.storeBackupData(dto);
+            backupDataStorageService.storeBackupData(dto);
         } catch (Exception e) {
             System.out.println("Failed to store locally (bm)");
         }

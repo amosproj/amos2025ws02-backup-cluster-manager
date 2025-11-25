@@ -2,8 +2,8 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.repository.UserGroupRelationMapper;
 import com.bcm.cluster_manager.repository.UserMapper;
-import com.bcm.shared.model.database.User;
-import com.bcm.shared.model.database.UserGroupRelation;
+import com.bcm.cluster_manager.model.database.User;
+import com.bcm.cluster_manager.model.database.UserGroupRelation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

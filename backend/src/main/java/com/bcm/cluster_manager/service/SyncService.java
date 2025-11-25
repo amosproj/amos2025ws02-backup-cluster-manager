@@ -1,22 +1,13 @@
 package com.bcm.cluster_manager.service;
 
-import com.bcm.cluster_manager.repository.ClientMapper;
-import com.bcm.cluster_manager.repository.TaskMapper;
-import com.bcm.cluster_manager.repository.UserGroupRelationMapper;
-import com.bcm.cluster_manager.repository.UserMapper;
 import com.bcm.shared.model.api.ClusterTablesDTO;
-import com.bcm.shared.model.database.User;
-import com.bcm.shared.model.database.UserGroupRelation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service

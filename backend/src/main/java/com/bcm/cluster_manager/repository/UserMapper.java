@@ -1,6 +1,6 @@
 package com.bcm.cluster_manager.repository;
 
-import com.bcm.shared.model.database.User;
+import com.bcm.cluster_manager.model.database.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

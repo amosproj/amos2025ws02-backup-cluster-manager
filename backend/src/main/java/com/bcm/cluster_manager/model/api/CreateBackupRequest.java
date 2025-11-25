@@ -1,4 +1,4 @@
-package com.bcm.cluster_manager.dto;
+package com.bcm.cluster_manager.model.api;
 
 public class CreateBackupRequest {
 

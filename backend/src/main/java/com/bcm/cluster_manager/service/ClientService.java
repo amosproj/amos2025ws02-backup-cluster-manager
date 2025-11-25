@@ -2,6 +2,7 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.model.database.Client;
 import com.bcm.cluster_manager.repository.ClientMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,11 +11,9 @@ import java.util.List;
 @Service
 public class ClientService {
 
-    private final ClientMapper clientMapper;
+    @Autowired
+    private ClientMapper clientMapper;
 
-    public ClientService(ClientMapper clientMapper) {
-        this.clientMapper = clientMapper;
-    }
 
     @Transactional
     public Client getClientById(Long id) {

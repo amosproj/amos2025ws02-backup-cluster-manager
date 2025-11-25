@@ -1,15 +1,21 @@
 package com.bcm.cluster_manager.service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
+import com.bcm.cluster_manager.dto.CreateBackupRequest;
+import com.bcm.cluster_manager.repository.TaskRepository;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.BackupDTO;
+import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.database.Backup;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.pagination.PaginationProvider;
-import com.bcm.shared.repository.BackupMapper;
+import com.bcm.shared.service.BackupStorageService;
 import com.bcm.shared.sort.BackupComparators;
 import com.bcm.shared.sort.SortProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,10 +29,16 @@ public class BackupService implements PaginationProvider<BackupDTO> {
 
     private final RegistryService registryService;
     private final RestTemplate restTemplate;
-    private final BackupMapper backupMapper;
+    private final TaskRepository.BackupMapper backupMapper;
+
+    @Autowired
+    private BackupStorageService backupStorageService;
+
+    @Value("${application.bm.public-address:localhost:8082}")
+    private String backupManagerBaseUrl;
 
     public BackupService(RegistryService registryService,
-                         BackupMapper backupMapper,
+                         TaskRepository.BackupMapper backupMapper,
                          RestTemplate restTemplate) {
         this.registryService = registryService;
         this.backupMapper = backupMapper;
@@ -126,6 +138,47 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                     .toList();
         }
         return backups;
+    }
+
+
+    public BackupDTO createBackup(CreateBackupRequest request) {
+        // select nodes
+        List<String> activeNodes = registryService.getActiveNodes().stream()
+                .map(NodeDTO::getAddress)
+                .toList();
+
+        //System.out.println("Active nodes: " + activeNodes);
+
+        if (activeNodes.isEmpty()) {
+            throw new RuntimeException("No active nodes available");
+        }
+
+        BackupDTO dto = new BackupDTO(
+                null,
+                request.getClientId(),
+                request.getTaskId(),
+                "Backup-" + request.getTaskId(),
+                BackupState.RUNNING,
+                request.getSizeBytes(),
+                null,
+                null,
+                LocalDateTime.now(),
+                activeNodes
+        );
+
+        try {
+            BackupDTO savedDto = backupStorageService.store(dto);
+            restTemplate.postForEntity(
+                    "http://" + backupManagerBaseUrl + "/api/v1/backups",
+                    savedDto,
+                    Void.class
+            );
+        } catch (Exception e) {
+            System.out.println("Failed to forward to backup_manager: " + e.getMessage());
+            throw e;
+        }
+
+        return dto;
     }
 
 }

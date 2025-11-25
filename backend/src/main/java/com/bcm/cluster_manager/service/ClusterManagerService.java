@@ -1,11 +1,11 @@
 package com.bcm.cluster_manager.service;
 
 
+import com.bcm.cluster_manager.repository.TaskRepository;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.database.BackupState;
-import com.bcm.shared.repository.BackupMapper;
 import com.bcm.shared.service.BackupStorageService;
 import org.springframework.beans.factory.annotation.Value;
 import com.bcm.shared.pagination.PaginationProvider;
@@ -29,20 +29,6 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
     @Autowired
     private RegistryService registry;
 
-    @Autowired
-    private BackupStorageService backupStorageService;
-
-
-    @Value("${application.bm.public-address:localhost:8082}")
-    private String backupManagerBaseUrl;
-
-    public ClusterManagerService(RegistryService registryService,
-                                 BackupMapper backupMapper,
-                                 RestTemplate restTemplate) {
-        this.registryService = registryService;
-        this.backupMapper = backupMapper;
-        this.restTemplate = restTemplate;
-    }
 
     @Override
     public long getTotalItemsCount(Filter filter) {
@@ -69,51 +55,6 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
         }
         sorted = sorted.subList(fromIndex, toIndex);
         return sorted;
-    }
-
-    private final RegistryService registryService;
-    private final RestTemplate restTemplate;
-    private final BackupMapper backupMapper;
-
-
-    public BackupDTO createBackup(CreateBackupRequest request) {
-        // select nodes
-        List<String> activeNodes = registryService.getActiveNodes().stream()
-                .map(NodeDTO::getAddress)
-                .toList();
-
-        //System.out.println("Active nodes: " + activeNodes);
-
-        if (activeNodes.isEmpty()) {
-            throw new RuntimeException("No active nodes available");
-        }
-
-        BackupDTO dto = new BackupDTO(
-                null,
-                request.getClientId(),
-                request.getTaskId(),
-                "Backup-" + request.getTaskId(),
-                BackupState.RUNNING,
-                request.getSizeBytes(),
-                null,
-                null,
-                LocalDateTime.now(),
-                activeNodes
-        );
-
-        try {
-            BackupDTO savedDto = backupStorageService.store(dto);
-            restTemplate.postForEntity(
-                    "http://" + backupManagerBaseUrl + "/api/v1/backups",
-                    savedDto,
-                    Void.class
-            );
-        } catch (Exception e) {
-            System.out.println("Failed to forward to backup_manager: " + e.getMessage());
-            throw e;
-        }
-
-        return dto;
     }
 
     private List<NodeDTO> applyFilters(List<NodeDTO> nodes, Filter filter) {

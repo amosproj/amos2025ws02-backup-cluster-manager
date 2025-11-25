@@ -1,4 +1,4 @@
-package com.bcm.shared.repository;
+package com.bcm.cluster_manager.repository;
 
 import com.bcm.shared.model.database.User;
 import org.junit.jupiter.api.*;

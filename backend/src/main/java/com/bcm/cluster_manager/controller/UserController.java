@@ -1,7 +1,7 @@
 package com.bcm.cluster_manager.controller;
 
+import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.database.User;
-import com.bcm.shared.service.UserMService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    private UserMService userMService;
+    private SyncService.UserMService userMService;
 
     @GetMapping
     public List<User> getAllUsers() {

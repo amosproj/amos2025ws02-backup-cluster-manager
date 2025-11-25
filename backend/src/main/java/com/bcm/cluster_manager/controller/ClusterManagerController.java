@@ -59,7 +59,7 @@ public class ClusterManagerController {
     public ResponseEntity<BackupDTO> createBackup(@RequestBody CreateBackupRequest request) {
         try {
 
-            BackupDTO result = clusterManagerService.createBackup(request);
+            BackupDTO result = backupService.createBackup(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception e) {
             e.printStackTrace();

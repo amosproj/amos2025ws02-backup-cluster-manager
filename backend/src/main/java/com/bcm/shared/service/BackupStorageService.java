@@ -1,11 +1,9 @@
 package com.bcm.shared.service;
 
+import com.bcm.cluster_manager.repository.TaskRepository;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.database.Backup;
-import com.bcm.shared.model.database.BackupData;
 import com.bcm.shared.model.database.BackupState;
-import com.bcm.shared.repository.BackupDataMapper;
-import com.bcm.shared.repository.BackupMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +15,9 @@ import java.util.List;
 @Service
 public class BackupStorageService {
 
-    private final BackupMapper backupMapper;
+    private final TaskRepository.BackupMapper backupMapper;
 
-    public BackupStorageService(BackupMapper backupMapper) {
+    public BackupStorageService(TaskRepository.BackupMapper backupMapper) {
         this.backupMapper = backupMapper;
     }
 

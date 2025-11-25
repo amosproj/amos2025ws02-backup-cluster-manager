@@ -1,7 +1,13 @@
 package com.bcm.cluster_manager.service;
 
+
+import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.model.database.BackupState;
+import com.bcm.shared.repository.BackupMapper;
+import com.bcm.shared.service.BackupStorageService;
+import org.springframework.beans.factory.annotation.Value;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.sort.NodeComparators;
@@ -10,8 +16,11 @@ import com.bcm.shared.sort.SortProvider;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.client.RestTemplate;
+import com.bcm.cluster_manager.dto.CreateBackupRequest;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+
 import java.util.List;
 import org.springframework.util.StringUtils;
 
@@ -20,6 +29,20 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
     @Autowired
     private RegistryService registry;
 
+    @Autowired
+    private BackupStorageService backupStorageService;
+
+
+    @Value("${application.bm.public-address:localhost:8082}")
+    private String backupManagerBaseUrl;
+
+    public ClusterManagerService(RegistryService registryService,
+                                 BackupMapper backupMapper,
+                                 RestTemplate restTemplate) {
+        this.registryService = registryService;
+        this.backupMapper = backupMapper;
+        this.restTemplate = restTemplate;
+    }
 
     @Override
     public long getTotalItemsCount(Filter filter) {
@@ -48,8 +71,51 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
         return sorted;
     }
 
+    private final RegistryService registryService;
+    private final RestTemplate restTemplate;
+    private final BackupMapper backupMapper;
 
-    // Helper Methods goes here
+
+    public BackupDTO createBackup(CreateBackupRequest request) {
+        // select nodes
+        List<String> activeNodes = registryService.getActiveNodes().stream()
+                .map(NodeDTO::getAddress)
+                .toList();
+
+        //System.out.println("Active nodes: " + activeNodes);
+
+        if (activeNodes.isEmpty()) {
+            throw new RuntimeException("No active nodes available");
+        }
+
+        BackupDTO dto = new BackupDTO(
+                null,
+                request.getClientId(),
+                request.getTaskId(),
+                "Backup-" + request.getTaskId(),
+                BackupState.RUNNING,
+                request.getSizeBytes(),
+                null,
+                null,
+                LocalDateTime.now(),
+                activeNodes
+        );
+
+        try {
+            BackupDTO savedDto = backupStorageService.store(dto);
+            restTemplate.postForEntity(
+                    "http://" + backupManagerBaseUrl + "/api/v1/backups",
+                    savedDto,
+                    Void.class
+            );
+        } catch (Exception e) {
+            System.out.println("Failed to forward to backup_manager: " + e.getMessage());
+            throw e;
+        }
+
+        return dto;
+    }
+
     private List<NodeDTO> applyFilters(List<NodeDTO> nodes, Filter filter) {
         if (filter == null || filter.getFilters() == null || filter.getFilters().isEmpty()) {
             return nodes;
@@ -76,8 +142,6 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
                 .toList();
     }
 
-    // Search implementation
-    // Searches in name, address, status and id fields
     private List<NodeDTO> applySearch(List<NodeDTO> nodes, Filter filter){
         if (filter != null && StringUtils.hasText(filter.getSearch())) {
             String searchTerm = filter.getSearch().toLowerCase();

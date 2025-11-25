@@ -8,12 +8,18 @@ import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.model.api.UserDTO;
+import com.bcm.shared.model.database.Group;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
-import com.bcm.shared.service.UserService;
+import com.bcm.shared.service.UserMService;
+import com.bcm.shared.service.GroupService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.bcm.cluster_manager.dto.CreateBackupRequest;
 
 import java.util.List;
 
@@ -25,6 +31,9 @@ public class ClusterManagerController {
     private ClusterManagerService clusterManagerService;
 
     @Autowired
+    private GroupService groupService;
+
+    @Autowired
     private BackupService backupService;
 
     @Autowired
@@ -32,12 +41,18 @@ public class ClusterManagerController {
 
     @Autowired
     private SyncService syncService;
+
     @Autowired
-    private UserService userService;
+    private UserMService userService;
 
     @GetMapping("/nodes")
     public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination) {
         return clusterManagerService.getPaginatedItems(pagination);
+    }
+
+    @GetMapping("/groups")
+    public List<Group> getGroups() {
+        return groupService.getAllGroups();
     }
 
     @GetMapping("/backups")
@@ -45,7 +60,19 @@ public class ClusterManagerController {
         return backupService.getPaginatedItems(pagination);
     }
 
-    @GetMapping("/users")
+    @PostMapping("/backups")
+    public ResponseEntity<BackupDTO> createBackup(@RequestBody CreateBackupRequest request) {
+        try {
+
+            BackupDTO result = clusterManagerService.createBackup(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/userlist")
     public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination){
         return userService.getPaginatedItems(pagination);
     }

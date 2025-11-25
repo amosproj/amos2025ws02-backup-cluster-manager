@@ -1,17 +1,24 @@
-import {Component, signal} from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { UsersModal } from '../../shared/components/users-modal/users-modal';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {UsersService} from './users.service';
 
 @Component({
   selector: 'app-users',
-  imports: [
-    DataTable
-  ],
+  imports: [DataTable, UsersModal],
   templateUrl: './users.html',
   styleUrl: './users.css',
 })
 export class Users {
   constructor(private usersService: UsersService) {
+  }
+
+  isAddUserModalOpen = false;
+  modalMode: 'create' | 'edit' | 'delete' = 'create';
+
+  openAddUserModal(mode: 'create' | 'edit' | 'delete') {
+    this.modalMode = mode;
+    this.isAddUserModalOpen = true;
   }
 
   tableColumns = signal([

@@ -5,9 +5,10 @@
   <div class="bg-red-600 text-white p-4 rounded-lg">Error: {{ error() }}</div>
 }
 <app-data-table
-  [data]="tasks()"
+  [fetchData]="tasks"
   [columns]="tableColumns()"
-  [searchColumns]="tableSearchColumns()"
   [filters]="tableFilters()"
   [loading]="loading$ | async"
+  [addButtonText]="'Add Task'"
+  (add)="openAddModal()"
 />

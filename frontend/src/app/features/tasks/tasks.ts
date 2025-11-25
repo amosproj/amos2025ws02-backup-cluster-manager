@@ -1,8 +1,10 @@
 import {Component, OnInit, signal} from '@angular/core';
 import {TasksService } from './tasks.service';
+import {ClientsService} from '../clients/clients';
 import {ApiService} from '../../core/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
+import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 
 @Component({
   selector: 'app-tasks',
@@ -24,9 +26,6 @@ export class Tasks implements OnInit {
     {field: 'interval', header: 'Interval'},
   ]);
 
-  // Columns to be included in search
-  tableSearchColumns = signal(['name', 'enabled', 'id', "clientId"]);
-
   // Example filter: filter tasks by 'active' status
   tableFilters = signal([
     {
@@ -38,11 +37,34 @@ export class Tasks implements OnInit {
   error = signal<string | null>(null);
   loading$;
 
+  showAddModal = signal(false);
+  addForm!: FormGroup;
+
+
   constructor(
     private tasksService: TasksService,
+    private clientsService: ClientsService,
+    private fb: FormBuilder,
     private apiService: ApiService
   ) {
     this.loading$ = this.apiService.loading$;
+
+    this.addForm = this.fb.group({
+      clientId: ['', Validators.required],
+      name: ['', Validators.required],
+      source: ['', Validators.required],
+      enabled: ['', Validators.required],
+      interval: ['', Validators.required],
+    });
+  }
+
+  openAddModal() {
+    this.addForm.reset();
+    this.showAddModal.set(true);
+  }
+
+  closeAddModal() {
+    this.showAddModal.set(false);
   }
 
   ngOnInit() {
@@ -55,5 +77,23 @@ export class Tasks implements OnInit {
       next: (data) => this.tasks.set(data),
       error: (error) => this.error.set(error.message)
     })
+  }
+
+  submitTask() {
+    if (this.addForm.invalid) {
+      this.addForm.markAllAsTouched();
+      return;
+    }
+
+    this.tasksService.createTask(this.addForm.value).subscribe({
+      next: (response) => {
+        //console.log('Backup created:', response);
+        this.closeAddModal();
+      },
+      error: (error) => {
+        console.error('Error creating backup:', error);
+      }
+    });
+
   }
 }

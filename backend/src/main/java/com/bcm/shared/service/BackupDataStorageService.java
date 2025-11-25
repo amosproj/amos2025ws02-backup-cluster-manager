@@ -26,10 +26,5 @@ public class BackupDataStorageService {
         backupDataMapper.insert(data);
     }
 
-    @Transactional
-    public void deleteBackupData(Long backupId) {
-        backupDataMapper.delete(backupId);
-    }
-
 
 }

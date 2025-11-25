@@ -2,7 +2,6 @@ package com.bcm.backup_node;
 
 
 import com.bcm.shared.model.api.BackupDTO;
-import com.bcm.shared.service.BackupDataStorageService;
 import com.bcm.shared.service.BackupStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,7 @@ import java.util.List;
 public class BackupNodeController {
 
     @Autowired
-    private BackupDataStorageService backupStorageService;
+    private BackupStorageService backupStorageService;
 
     @Autowired
     private BackupNodeService backupNodeService;
@@ -22,10 +21,9 @@ public class BackupNodeController {
     public BackupNodeController(BackupNodeService backupNodeService) {
         this.backupNodeService = backupNodeService;
     }
-
-    @DeleteMapping("/backups/{id}")
-    public void deleteBackup(@PathVariable Long id) {
-        backupStorageService.deleteBackupData(id);
+    @GetMapping("/backups")
+    public List<BackupDTO> getBackups() {
+        return backupStorageService.findAllBackupsAsDto();
     }
 
     @GetMapping("/backupNode/test")

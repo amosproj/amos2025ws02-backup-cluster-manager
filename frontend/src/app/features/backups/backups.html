@@ -5,8 +5,6 @@
   [loading]="loading$ | async"
   [addButtonText]="'Add Backup'"
   (add)="openAddModal()"
-  (selectionChange)="onSelectionChange($event)"
-  (deleteSelection)="onDeleteSelection($event)"
 />
 
 @if (showAddModal()){

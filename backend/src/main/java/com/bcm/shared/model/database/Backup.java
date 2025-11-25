@@ -5,7 +5,6 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-
 @Getter
 @Setter
 public class Backup {
@@ -16,7 +15,7 @@ public class Backup {
     private Instant startTime;
     private Instant stopTime;  // nullable
     private long sizeBytes;
-    private String state;      // e.g. COMPLETED, FAILED, ...
+    private BackupState state;      // e.g. COMPLETED, FAILED, ...
     private String message;    // nullable (TEXT)
     private Instant createdAt;
 

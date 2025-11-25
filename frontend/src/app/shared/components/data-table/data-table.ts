@@ -1,11 +1,12 @@
-import {Component, Input, OnChanges, OnInit, signal, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, signal, SimpleChanges, TemplateRef} from '@angular/core';
 import {Observable} from 'rxjs';
-import {NgClass} from '@angular/common';
+import { NgClass, NgTemplateOutlet, CommonModule } from '@angular/common';
 import {SortOrder} from '../../types/SortTypes';
 import {FormsModule} from '@angular/forms';
 
 interface PaginatedResponse {
   items: any[];
+
   currentPage: number;
   totalPages: number;
 }
@@ -14,7 +15,9 @@ interface PaginatedResponse {
   selector: 'app-data-table',
   imports: [
     NgClass,
-    FormsModule
+    FormsModule,
+    NgTemplateOutlet,
+    CommonModule
   ],
   templateUrl: './data-table.html',
   styleUrl: './data-table.css',
@@ -25,14 +28,23 @@ export class DataTable implements OnInit, OnChanges {
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
   @Input() fetchData!: (page: number, itemsPerPage: number, filter:string, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
+  @Input() loading: boolean | null = false;
 
   data: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 15;
   totalPages: number = 1;
-  loading: boolean = false;
   availablePageSizes = [1,2,3,15, 25, 50, 100];
   filterParam = "";
+
+  @Input() addButtonText = 'Add';
+
+  @Input() showAddButton = true;
+  @Input() addButtonTemplate: TemplateRef<unknown> | null = null;
+  @Output() add = new EventEmitter<void>();
+  @Output() addClicked = new EventEmitter<void>();
+  currentAddButtonText = this.addButtonText;
+
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
@@ -77,6 +89,9 @@ export class DataTable implements OnInit, OnChanges {
     }
     if (changes['filters']) {
       this.tableFilters.set(this.filters);
+    }
+    if (changes['addButtonText'] && !changes['addButtonText'].firstChange) {
+      this.currentAddButtonText = this.addButtonText;
     }
   }
 
@@ -180,5 +195,9 @@ export class DataTable implements OnInit, OnChanges {
     this.tableFilters.set([...this.tableFilters()]);
     this.filterParam = this.tableFilters().filter(f => f.active).map(f => f.label).join(",");
     this.loadData();
+  }
+
+  onAddClick() {
+    this.add.emit();
   }
 }

@@ -33,9 +33,14 @@ application:
     public-address: ${CM_ADDRESS}
   node:
     public-address: ${NODE_ADDRESS}
+  bm:
+    public-address: ${BM_ADDRESS}
 
 mybatis:
   type-aliases-package: com.bcm.shared.model.database
+  configuration:
+    map-underscore-to-camel-case: true
+    jdbc-type-for-null: OTHER
 
 
 
@@ -45,7 +50,8 @@ spring:
   config:
     activate:
       on-profile: cluster_manager
-
+  flyway:
+    locations: classpath:db/migration/cluster_manager
 ---
 spring:
   config:
@@ -57,6 +63,8 @@ spring:
   config:
     activate:
       on-profile: backup_node
+  flyway:
+    locations: classpath:db/migration/backup_node
 
 ---
 # Prod profile

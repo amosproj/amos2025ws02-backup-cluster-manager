@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { Dashboard } from './dashboard';
-
 describe('Dashboard', () => {
   let component: Dashboard;
   let fixture: ComponentFixture<Dashboard>;
@@ -12,7 +13,9 @@ describe('Dashboard', () => {
     await TestBed.configureTestingModule({
       imports: [Dashboard],
       providers: [
-        { provide: Router, useValue: mockRouter }
+        { provide: Router, useValue: mockRouter },
+        provideHttpClient(),
+        provideHttpClientTesting()
       ]
     })
     .compileComponents();
@@ -22,18 +25,21 @@ describe('Dashboard', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should open modal in create mode when openAddUserModal is called with "create"', () => {
+    expect(component.isAddUserModalOpen).toBe(false);
+    expect(component.modalMode).toBe('create');
+
+    component.openAddUserModal('create');
+
+    expect(component.isAddUserModalOpen).toBe(true);
+    expect(component.modalMode).toBe('create');
   });
 
-  it('should navigate to users on add-user button click', () => {
-    component.onButtonClick('add-user');
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/users']);
-  });
+  it('should open modal in edit mode when openAddUserModal is called with "edit"', () => {
+    component.openAddUserModal('edit');
 
-  it('should navigate to users on edit-user button click', () => {
-    component.onButtonClick('edit-user');
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/users']);
+    expect(component.isAddUserModalOpen).toBe(true);
+    expect(component.modalMode).toBe('edit');
   });
 
   it('should show confirmation on logout', () => {

@@ -11,7 +11,7 @@ services:
 
   cluster-manager:
     image: backend
-    container_name: cluster-manager
+    container_name: cluster_manager
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
       - POSTGRES_USER=appuser
@@ -20,6 +20,7 @@ services:
       - ALLOWED_ORIGINS=http://localhost:4200,http://node1:8081,http://node2:8082
       #- APPLICATION_PORT=8080
       - SPRING_PROFILES_ACTIVE=cluster_manager
+      - BM_ADDRESS=node2:8082
     ports:
       - "8080:8080"
     networks:
@@ -41,6 +42,7 @@ services:
       - APPLICATION_PORT=8081
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node1:8081
+      - BM_ADDRESS=node2:8082
     ports:
       - "8081:8081"
     networks:
@@ -57,11 +59,12 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node2
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - SPRING_PROFILES_ACTIVE=backup_node
+      - SPRING_PROFILES_ACTIVE=backup_manager
       - NODE_ID=node2
       - APPLICATION_PORT=8082
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node2:8082
+      - BM_ADDRESS=node2:8082
     ports:
       - "8082:8082"
     networks:
@@ -83,6 +86,7 @@ services:
       - APPLICATION_PORT=8083
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node3:8083
+      - BM_ADDRESS=node2:8082
     ports:
       - "8083:8083"
     networks:
@@ -104,6 +108,7 @@ services:
       - APPLICATION_PORT=8084
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node4:8084
+      - BM_ADDRESS=node2:8082
     ports:
       - "8084:8084"
     networks:
@@ -125,6 +130,7 @@ services:
       - APPLICATION_PORT=8085
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node5:8085
+      - BM_ADDRESS=node2:8082
     ports:
       - "8085:8085"
     networks:
@@ -146,6 +152,7 @@ services:
       - APPLICATION_PORT=8086
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node6:8086
+      - BM_ADDRESS=node2:8082
     ports:
       - "8086:8086"
     networks:

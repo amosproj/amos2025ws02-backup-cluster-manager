@@ -4,6 +4,13 @@ import {Observable} from 'rxjs';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 import {SortOrder} from '../../shared/types/SortTypes';
 
+
+
+export interface BackupRequest {
+  clientId: number;
+  taskId?: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -22,4 +29,9 @@ export class BackupsService {
     }
     return this.apiService.get<PaginatedResponse>('backups', {params});
   }
+
+  createBackup(request: BackupRequest): Observable<any> {
+    return this.apiService.post<any>('backups', request);
+  }
+
 }

@@ -29,6 +29,22 @@ export class ApiService {
     );
   }
 
+  put<T>(endpoint: string, data: any, options?: { params?: any; headers?: any }): Observable<T> {
+    this.loadingSubject.next(true);
+    return this.http.put<T>(`${this.baseUrl}/${endpoint}`, data, options).pipe(
+      catchError(this.handleError),
+      finalize(() => this.loadingSubject.next(false))
+    );
+  }
+
+  delete<T>(endpoint: string, options?: { params?: any; headers?: any }): Observable<T> {
+    this.loadingSubject.next(true);
+    return this.http.delete<T>(`${this.baseUrl}/${endpoint}`, options).pipe(
+      catchError(this.handleError),
+      finalize(() => this.loadingSubject.next(false))
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An unknown error occurred!';
     if(error.error instanceof ErrorEvent){

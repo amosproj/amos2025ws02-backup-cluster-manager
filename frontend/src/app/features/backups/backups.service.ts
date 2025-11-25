@@ -34,4 +34,8 @@ export class BackupsService {
     return this.apiService.post<any>('backups', request);
   }
 
+  deleteBackup(backupId: number): Observable<any> {
+    return this.apiService.delete<any>(`backups/${backupId}`);
+  }
+
 }

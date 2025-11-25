@@ -60,6 +60,17 @@ public class ClusterManagerController {
         return backupService.getPaginatedItems(pagination);
     }
 
+    @DeleteMapping("/backups/{id}")
+    public ResponseEntity<Void> deleteBackup(@PathVariable Long id) {
+        try {
+            clusterManagerService.deleteBackup(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PostMapping("/backups")
     public ResponseEntity<BackupDTO> createBackup(@RequestBody CreateBackupRequest request) {
         try {

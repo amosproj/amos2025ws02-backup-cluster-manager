@@ -156,7 +156,7 @@ class BackupMapperTest {
         backup.setStartTime(now);
         backup.setStopTime(now.plusSeconds(3600)); // 1 hour later
         backup.setSizeBytes(42L);
-        backup.setState("COMPLETED");   // valid value from backup_state enum
+        backup.setState(BackupState.COMPLETED);   // valid value from backup_state enum
         backup.setMessage("insert integration test");
         backup.setCreatedAt(now);
 
@@ -175,7 +175,7 @@ class BackupMapperTest {
         assertThat(persisted.getStartTime()).isEqualTo(backup.getStartTime());
         assertThat(persisted.getStopTime()).isEqualTo(backup.getStopTime());
         assertThat(persisted.getSizeBytes()).isEqualTo(backup.getSizeBytes());
-        assertThat(persisted.getState()).isEqualTo("COMPLETED");
+        assertThat(persisted.getState()).isEqualTo(BackupState.COMPLETED);
         assertThat(persisted.getMessage()).isEqualTo(backup.getMessage());
         assertThat(persisted.getCreatedAt()).isEqualTo(backup.getCreatedAt());
     }

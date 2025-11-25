@@ -7,10 +7,12 @@ import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
+import com.bcm.shared.model.api.UserDTO;
 import com.bcm.shared.model.database.Group;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
+import com.bcm.shared.service.UserMService;
 import com.bcm.shared.service.GroupService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,9 @@ public class ClusterManagerController {
     @Autowired
     private SyncService syncService;
 
+    @Autowired
+    private UserMService userService;
+
     @GetMapping("/nodes")
     public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination) {
         return clusterManagerService.getPaginatedItems(pagination);
@@ -52,7 +57,7 @@ public class ClusterManagerController {
 
     @GetMapping("/backups")
     public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
-            return backupService.getPaginatedItems(pagination);
+        return backupService.getPaginatedItems(pagination);
     }
 
     @PostMapping("/backups")
@@ -67,11 +72,21 @@ public class ClusterManagerController {
         }
     }
 
+    @GetMapping("/userlist")
+    public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination){
+        return userService.getPaginatedItems(pagination);
+    }
+
+    @GetMapping("/generateUser")
+    public String generateUser(){
+        userService.generateExampleUsers(50);
+        return "Generated 50 example users";
+    }
+
     @PostMapping("/register")
     public void register(@RequestBody RegisterRequest req) {
         registry.register(req.getAddress());
         // push updated tables to all nodes
         syncService.pushTablesToAllNodes();
     }
-
 }

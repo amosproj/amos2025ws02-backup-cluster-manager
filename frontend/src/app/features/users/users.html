@@ -30,3 +30,9 @@
   [mode]="modalMode"
   (closed)="isAddUserModalOpen = false"
 ></app-users-modal>
+<app-data-table
+  [fetchData]="fetchUsers"
+  [columns]="tableColumns()"
+  [filters]="tableFilters()"
+  [isNodeButtonEnabled]="false"
+/>

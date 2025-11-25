@@ -3,6 +3,7 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.filter.Filter;
+import com.bcm.shared.model.api.BackupDeleteDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.repository.BackupMapper;
@@ -114,6 +115,28 @@ public class ClusterManagerService implements PaginationProvider<NodeDTO> {
         }
 
         return dto;
+    }
+
+    public void deleteBackup(Long backupId) {
+
+        try {
+            // build list of node addresses that should delete this backup
+            List<String> nodesToDeleteOn = registryService.getAllNodes().stream()
+                    .map(n -> n.getAddress())
+                    .toList();
+
+            BackupDeleteDTO request = new BackupDeleteDTO(backupId, nodesToDeleteOn);
+
+            // 2. notify backup_manager with backupId + nodes
+            String url = "http://" + backupManagerBaseUrl + "/api/v1/backups/delete";
+            restTemplate.postForEntity(url, request, Void.class);
+
+            // 3. delete backup metadata from CM
+            backupMapper.delete(backupId);
+
+        } catch (Exception e) {
+            System.err.println("Failed to delete backup via " + backupManagerBaseUrl + ": " + e.getMessage());
+        }
     }
 
     private List<NodeDTO> applyFilters(List<NodeDTO> nodes, Filter filter) {

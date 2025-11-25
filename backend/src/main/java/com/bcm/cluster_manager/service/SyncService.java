@@ -1,7 +1,7 @@
 package com.bcm.cluster_manager.service;
 
-import com.bcm.cluster_manager.repository.ClientRepository;
-import com.bcm.cluster_manager.repository.TaskRepository;
+import com.bcm.cluster_manager.repository.ClientMapper;
+import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.shared.model.api.ClusterTablesDTO;
 import com.bcm.shared.model.database.User;
 import com.bcm.shared.model.database.UserGroupRelation;
@@ -50,10 +50,10 @@ public class SyncService {
     @Service
     public static class UserMService {
 
-        final TaskRepository.UserMapper userMapper;
-        final ClientRepository.UserGroupRelationMapper userGroupRelationMapper;
+        final TaskMapper.UserMapper userMapper;
+        final ClientMapper.UserGroupRelationMapper userGroupRelationMapper;
 
-        public UserMService(TaskRepository.UserMapper userMapper, ClientRepository.UserGroupRelationMapper userGroupRelationMapper) {
+        public UserMService(TaskMapper.UserMapper userMapper, ClientMapper.UserGroupRelationMapper userGroupRelationMapper) {
             this.userMapper = userMapper;
             this.userGroupRelationMapper = userGroupRelationMapper;
         }

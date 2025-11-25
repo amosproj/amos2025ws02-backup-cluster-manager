@@ -22,10 +22,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = Replace.ANY)
 @Transactional
 @Rollback
-class ClientRepositoryTest {
+class ClientMapperTest {
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientMapper clientMapper;
 
     /**
      * Creates and persists a new test client instance.
@@ -41,7 +41,7 @@ class ClientRepositoryTest {
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         client.setCreatedAt(now);
         client.setUpdatedAt(now);
-        clientRepository.insert(client);
+        clientMapper.insert(client);
         return client;
     }
 
@@ -51,7 +51,7 @@ class ClientRepositoryTest {
         Client createdClient = createTestClient();
 
         // Act
-        Client foundClient = clientRepository.findById(createdClient.getId());
+        Client foundClient = clientMapper.findById(createdClient.getId());
 
         // Assert
         assertThat(foundClient).isNotNull();
@@ -65,7 +65,7 @@ class ClientRepositoryTest {
     @Test
     void findById_shouldReturnNullForInvalidId() {
         // Act
-        Client foundClient = clientRepository.findById(-1L); // Non-existent ID
+        Client foundClient = clientMapper.findById(-1L); // Non-existent ID
 
         // Assert
         assertThat(foundClient).isNull();

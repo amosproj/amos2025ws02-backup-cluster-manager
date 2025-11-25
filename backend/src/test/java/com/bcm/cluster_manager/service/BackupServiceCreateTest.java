@@ -5,7 +5,6 @@ import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.model.database.BackupState;
-import com.bcm.shared.service.BackupStorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

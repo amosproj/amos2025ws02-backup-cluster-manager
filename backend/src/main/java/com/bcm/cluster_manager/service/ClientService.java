@@ -1,7 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.model.database.Client;
-import com.bcm.cluster_manager.repository.ClientRepository;
+import com.bcm.cluster_manager.repository.ClientMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,41 +10,41 @@ import java.util.List;
 @Service
 public class ClientService {
 
-    private final ClientRepository clientRepository;
+    private final ClientMapper clientMapper;
 
-    public ClientService(ClientRepository clientRepository) {
-        this.clientRepository = clientRepository;
+    public ClientService(ClientMapper clientMapper) {
+        this.clientMapper = clientMapper;
     }
 
     @Transactional
     public Client getClientById(Long id) {
-        return clientRepository.findById(id);
+        return clientMapper.findById(id);
     }
 
     @Transactional
     public Client getClientByNameOrIp(String nameOrIp) {
-        return clientRepository.findByNameOrIp(nameOrIp);
+        return clientMapper.findByNameOrIp(nameOrIp);
     }
 
     @Transactional
     public List<Client> getAllClients() {
-        return clientRepository.findAll();
+        return clientMapper.findAll();
     }
 
     @Transactional
     public Client addClient(Client client) {
-        clientRepository.insert(client);
-        return clientRepository.findById(client.getId());
+        clientMapper.insert(client);
+        return clientMapper.findById(client.getId());
     }
 
     @Transactional
     public Client editClient(Client client) {
-        clientRepository.update(client);
-        return clientRepository.findById(client.getId());
+        clientMapper.update(client);
+        return clientMapper.findById(client.getId());
     }
 
     @Transactional
     public boolean deleteClient(Long id) {
-        return clientRepository.delete(id) == 1;
+        return clientMapper.delete(id) == 1;
     }
 }

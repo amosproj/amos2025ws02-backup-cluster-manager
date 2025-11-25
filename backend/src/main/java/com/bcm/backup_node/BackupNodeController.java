@@ -2,7 +2,7 @@ package com.bcm.backup_node;
 
 
 import com.bcm.shared.model.api.BackupDTO;
-import com.bcm.shared.service.BackupStorageService;
+import com.bcm.cluster_manager.service.BackupStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +20,6 @@ public class BackupNodeController {
 
     public BackupNodeController(BackupNodeService backupNodeService) {
         this.backupNodeService = backupNodeService;
-    }
-    @GetMapping("/backups")
-    public List<BackupDTO> getBackups() {
-        return backupStorageService.findAllBackupsAsDto();
     }
 
     @GetMapping("/backupNode/test")

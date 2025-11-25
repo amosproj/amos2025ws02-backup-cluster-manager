@@ -4,14 +4,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import com.bcm.cluster_manager.dto.CreateBackupRequest;
-import com.bcm.cluster_manager.repository.TaskRepository;
+import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.database.Backup;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.pagination.PaginationProvider;
-import com.bcm.shared.service.BackupStorageService;
 import com.bcm.shared.sort.BackupComparators;
 import com.bcm.shared.sort.SortProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.util.StringUtils;
 
-import static com.bcm.shared.service.BackupStorageService.toLdt;
+import static com.bcm.cluster_manager.service.BackupStorageService.toLdt;
 
 @Profile("cluster_manager")
 @Service
@@ -29,7 +28,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
 
     private final RegistryService registryService;
     private final RestTemplate restTemplate;
-    private final TaskRepository.BackupMapper backupMapper;
+    private final TaskMapper.BackupMapper backupMapper;
 
     @Autowired
     private BackupStorageService backupStorageService;
@@ -38,7 +37,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
     private String backupManagerBaseUrl;
 
     public BackupService(RegistryService registryService,
-                         TaskRepository.BackupMapper backupMapper,
+                         TaskMapper.BackupMapper backupMapper,
                          RestTemplate restTemplate) {
         this.registryService = registryService;
         this.backupMapper = backupMapper;

@@ -1,7 +1,7 @@
 package com.bcm.backup_manager;
 
 import com.bcm.shared.model.api.BackupDTO;
-import com.bcm.shared.service.BackupStorageService;
+import com.bcm.cluster_manager.service.BackupStorageService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +23,6 @@ public class BackupManagerController {
     public ResponseEntity<Void> createBackup(@RequestBody BackupDTO dto) {
         backupManagerService.distributeBackup(dto);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/backups")
-    public ResponseEntity<Iterable<BackupDTO>> getBackups() {
-        Iterable<BackupDTO> backups = backupStorageService.findAllBackupsAsDto();
-        return ResponseEntity.ok(backups);
     }
 
 }

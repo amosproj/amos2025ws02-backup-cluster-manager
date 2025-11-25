@@ -1,6 +1,6 @@
-package com.bcm.shared.service;
+package com.bcm.cluster_manager.service;
 
-import com.bcm.cluster_manager.repository.TaskRepository;
+import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.shared.model.database.Group;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,9 +10,9 @@ import java.util.List;
 @Service
 public class GroupService {
 
-    private final TaskRepository.GroupMapper groupMapper;
+    private final TaskMapper.GroupMapper groupMapper;
 
-    public GroupService(TaskRepository.GroupMapper groupMapper) {
+    public GroupService(TaskMapper.GroupMapper groupMapper) {
         this.groupMapper = groupMapper;
     }
 

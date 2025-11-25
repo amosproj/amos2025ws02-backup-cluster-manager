@@ -1,7 +1,5 @@
 package com.bcm.cluster_manager.repository;
 
-import com.bcm.cluster_manager.repository.ClientRepository;
-import com.bcm.cluster_manager.repository.TaskRepository;
 import com.bcm.shared.model.database.Backup;
 import com.bcm.cluster_manager.model.database.Client;
 import com.bcm.cluster_manager.model.database.Task;
@@ -54,7 +52,7 @@ class BackupMapperTest {
     }
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientMapper clientMapper;
 
     /**
      * Creates and persists a new test client instance.
@@ -70,12 +68,12 @@ class BackupMapperTest {
         Instant now = Instant.now();
         client.setCreatedAt(now);
         client.setUpdatedAt(now);
-        clientRepository.insert(client);
+        clientMapper.insert(client);
         return client;
     }
 
     @Autowired
-    private TaskRepository taskRepository;
+    private TaskMapper taskMapper;
 
     /**
      * Creates and persists a new test Task instance.
@@ -96,7 +94,7 @@ class BackupMapperTest {
         Instant now = Instant.now();
         task.setCreatedAt(now);
         task.setUpdatedAt(now);
-        taskRepository.insert(task);
+        taskMapper.insert(task);
         return task;
     }
 

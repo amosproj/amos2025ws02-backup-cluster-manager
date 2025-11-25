@@ -1,7 +1,7 @@
 package com.bcm.shared.service;
 
-import com.bcm.cluster_manager.repository.ClientRepository;
-import com.bcm.cluster_manager.repository.TaskRepository;
+import com.bcm.cluster_manager.repository.ClientMapper;
+import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.database.User;
 import org.junit.jupiter.api.Test;
@@ -19,10 +19,10 @@ import static org.mockito.Mockito.when;
 class UserMServiceTest {
 
     @Mock
-    private TaskRepository.UserMapper userMapper;
+    private TaskMapper.UserMapper userMapper;
 
     @Mock
-    private ClientRepository.UserGroupRelationMapper userGroupRelationMapper;
+    private ClientMapper.UserGroupRelationMapper userGroupRelationMapper;
 
     @InjectMocks
     private SyncService.UserMService userMService; // nimmt den Konstruktor und injiziert Mocks

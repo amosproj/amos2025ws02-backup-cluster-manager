@@ -2,11 +2,9 @@ package com.bcm.backup_manager.controller;
 
 import com.bcm.backup_manager.BackupManagerService;
 import com.bcm.backup_node.BackupNodeService;
-import com.bcm.cluster_manager.service.BackupService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.service.BackupDataStorageService;
-import com.bcm.shared.service.BackupStorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

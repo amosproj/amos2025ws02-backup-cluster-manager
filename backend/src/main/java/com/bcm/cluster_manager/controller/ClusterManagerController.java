@@ -8,10 +8,9 @@ import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.model.database.Group;
-import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
-import com.bcm.shared.service.GroupService;
+import com.bcm.cluster_manager.service.GroupService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

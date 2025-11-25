@@ -1,6 +1,6 @@
-package com.bcm.shared.service;
+package com.bcm.cluster_manager.service;
 
-import com.bcm.cluster_manager.repository.TaskRepository;
+import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.database.Backup;
 import com.bcm.shared.model.database.BackupState;
@@ -10,14 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 
 @Service
 public class BackupStorageService {
 
-    private final TaskRepository.BackupMapper backupMapper;
+    private final TaskMapper.BackupMapper backupMapper;
 
-    public BackupStorageService(TaskRepository.BackupMapper backupMapper) {
+    public BackupStorageService(TaskMapper.BackupMapper backupMapper) {
         this.backupMapper = backupMapper;
     }
 
@@ -33,30 +32,11 @@ public class BackupStorageService {
         backup.setCreatedAt(Instant.now());
 
         backupMapper.insert(backup);
-        return new BackupDTO(
-                backup.getId(),
-                backup.getClientId(),
-                backup.getTaskId(),
-                "Backup-" + backup.getTaskId(),
-                backup.getState(),
-                backup.getSizeBytes(),
-                toLdt(backup.getStartTime()),
-                toLdt(backup.getStopTime()),
-                toLdt(backup.getCreatedAt()),
-                dto.getReplicationNodes()
-        );
-
+        return toDTO(backup);
     }
 
     public static LocalDateTime toLdt(Instant t) {
         return t == null ? null : LocalDateTime.ofInstant(t, ZoneOffset.UTC);
-    }
-
-    public List<BackupDTO> findAllBackupsAsDto() {
-        return backupMapper.findAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
     }
 
     private BackupDTO toDTO(Backup backup) {

@@ -1,7 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.model.database.Task;
-import com.bcm.cluster_manager.repository.TaskRepository;
+import com.bcm.cluster_manager.repository.TaskMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,41 +10,41 @@ import java.util.List;
 @Service
 public class TaskService {
 
-    final private TaskRepository taskRepository;
+    final private TaskMapper taskMapper;
 
-    public TaskService(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public TaskService(TaskMapper taskMapper) {
+        this.taskMapper = taskMapper;
     }
 
     @Transactional
     public Task getTaskById(Long taskId) {
-        return taskRepository.findById(taskId);
+        return taskMapper.findById(taskId);
     }
 
     @Transactional
     public List<Task> getTasksOfClient(Long clientId) {
-        return taskRepository.findByClient(clientId);
+        return taskMapper.findByClient(clientId);
     }
 
     @Transactional
     public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+        return taskMapper.findAll();
     }
 
     @Transactional
     public Task addTask(Task task) {
-        taskRepository.insert(task);
-        return taskRepository.findById(task.getId());
+        taskMapper.insert(task);
+        return taskMapper.findById(task.getId());
     }
 
     @Transactional
     public Task editTask(Task task) {
-        taskRepository.update(task);
-        return taskRepository.findById(task.getId());
+        taskMapper.update(task);
+        return taskMapper.findById(task.getId());
     }
 
     @Transactional
     public boolean deleteTask(Long taskId) {
-        return taskRepository.delete(taskId) == 1;
+        return taskMapper.delete(taskId) == 1;
     }
 }

@@ -1,7 +1,5 @@
 package com.bcm.cluster_manager.repository;
 
-import com.bcm.cluster_manager.repository.ClientRepository;
-import com.bcm.cluster_manager.repository.TaskRepository;
 import com.bcm.cluster_manager.model.database.Client;
 import com.bcm.cluster_manager.model.database.Task;
 import org.junit.jupiter.api.*;
@@ -22,10 +20,10 @@ import static org.assertj.core.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = Replace.ANY)
 @Transactional
 @Rollback
-class TaskRepositoryTest {
+class TaskMapperTest {
 
     @Autowired
-    private TaskRepository taskRepository;
+    private TaskMapper taskMapper;
 
     private Task createTestTask(Long clientId) {
         Task t = new Task();
@@ -43,7 +41,7 @@ class TaskRepositoryTest {
     }
 
     @Autowired
-    private ClientRepository clientRepository;
+    private ClientMapper clientMapper;
 
     private Client createTestClient() {
         Client c = new Client();
@@ -52,7 +50,7 @@ class TaskRepositoryTest {
         Instant now = Instant.now();
         c.setCreatedAt(now);
         c.setUpdatedAt(now);
-        clientRepository.insert(c);
+        clientMapper.insert(c);
         return c;
     }
 
@@ -61,11 +59,11 @@ class TaskRepositoryTest {
         Client client = createTestClient();
         Task task = createTestTask(client.getId());
 
-        int rows = taskRepository.insert(task);
+        int rows = taskMapper.insert(task);
         assertThat(rows).isEqualTo(1);
         assertThat(task.getId()).isNotNull(); // useGeneratedKeys sollte hier greifen
 
-        Task loaded = taskRepository.findById(task.getId());
+        Task loaded = taskMapper.findById(task.getId());
         assertThat(loaded).isNotNull();
         assertThat(loaded.getId()).isEqualTo(task.getId());
         assertThat(loaded.getName()).isEqualTo("Test Task");
@@ -82,10 +80,10 @@ class TaskRepositoryTest {
         Task t2 = createTestTask(client.getId());
         t2.setName("Second Task");
 
-        taskRepository.insert(t1);
-        taskRepository.insert(t2);
+        taskMapper.insert(t1);
+        taskMapper.insert(t2);
 
-        List<Task> tasks = taskRepository.findByClient(client.getId());
+        List<Task> tasks = taskMapper.findByClient(client.getId());
 
         assertThat(tasks)
                 .isNotEmpty()
@@ -101,19 +99,19 @@ class TaskRepositoryTest {
     void update_shouldModifyExistingTask() {
         Client client = createTestClient();
         Task task = createTestTask(client.getId());
-        taskRepository.insert(task);
+        taskMapper.insert(task);
 
-        Task beforeUpdate = taskRepository.findById(task.getId());
+        Task beforeUpdate = taskMapper.findById(task.getId());
         assertThat(beforeUpdate).isNotNull();
 
         beforeUpdate.setName("Updated Name");
         beforeUpdate.setEnabled(false);
         beforeUpdate.setUpdatedAt(Instant.now());
 
-        int rows = taskRepository.update(beforeUpdate);
+        int rows = taskMapper.update(beforeUpdate);
         assertThat(rows).isEqualTo(1);
 
-        Task afterUpdate = taskRepository.findById(task.getId());
+        Task afterUpdate = taskMapper.findById(task.getId());
         assertThat(afterUpdate).isNotNull();
         assertThat(afterUpdate.getName()).isEqualTo("Updated Name");
         assertThat(afterUpdate.isEnabled()).isFalse();
@@ -123,15 +121,15 @@ class TaskRepositoryTest {
     void delete_shouldRemoveTask() {
         Client client = createTestClient();
         Task task = createTestTask(client.getId());
-        taskRepository.insert(task);
+        taskMapper.insert(task);
 
         Long id = task.getId();
-        assertThat(taskRepository.findById(id)).isNotNull();
+        assertThat(taskMapper.findById(id)).isNotNull();
 
-        int rows = taskRepository.delete(id);
+        int rows = taskMapper.delete(id);
         assertThat(rows).isEqualTo(1);
 
-        Task deleted = taskRepository.findById(id);
+        Task deleted = taskMapper.findById(id);
         assertThat(deleted).isNull();
     }
 }

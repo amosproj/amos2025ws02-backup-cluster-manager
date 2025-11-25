@@ -1,6 +1,8 @@
 package com.bcm.shared.repository;
 
+import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.database.User;
+import com.bcm.shared.sort.SortOrder;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -28,6 +30,56 @@ public interface UserMapper {
             SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users
             """)
     List<User> findAll();
+
+    @Select("""
+            <script>
+            SELECT COUNT(*) FROM users
+            <where>
+                <if test="search != null and search != ''">
+                    (name ILIKE CONCAT('%', #{search}, '%') OR CAST(id AS TEXT) ILIKE CONCAT('%', #{search}, '%'))
+                </if>
+                <if test="isUserEnabled != null">
+                    AND enabled = #{isUserEnabled}
+                </if>
+            </where>
+            </script>
+            """)
+    long getTotalCount(@Param("search") String search, @Param("isUserEnabled") Boolean isUserEnabled);
+
+    @Select("""
+            <script>
+            SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt
+            FROM users
+            <where>
+                <if test="search != null and search != ''">
+                    (name ILIKE CONCAT('%', #{search}, '%') OR CAST(id AS TEXT) ILIKE CONCAT('%', #{search}, '%'))
+                </if>
+                <if test="isUserEnabled != null">
+                    AND enabled = #{isUserEnabled}
+                </if>
+            </where>
+            <choose>
+                <when test="sortBy != null and sortBy != ''">
+                    ORDER BY ${sortBy}
+                    <choose>
+                        <when test="sortOrder != null and sortOrder.name() == 'DESC'">
+                            DESC
+                        </when>
+                        <otherwise>
+                            ASC
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    ORDER BY created_at DESC
+                </otherwise>
+            </choose>
+            LIMIT #{itemsPerPage} OFFSET ${(page - 1) * itemsPerPage}
+            </script>
+            """)
+    List<User> getPaginatedAndFilteredUsers(@Param("page") long page, @Param("itemsPerPage") long itemsPerPage,
+                                            @Param("search") String search, @Param("sortBy") String sortBy,
+                                            @Param("sortOrder") SortOrder sortOrder, @Param("isUserEnabled") Boolean isUserEnabled);
 
     @Insert("""
             INSERT INTO users (name, password_hash, enabled, created_at, updated_at)

@@ -94,8 +94,7 @@
       </table>
 
       @for (row of (tableData()); track row.id) {
-      }
-      @empty{
+      } @empty {
         <div class="w-full flex justify-center items-center bg-primary-1 p-4 rounded-b-lg">
           No data found
         </div>

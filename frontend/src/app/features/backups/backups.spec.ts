@@ -1,20 +1,39 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { Backups } from './backups';
+import { SortOrder } from '../../shared/types/SortTypes';
+import {BackupsService} from './backups.service';
+import {ApiService} from '../../core/services/api.service';
 
 describe('Backups', () => {
-  let component: Backups;
   let fixture: ComponentFixture<Backups>;
+  let component: Backups;
+
+  const backupsServiceMock = {
+    getBackups: (page = 1, itemsPerPage = 15, filters = '', search = '', sortBy = '', order: SortOrder = SortOrder.ASC) =>
+      of({ items: [], currentPage: page, totalPages: 1 }),
+    createBackup: () => of({})
+  };
+
+  const apiServiceMock = {
+    loading$: of(false),
+    post: () => of({})
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Backups],
-      providers: [provideHttpClient()]
-    })
-    .compileComponents();
+      providers: [
+        { provide: BackupsService, useValue: backupsServiceMock },
+        { provide: ApiService, useValue: apiServiceMock },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(Backups);
     component = fixture.componentInstance;
+
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
   });
 

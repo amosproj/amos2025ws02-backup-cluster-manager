@@ -1,6 +1,6 @@
-package com.bcm.shared.repository;
+package com.bcm.backup_node.repository;
 
-import com.bcm.shared.model.database.BackupData;
+import com.bcm.backup_node.model.database.BackupData;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

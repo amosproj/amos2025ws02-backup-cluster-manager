@@ -1,6 +1,7 @@
-package com.bcm.backup_node;
+package com.bcm.backup_node.controller;
 
 
+import com.bcm.backup_node.service.BackupNodeService;
 import com.bcm.shared.model.api.BackupDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

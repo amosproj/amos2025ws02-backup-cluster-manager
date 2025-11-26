@@ -1,10 +1,9 @@
 package com.bcm.backup_manager.controller;
 
 import com.bcm.backup_manager.BackupManagerService;
-import com.bcm.backup_node.BackupNodeService;
+import com.bcm.backup_node.service.BackupNodeService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.cluster_manager.model.database.BackupState;
-import com.bcm.shared.service.BackupDataStorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -33,9 +32,6 @@ class BackupManagerServiceTest {
     @Mock
     private BackupNodeService backupNodeService;
 
-    @Mock
-    private BackupDataStorageService storage;
-
     @InjectMocks
     private BackupManagerService backupManagerService;
 
@@ -53,7 +49,7 @@ class BackupManagerServiceTest {
         backupManagerService.distributeBackup(dto);
 
         // Assert
-        verify(storage, times(1)).storeBackupData(dto);
+        verify(backupNodeService, times(2)).storeBackup(dto);
         verify(restTemplate, times(2)).postForEntity(anyString(), eq(dto), eq(Void.class));
         verifyNoMoreInteractions(restTemplate);
         verifyNoInteractions(backupNodeService); // BM doesn’t call this for local store
@@ -76,7 +72,7 @@ class BackupManagerServiceTest {
         assertThatCode(() -> backupManagerService.distributeBackup(dto))
                 .doesNotThrowAnyException();
 
-        verify(storage, times(1)).storeBackupData(dto);
+        verify(backupNodeService, times(1)).storeBackup(dto);
         verify(restTemplate, times(2)).postForEntity(anyString(), eq(dto), eq(Void.class));
         verifyNoMoreInteractions(restTemplate);
         verifyNoInteractions(backupNodeService);
@@ -104,7 +100,7 @@ class BackupManagerServiceTest {
         backupManagerService.distributeBackup(dtoNull);
 
         // Assert
-        verify(storage, times(2)).storeBackupData(any());
+        verify(backupNodeService, times(2)).storeBackup(any());
         verify(restTemplate, never()).postForEntity(anyString(), any(), any());
         verifyNoInteractions(backupNodeService);
     }
@@ -119,13 +115,13 @@ class BackupManagerServiceTest {
                 Arrays.asList("node1:8081")
         );
 
-        doThrow(new RuntimeException("Database error")).when(storage).storeBackupData(any());
+        doThrow(new RuntimeException("Database error")).when(backupNodeService).storeBackup(any());
 
         // Act & Assert - should not throw
         assertThatCode(() -> backupManagerService.distributeBackup(dto))
                 .doesNotThrowAnyException();
 
-        verify(storage, times(1)).storeBackupData(dto); // attempted
+        verify(backupNodeService, times(1)).storeBackup(dto); // attempted
         verify(restTemplate, times(1)).postForEntity(anyString(), eq(dto), eq(Void.class));
         verifyNoMoreInteractions(restTemplate);
         verifyNoInteractions(backupNodeService);
@@ -147,7 +143,7 @@ class BackupManagerServiceTest {
         backupManagerService.distributeBackup(dto);
 
         // Assert
-        verify(storage, times(1)).storeBackupData(dto);
+        verify(backupNodeService, times(1)).storeBackup(dto);
         verify(restTemplate, times(3)).postForEntity(urlCaptor.capture(), eq(dto), eq(Void.class));
 
         List<String> urls = urlCaptor.getAllValues();
@@ -187,7 +183,7 @@ class BackupManagerServiceTest {
                 .doesNotThrowAnyException();
 
         // Assert: all nodes were attempted
-        verify(storage, times(1)).storeBackupData(dto);
+        verify(backupNodeService, times(1)).storeBackup(dto);
         verify(restTemplate, times(nodes.size())).postForEntity(anyString(), eq(dto), eq(Void.class));
 
         // Optionally capture to ensure all expected URLs were hit

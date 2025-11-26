@@ -1,6 +1,8 @@
 package com.bcm.cluster_manager.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import com.bcm.cluster_manager.model.api.CreateBackupRequest;
@@ -13,14 +15,11 @@ import com.bcm.cluster_manager.model.database.BackupState;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.sort.BackupComparators;
 import com.bcm.shared.sort.SortProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.util.StringUtils;
-
-import static com.bcm.cluster_manager.service.BackupMetadataService.toLdt;
 
 @Profile("cluster_manager")
 @Service
@@ -29,9 +28,6 @@ public class BackupService implements PaginationProvider<BackupDTO> {
     private final RegistryService registryService;
     private final RestTemplate restTemplate;
     private final BackupMapper backupMapper;
-
-    @Autowired
-    private BackupMetadataService backupMetadataService;
 
     @Value("${application.bm.public-address:localhost:8082}")
     private String backupManagerBaseUrl;
@@ -166,18 +162,48 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         );
 
         try {
-            BackupDTO savedDto = backupMetadataService.store(dto);
+            BackupDTO savedDto = store(dto);
             restTemplate.postForEntity(
                     "http://" + backupManagerBaseUrl + "/api/v1/backupsData",
                     savedDto,
                     Void.class
             );
+            return dto;
+
         } catch (Exception e) {
             System.out.println("Failed to forward to backup_manager: " + e.getMessage());
             throw e;
         }
+    }
 
-        return dto;
+    public BackupDTO store(BackupDTO dto) {
+        Backup backup = new Backup();
+        backup.setClientId(dto.getClientId());
+        backup.setTaskId(dto.getTaskId());
+        backup.setSizeBytes(dto.getSizeBytes() != null ? dto.getSizeBytes() : 0L);
+        backup.setStartTime(Instant.now());
+        backup.setState(BackupState.RUNNING);
+        backup.setMessage(null);
+        backup.setCreatedAt(Instant.now());
+
+        backupMapper.insert(backup);
+        return new BackupDTO(
+                backup.getId(),
+                backup.getClientId(),
+                backup.getTaskId(),
+                "Backup-" + backup.getTaskId(),
+                backup.getState(),
+                backup.getSizeBytes(),
+                toLdt(backup.getStartTime()),
+                toLdt(backup.getStopTime()),
+                toLdt(backup.getCreatedAt()),
+                dto.getReplicationNodes()
+        );
+
+    }
+
+    public static LocalDateTime toLdt(Instant t) {
+        return t == null ? null : LocalDateTime.ofInstant(t, ZoneOffset.UTC);
     }
 
 }

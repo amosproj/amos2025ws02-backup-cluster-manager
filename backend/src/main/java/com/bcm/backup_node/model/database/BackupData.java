@@ -1,4 +1,4 @@
-package com.bcm.shared.model.database;
+package com.bcm.backup_node.model.database;
 
 import lombok.Getter;
 import lombok.Setter;

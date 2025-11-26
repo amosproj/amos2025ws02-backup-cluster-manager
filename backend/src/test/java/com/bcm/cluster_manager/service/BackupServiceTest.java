@@ -31,7 +31,6 @@ class BackupServiceTest {
 
     @Mock private RegistryService registryService;
     @Mock private RestTemplate restTemplate;
-    @Mock private BackupMetadataService backupMetadataService;
 
     @InjectMocks
     private BackupService backupService;
@@ -39,7 +38,6 @@ class BackupServiceTest {
     @BeforeEach
     void wirePrivateFields() {
         ReflectionTestUtils.setField(backupService, "registryService", registryService);
-        ReflectionTestUtils.setField(backupService, "backupMetadataService", backupMetadataService);
         ReflectionTestUtils.setField(backupService, "backupManagerBaseUrl", "node2:8082");
     }
 
@@ -59,7 +57,7 @@ class BackupServiceTest {
                 null, null, LocalDateTime.now(),
                 List.of("node1:8081", "node2:8082")
         );
-        when(backupMetadataService.store(any())).thenReturn(saved);
+        when(backupService.store(any())).thenReturn(saved);
 
         CreateBackupRequest request = new CreateBackupRequest(1L, 1L, 100L);
 
@@ -68,7 +66,7 @@ class BackupServiceTest {
 
         // Assert: stored once
         ArgumentCaptor<BackupDTO> builtCaptor = ArgumentCaptor.forClass(BackupDTO.class);
-        verify(backupMetadataService, times(1)).store(builtCaptor.capture());
+        verify(backupService, times(1)).store(builtCaptor.capture());
         BackupDTO built = builtCaptor.getValue();
         assertThat(built.getId()).isNull();
         assertThat(built.getClientId()).isEqualTo(1L);
@@ -101,7 +99,7 @@ class BackupServiceTest {
                 new NodeDTO(3L, "node3:8083", "node3:8083", NodeStatus.ACTIVE, LocalDateTime.now())
         );
         when(registryService.getActiveNodes()).thenReturn(nodes);
-        when(backupMetadataService.store(any())).thenReturn(
+        when(backupService.store(any())).thenReturn(
                 new BackupDTO(10L, 1L, 1L, "Backup-1", BackupState.RUNNING, 100L, null, null, LocalDateTime.now(),
                         List.of("node1:8081", "node2:8082", "node3:8083"))
         );
@@ -114,7 +112,7 @@ class BackupServiceTest {
         // Assert
         assertThat(returned.getReplicationNodes())
                 .containsExactlyInAnyOrder("node1:8081", "node2:8082", "node3:8083");
-        verify(backupMetadataService).store(any());
+        verify(backupService).store(any());
         verify(restTemplate).postForEntity(anyString(), any(BackupDTO.class), eq(Void.class));
     }
 
@@ -129,7 +127,7 @@ class BackupServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("No active nodes available");
 
-        verifyNoInteractions(backupMetadataService, restTemplate);
+        verifyNoInteractions(backupService, restTemplate);
     }
 
     @Test
@@ -138,7 +136,7 @@ class BackupServiceTest {
         when(registryService.getActiveNodes()).thenReturn(
                 List.of(new NodeDTO(1L, "node2:8082", "node2:8082", NodeStatus.ACTIVE, LocalDateTime.now()))
         );
-        when(backupMetadataService.store(any())).thenReturn(
+        when(backupService.store(any())).thenReturn(
                 new BackupDTO(77L, 1L, 1L, "Backup-1", BackupState.RUNNING, 100L, null, null, LocalDateTime.now(),
                         List.of("node2:8082"))
         );
@@ -151,7 +149,7 @@ class BackupServiceTest {
         assertThatThrownBy(() -> backupService.createBackup(request))
                 .isInstanceOf(RestClientException.class);
 
-        verify(backupMetadataService, times(1)).store(any());
+        verify(backupService, times(1)).store(any());
         verify(restTemplate, times(1)).postForEntity(anyString(), any(), any());
     }
 
@@ -168,7 +166,7 @@ class BackupServiceTest {
                 null, null, LocalDateTime.now(),
                 List.of("node2:8082")
         );
-        when(backupMetadataService.store(any())).thenReturn(saved);
+        when(backupService.store(any())).thenReturn(saved);
 
         CreateBackupRequest request = new CreateBackupRequest(5L, 15L, 512L);
 

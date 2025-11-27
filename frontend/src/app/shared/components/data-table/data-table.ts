@@ -1,6 +1,16 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, signal, SimpleChanges, TemplateRef} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  signal,
+  SimpleChanges,
+  TemplateRef
+} from '@angular/core';
 import {Observable} from 'rxjs';
-import { NgClass, NgTemplateOutlet, CommonModule } from '@angular/common';
+import {NgClass, NgTemplateOutlet, CommonModule} from '@angular/common';
 import {SortOrder} from '../../types/SortTypes';
 import {FormsModule} from '@angular/forms';
 
@@ -16,7 +26,7 @@ interface PaginatedResponse {
   imports: [
     NgClass,
     FormsModule,
-    NgTemplateOutlet,
+    // NgTemplateOutlet,
     CommonModule
   ],
   templateUrl: './data-table.html',
@@ -27,27 +37,31 @@ export class DataTable implements OnInit, OnChanges {
   @Input() columns: { field: string, header: string }[] = [];
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
-  @Input() isNodeButtonEnabled = true;
-  @Input() fetchData!: (page: number, itemsPerPage: number, filter:string, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
+  @Input() fetchData!: (page: number, itemsPerPage: number, filter: string, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
   @Input() loading: boolean | null = false;
-  @Output() selectionChange = new EventEmitter<any[]>();
+  @Input() editButtonText: string = 'Edit';
+  @Input() addButtonText = 'Add';
+  @Input() showAddButton = true;
+  @Input() showEditButton = false;
+  @Input() showDeleteButton = true;
+  // @Input() addButtonTemplate: TemplateRef<unknown> | null = null;
 
+  @Output() selectionChange = new EventEmitter<any[]>();
+  @Output() add = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<void>();
+  @Output() addClicked = new EventEmitter<void>();
+  @Output() deleteSelection = new EventEmitter<any[]>();
+
+  currentAddButtonText = this.addButtonText;
   data: any[] = [];
   currentPage: number = 1;
   itemsPerPage: number = 15;
   totalPages: number = 1;
-  availablePageSizes = [1,2,3,15, 25, 50, 100];
+  availablePageSizes = [1, 2, 3, 15, 25, 50, 100];
   filterParam = "";
   selectedIds = new Set<string>();
 
-  @Input() addButtonText = 'Add';
 
-  @Input() showAddButton = true;
-  @Input() addButtonTemplate: TemplateRef<unknown> | null = null;
-  @Output() add = new EventEmitter<void>();
-  @Output() addClicked = new EventEmitter<void>();
-  currentAddButtonText = this.addButtonText;
-  @Output() deleteSelection = new EventEmitter<any[]>();
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
@@ -110,7 +124,7 @@ export class DataTable implements OnInit, OnChanges {
 
   loadData() {
     this.loading = true;
-    this.fetchData(this.currentPage, this.itemsPerPage, this.filterParam, this.currentSearchQuery, this.currentSortBy(),this.currentSortOrder()).subscribe({
+    this.fetchData(this.currentPage, this.itemsPerPage, this.filterParam, this.currentSearchQuery, this.currentSortBy(), this.currentSortOrder()).subscribe({
       next: (response: any) => {
         this.data = response.items;
         this.totalPages = response.totalPages;
@@ -124,6 +138,7 @@ export class DataTable implements OnInit, OnChanges {
       }
     })
   }
+
   onDeleteClick(): void {
     const selectedRows = this.tableData().filter(row => this.selectedIds.has(row.id));
     this.deleteSelection.emit(selectedRows);
@@ -249,5 +264,10 @@ export class DataTable implements OnInit, OnChanges {
 
   onAddClick() {
     this.add.emit();
+  }
+
+  onEditClick(){
+    if(this.edit == null) return;
+    this.edit.emit();
   }
 }

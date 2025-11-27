@@ -27,8 +27,8 @@ public interface TaskMapper {
     List<Task> findAll();
 
     @Insert("""
-            INSERT INTO tasks (name, client_id, source, enabled, created_at, updated_at, "interval")
-            VALUES (#{name}, #{clientId}, #{source}, #{enabled}, #{createdAt}, #{updatedAt}, #{interval})
+            INSERT INTO tasks (name, client_id, source, enabled, "interval")
+            VALUES (#{name}, #{clientId}, #{source}, #{enabled}, #{interval}::frequency_enum)
             """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Task t);
@@ -40,7 +40,7 @@ public interface TaskMapper {
                 source = #{source},
                 enabled = #{enabled},
                 updated_at = #{updatedAt},
-                "interval" = #{interval}
+                "interval" = #{interval}::frequency_enum
             WHERE id = #{id}
             """)
     int update(Task t);

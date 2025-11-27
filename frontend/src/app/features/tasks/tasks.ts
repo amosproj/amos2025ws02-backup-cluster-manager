@@ -1,22 +1,23 @@
 import {Component, OnInit, signal} from '@angular/core';
 import {TasksService } from './tasks.service';
-import {ClientsService} from '../clients/clients';
+import {ClientsService} from '../clients/clients.service';
 import {ApiService} from '../../core/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import {SortOrder} from '../../shared/types/SortTypes';
 
 @Component({
   selector: 'app-tasks',
   imports: [
     AsyncPipe,
-    DataTable
+    DataTable,
+    ReactiveFormsModule
   ],
   templateUrl: './tasks.html',
   styleUrl: './tasks.css',
 })
 export class Tasks implements OnInit {
-  tasks = signal<any[]>([]);
   tableColumns = signal([
     {field: 'id', header: 'ID'},
     {field: 'name', header: 'Name'},
@@ -34,12 +35,24 @@ export class Tasks implements OnInit {
       active: false,
     }
   ]);
-  error = signal<string | null>(null);
   loading$;
 
   showAddModal = signal(false);
   addForm!: FormGroup;
 
+  clients = signal<any[]>([]);
+  intervalOptions = [
+    { value: 'DAILY', label: 'Daily' },
+    { value: 'WEEKLY', label: 'Weekly' },
+    { value: 'MONTHLY', label: 'Monthly' }
+  ];
+
+  ngOnInit() {
+    this.clientsService.getClients().subscribe({
+      next: (data) => this.clients.set(data),
+      error: (err) => console.error('Fehler beim Laden der Clients:', err)
+    });
+  }
 
   constructor(
     private tasksService: TasksService,
@@ -53,9 +66,13 @@ export class Tasks implements OnInit {
       clientId: ['', Validators.required],
       name: ['', Validators.required],
       source: ['', Validators.required],
-      enabled: ['', Validators.required],
+      enabled: [true, Validators.required],
       interval: ['', Validators.required],
     });
+  }
+
+  fetchTasks = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder:SortOrder) => {
+    return this.tasksService.getTasks(page, itemsPerPage, filters, search, sortBy, sortOrder);
   }
 
   openAddModal() {
@@ -67,25 +84,13 @@ export class Tasks implements OnInit {
     this.showAddModal.set(false);
   }
 
-  ngOnInit() {
-    this.loadTasks();
-  }
-
-  loadTasks() {
-    this.error.set(null);
-    this.tasksService.getTasks().subscribe({
-      next: (data) => this.tasks.set(data),
-      error: (error) => this.error.set(error.message)
-    })
-  }
-
   submitTask() {
     if (this.addForm.invalid) {
       this.addForm.markAllAsTouched();
       return;
     }
 
-    this.tasksService.createTask(this.addForm.value).subscribe({
+    this.tasksService.createTask({id: null, ...this.addForm.value}).subscribe({
       next: (response) => {
         //console.log('Backup created:', response);
         this.closeAddModal();

@@ -15,5 +15,5 @@ public class Task {
     private boolean enabled;
     private Instant createdAt;
     private Instant updatedAt;
-    private String interval;
+    private TaskFrequency interval;
 }

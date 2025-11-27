@@ -49,10 +49,8 @@ class BackupManagerServiceTest {
         backupManagerService.distributeBackup(dto);
 
         // Assert
-        verify(backupNodeService, times(2)).storeBackup(dto);
         verify(restTemplate, times(2)).postForEntity(anyString(), eq(dto), eq(Void.class));
         verifyNoMoreInteractions(restTemplate);
-        verifyNoInteractions(backupNodeService); // BM doesn’t call this for local store
     }
 
     @Test
@@ -72,57 +70,8 @@ class BackupManagerServiceTest {
         assertThatCode(() -> backupManagerService.distributeBackup(dto))
                 .doesNotThrowAnyException();
 
-        verify(backupNodeService, times(1)).storeBackup(dto);
+        verify(backupNodeService, times(0)).storeBackup(dto);
         verify(restTemplate, times(2)).postForEntity(anyString(), eq(dto), eq(Void.class));
-        verifyNoMoreInteractions(restTemplate);
-        verifyNoInteractions(backupNodeService);
-    }
-
-    @Test
-    void distributeBackup_withoutNodes_shouldOnlyStoreLocally() {
-        // Arrange
-        BackupDTO dtoEmpty = new BackupDTO(
-                null, 1L, 1L, "Backup-1",
-                BackupState.RUNNING, 100L,
-                LocalDateTime.now(), null, LocalDateTime.now(),
-                Collections.emptyList()
-        );
-
-        BackupDTO dtoNull = new BackupDTO(
-                null, 1L, 1L, "Backup-1",
-                BackupState.QUEUED, 100L,
-                LocalDateTime.now(), null, LocalDateTime.now(),
-                null
-        );
-
-        // Act
-        backupManagerService.distributeBackup(dtoEmpty);
-        backupManagerService.distributeBackup(dtoNull);
-
-        // Assert
-        verify(backupNodeService, times(2)).storeBackup(any());
-        verify(restTemplate, never()).postForEntity(anyString(), any(), any());
-        verifyNoInteractions(backupNodeService);
-    }
-
-    @Test
-    void distributeBackup_localStorageFails_shouldStillDistribute() {
-        // Arrange
-        BackupDTO dto = new BackupDTO(
-                null, 1L, 1L, "Backup-1",
-                BackupState.COMPLETED, 100L,
-                LocalDateTime.now(), null, LocalDateTime.now(),
-                Arrays.asList("node1:8081")
-        );
-
-        doThrow(new RuntimeException("Database error")).when(backupNodeService).storeBackup(any());
-
-        // Act & Assert - should not throw
-        assertThatCode(() -> backupManagerService.distributeBackup(dto))
-                .doesNotThrowAnyException();
-
-        verify(backupNodeService, times(1)).storeBackup(dto); // attempted
-        verify(restTemplate, times(1)).postForEntity(anyString(), eq(dto), eq(Void.class));
         verifyNoMoreInteractions(restTemplate);
         verifyNoInteractions(backupNodeService);
     }
@@ -143,14 +92,14 @@ class BackupManagerServiceTest {
         backupManagerService.distributeBackup(dto);
 
         // Assert
-        verify(backupNodeService, times(1)).storeBackup(dto);
+        verify(backupNodeService, times(0)).storeBackup(dto);
         verify(restTemplate, times(3)).postForEntity(urlCaptor.capture(), eq(dto), eq(Void.class));
 
         List<String> urls = urlCaptor.getAllValues();
         assertThat(urls).containsExactlyInAnyOrder(
-                "http://alpha:7001/api/v1/backups/sync",
-                "http://beta:7002/api/v1/backups/sync",
-                "http://gamma:7003/api/v1/backups/sync"
+                "http://alpha:7001/api/v1/bn/backups/sync",
+                "http://beta:7002/api/v1/bn/backups/sync",
+                "http://gamma:7003/api/v1/bn/backups/sync"
         );
         verifyNoMoreInteractions(restTemplate);
     }
@@ -183,18 +132,18 @@ class BackupManagerServiceTest {
                 .doesNotThrowAnyException();
 
         // Assert: all nodes were attempted
-        verify(backupNodeService, times(1)).storeBackup(dto);
+        verify(backupNodeService, times(0)).storeBackup(dto);
         verify(restTemplate, times(nodes.size())).postForEntity(anyString(), eq(dto), eq(Void.class));
 
         // Optionally capture to ensure all expected URLs were hit
         ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
         verify(restTemplate, times(nodes.size())).postForEntity(urlCaptor.capture(), eq(dto), eq(Void.class));
         assertThat(urlCaptor.getAllValues()).containsExactlyInAnyOrder(
-                "http://n1:8001/api/v1/backups/sync",
-                "http://n2:8002/api/v1/backups/sync",
-                "http://n3:8003/api/v1/backups/sync",
-                "http://n4:8004/api/v1/backups/sync",
-                "http://n5:8005/api/v1/backups/sync"
+                "http://n1:8001/api/v1/bn/backups/sync",
+                "http://n2:8002/api/v1/bn/backups/sync",
+                "http://n3:8003/api/v1/bn/backups/sync",
+                "http://n4:8004/api/v1/bn/backups/sync",
+                "http://n5:8005/api/v1/bn/backups/sync"
         );
 
         verifyNoMoreInteractions(restTemplate);

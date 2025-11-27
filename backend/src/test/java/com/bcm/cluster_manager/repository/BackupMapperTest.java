@@ -1,9 +1,6 @@
 package com.bcm.cluster_manager.repository;
 
-import com.bcm.cluster_manager.model.database.Backup;
-import com.bcm.cluster_manager.model.database.Client;
-import com.bcm.cluster_manager.model.database.Task;
-import com.bcm.cluster_manager.model.database.BackupState;
+import com.bcm.cluster_manager.model.database.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -98,6 +95,7 @@ class BackupMapperTest {
         task.setClientId(clientId);
         task.setSource("JUnit");
         task.setEnabled(true);
+        task.setInterval(TaskFrequency.DAILY);
 
         // Falls dein Task andere Zeittypen nutzt (z.B. Instant/OffsetDateTime), bitte anpassen:
         Instant now = Instant.now();

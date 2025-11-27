@@ -56,7 +56,7 @@ class NodeStartupRegisterTests {
         verify(restTemplateMock, times(1))
                 .postForEntity(urlCaptor.capture(), requestCaptor.capture(), eq(Void.class));
 
-        assertThat(urlCaptor.getValue()).isEqualTo("http://localhost:8080/api/v1/register");
+        assertThat(urlCaptor.getValue()).isEqualTo("http://localhost:8080/api/v1/cm/register");
         assertThat(requestCaptor.getValue().getAddress()).isEqualTo("localhost:8081");
     }
 

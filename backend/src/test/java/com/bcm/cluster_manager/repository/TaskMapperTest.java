@@ -2,6 +2,7 @@ package com.bcm.cluster_manager.repository;
 
 import com.bcm.cluster_manager.model.database.Client;
 import com.bcm.cluster_manager.model.database.Task;
+import com.bcm.cluster_manager.model.database.TaskFrequency;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -31,6 +32,7 @@ class TaskMapperTest {
         t.setClientId(clientId);
         t.setSource("JUnit");
         t.setEnabled(true);
+        t.setInterval(TaskFrequency.DAILY);
 
         // Falls dein Task andere Zeittypen nutzt (z.B. Instant/OffsetDateTime), bitte anpassen:
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);

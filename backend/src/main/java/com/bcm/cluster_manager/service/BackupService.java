@@ -168,7 +168,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         try {
             BackupDTO savedDto = store(dto);
             restTemplate.postForEntity(
-                    "http://" + backupManagerBaseUrl + "/api/v1/backups",
+                    "http://" + backupManagerBaseUrl + "/api/v1/bm/backups",
                     savedDto,
                     Void.class
             );

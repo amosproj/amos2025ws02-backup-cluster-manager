@@ -29,7 +29,7 @@ public class NodeStartupRegister {
     @Bean
     public ApplicationRunner registerAtStartup() {
         return args -> {
-            String cmRegisterUrl = "http://" + cmPublicAddress + "/api/v1/register";
+            String cmRegisterUrl = "http://" + cmPublicAddress + "/api/v1/cm/register";
 
             log.info("Node starting with address: {}", nodePublicAddress);
             log.info("CM register endpoint: {}", cmRegisterUrl);

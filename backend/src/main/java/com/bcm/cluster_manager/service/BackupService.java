@@ -13,7 +13,7 @@ import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.cluster_manager.model.database.Backup;
 import com.bcm.cluster_manager.model.database.BackupState;
 import com.bcm.shared.pagination.PaginationProvider;
-import com.bcm.shared.sort.BackupComparators;
+import com.bcm.cluster_manager.service.sort.BackupComparators;
 import com.bcm.shared.sort.SortProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;

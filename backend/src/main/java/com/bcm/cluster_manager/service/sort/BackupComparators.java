@@ -1,6 +1,7 @@
-package com.bcm.shared.sort;
+package com.bcm.cluster_manager.service.sort;
 
 import com.bcm.shared.model.api.BackupDTO;
+import com.bcm.shared.sort.SortProvider;
 
 import java.util.Comparator;
 import java.util.Map;

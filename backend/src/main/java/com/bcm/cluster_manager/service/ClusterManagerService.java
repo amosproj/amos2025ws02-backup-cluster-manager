@@ -5,7 +5,7 @@ import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.model.api.NodeStatus;
-import com.bcm.shared.sort.NodeComparators;
+import com.bcm.cluster_manager.service.sort.NodeComparators;
 import com.bcm.shared.sort.SortProvider;
 
 

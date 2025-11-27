@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
-import { UsersModal } from '../../shared/components/users-modal/users-modal';
+import {Component, EventEmitter, signal, ViewChild} from '@angular/core';
+import {UsersModal} from '../../shared/components/users-modal/users-modal';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {UsersService} from './users.service';
+import {firstValueFrom} from 'rxjs';
 
 @Component({
   selector: 'app-users',
@@ -10,6 +11,7 @@ import {UsersService} from './users.service';
   styleUrl: './users.css',
 })
 export class Users {
+  @ViewChild(DataTable) dataTable!: DataTable;
   constructor(private usersService: UsersService) {
   }
 
@@ -42,5 +44,15 @@ export class Users {
 
   fetchUsers = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder: string) => {
     return this.usersService.getUsers(page, itemsPerPage, filters, search, sortBy, sortOrder);
+  }
+
+  onDeleteSelection =async (rows: any[]) => {
+    const deletions = rows.map((row:any) => firstValueFrom(this.usersService.deleteUser(row.id)));
+    await Promise.all(deletions);
+    this.dataTable.loadData();
+  }
+
+  onUserDataChanges(){
+    this.dataTable.loadData();
   }
 }

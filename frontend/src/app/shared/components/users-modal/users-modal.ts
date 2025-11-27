@@ -21,6 +21,7 @@ export class UsersModal implements OnChanges, OnInit {
   @Input() mode: 'create' | 'edit' | 'delete' = 'create';
   @Input() user: any | null = null;
   @Output() closed = new EventEmitter<void>();
+  @Output() dataChanged = new EventEmitter<void>();
 
   formData: {
     id?: number;
@@ -95,12 +96,13 @@ export class UsersModal implements OnChanges, OnInit {
     const payload = { ...this.user };
     this.api.post(`users/${this.formData.groupId}`, payload).subscribe({
       next: () => {
+        this.dataChanged.emit();
         this.close();
       },
       error: (err: any) => {
         console.error('Failed to create user', err);
       }
-    });    
+    });
   }
 
   onNameInput(value: string) {
@@ -135,27 +137,13 @@ export class UsersModal implements OnChanges, OnInit {
     console.log("payload", payload);
     this.api.put(`users/${this.user.id}`, payload).subscribe({
       next: () => {
+        this.dataChanged.emit();
         this.close();
       },
       error: (err: any) => {
         console.error('Failed to create user', err);
       }
-    });    
-  }
-
-  onDeleteSubmit() {
-    this.user = this.formData;
-    if (this.user) {
-      const userId = this.user.id;
-      this.api.delete(`users/${userId}`).subscribe({
-        next: () => {
-          this.close();
-        },
-        error: (err: any) => {
-          console.error('Failed to delete user', err);
-        }
-      });
-    }
+    });
   }
 
   close() {

@@ -1,5 +1,6 @@
-package com.bcm.backup_manager;
+package com.bcm.backup_manager.controller;
 
+import com.bcm.backup_manager.service.BackupManagerService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.cluster_manager.model.api.BackupDeleteDTO;
 import org.springframework.http.ResponseEntity;

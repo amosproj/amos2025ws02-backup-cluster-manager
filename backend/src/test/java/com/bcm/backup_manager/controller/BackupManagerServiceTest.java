@@ -1,6 +1,6 @@
 package com.bcm.backup_manager.controller;
 
-import com.bcm.backup_manager.BackupManagerService;
+import com.bcm.backup_manager.service.BackupManagerService;
 import com.bcm.backup_node.service.BackupNodeService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.cluster_manager.model.database.BackupState;

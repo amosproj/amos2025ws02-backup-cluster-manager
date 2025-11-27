@@ -1,4 +1,4 @@
-package com.bcm.backup_manager;
+package com.bcm.backup_manager.service;
 import com.bcm.shared.model.api.BackupDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;

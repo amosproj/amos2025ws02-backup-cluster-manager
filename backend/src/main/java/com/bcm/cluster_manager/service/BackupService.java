@@ -211,13 +211,13 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         try {
             // build list of node addresses that should delete this backup
             List<String> nodesToDeleteOn = registryService.getAllNodes().stream()
-                    .map(n -> n.getAddress())
+                    .map(NodeDTO::getAddress)
                     .toList();
 
             BackupDeleteDTO request = new BackupDeleteDTO(backupId, nodesToDeleteOn);
 
             // 2. notify backup_manager with backupId + nodes
-            String url = "http://" + backupManagerBaseUrl + "/api/v1/backups/delete";
+            String url = "http://" + backupManagerBaseUrl + "/api/v1/bm/backups/delete";
             restTemplate.postForEntity(url, request, Void.class);
 
             // 3. delete backup metadata from CM

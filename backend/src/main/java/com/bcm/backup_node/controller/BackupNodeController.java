@@ -17,6 +17,11 @@ public class BackupNodeController {
         this.backupNodeService = backupNodeService;
     }
 
+    @DeleteMapping("/backups/{id}")
+    public void deleteBackup(@PathVariable Long id) {
+        backupNodeService.deleteBackupData(id);
+    }
+
     @GetMapping("/backupNode/test")
     public String test(){
         return "This is a backup node endpoint";

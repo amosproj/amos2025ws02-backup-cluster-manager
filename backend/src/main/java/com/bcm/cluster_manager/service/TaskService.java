@@ -6,7 +6,6 @@ import com.bcm.cluster_manager.model.database.TaskFrequency;
 import com.bcm.cluster_manager.repository.TaskMapper;
 import com.bcm.cluster_manager.service.sort.TaskComparators;
 import com.bcm.shared.filter.Filter;
-import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.sort.SortProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +24,7 @@ public class TaskService implements PaginationProvider<TaskDTO> {
     private TaskMapper taskMapper;
 
     /**
-     *
      * Pagination
-     *
      */
 
     @Override
@@ -59,7 +56,7 @@ public class TaskService implements PaginationProvider<TaskDTO> {
     }
 
     public List<TaskDTO> getAllBackups() {
-        List<Task> tasks =  taskMapper.findAll();
+        List<Task> tasks = taskMapper.findAll();
         List<TaskDTO> taskDTOS = new ArrayList<>();
 
         for (Task task : tasks) {
@@ -79,8 +76,11 @@ public class TaskService implements PaginationProvider<TaskDTO> {
                 .filter(s -> !s.isEmpty())
                 .map(String::toUpperCase)
                 .map(s -> {
-                    try { return TaskFrequency.valueOf(s); }
-                    catch (IllegalArgumentException ex) { return null; }
+                    try {
+                        return TaskFrequency.valueOf(s);
+                    } catch (IllegalArgumentException ex) {
+                        return null;
+                    }
                 })
                 .filter(state -> state != null)
                 .distinct()

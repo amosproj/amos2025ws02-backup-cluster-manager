@@ -7,6 +7,7 @@ import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class ClusterManagerController {
     @Autowired
     private SyncService syncService;
 
+
     @GetMapping("/nodes")
     public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination) {
         return clusterManagerService.getPaginatedItems(pagination);
@@ -35,5 +37,4 @@ public class ClusterManagerController {
         // push updated tables to all nodes
         syncService.pushTablesToAllNodes();
     }
-
 }

@@ -1,27 +1,28 @@
 package com.bcm.cluster_manager.service;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-
+import com.bcm.cluster_manager.model.api.BackupDeleteDTO;
 import com.bcm.cluster_manager.model.api.CreateBackupRequest;
+import com.bcm.cluster_manager.model.database.Backup;
+import com.bcm.cluster_manager.model.database.BackupState;
 import com.bcm.cluster_manager.repository.BackupMapper;
+import com.bcm.cluster_manager.service.sort.BackupComparators;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
-import com.bcm.cluster_manager.model.database.Backup;
-import com.bcm.cluster_manager.model.database.BackupState;
 import com.bcm.shared.pagination.PaginationProvider;
-import com.bcm.cluster_manager.service.sort.BackupComparators;
 import com.bcm.shared.sort.SortProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
-@Profile("cluster_manager")
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class BackupService implements PaginationProvider<BackupDTO> {
 
@@ -69,7 +70,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
     }
 
     public List<BackupDTO> getAllBackups() {
-        List<Backup> backups =  backupMapper.findAll();
+        List<Backup> backups = backupMapper.findAll();
         List<BackupDTO> backupDTOs = new ArrayList<>();
 
         for (Backup backup : backups) {
@@ -102,8 +103,11 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                 .filter(s -> !s.isEmpty())
                 .map(String::toUpperCase)
                 .map(s -> {
-                    try { return BackupState.valueOf(s); }
-                    catch (IllegalArgumentException ex) { return null; }
+                    try {
+                        return BackupState.valueOf(s);
+                    } catch (IllegalArgumentException ex) {
+                        return null;
+                    }
                 })
                 .filter(state -> state != null)
                 .distinct()
@@ -164,7 +168,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         try {
             BackupDTO savedDto = store(dto);
             restTemplate.postForEntity(
-                    "http://" + backupManagerBaseUrl + "/api/v1/backupsData",
+                    "http://" + backupManagerBaseUrl + "/api/v1/backups",
                     savedDto,
                     Void.class
             );
@@ -200,6 +204,28 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                 dto.getReplicationNodes()
         );
 
+    }
+
+    public void deleteBackup(Long backupId) {
+
+        try {
+            // build list of node addresses that should delete this backup
+            List<String> nodesToDeleteOn = registryService.getAllNodes().stream()
+                    .map(n -> n.getAddress())
+                    .toList();
+
+            BackupDeleteDTO request = new BackupDeleteDTO(backupId, nodesToDeleteOn);
+
+            // 2. notify backup_manager with backupId + nodes
+            String url = "http://" + backupManagerBaseUrl + "/api/v1/backups/delete";
+            restTemplate.postForEntity(url, request, Void.class);
+
+            // 3. delete backup metadata from CM
+            backupMapper.delete(backupId);
+
+        } catch (Exception e) {
+            System.err.println("Failed to delete backup via " + backupManagerBaseUrl + ": " + e.getMessage());
+        }
     }
 
     public static LocalDateTime toLdt(Instant t) {

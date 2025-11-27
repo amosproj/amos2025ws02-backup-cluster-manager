@@ -9,8 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,10 +26,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * This focuses on validating the `findById` method, which retrieves a backup by its ID.
  */
 @SpringBootTest
-@AutoConfigureTestDatabase(replace = Replace.ANY)
+@Testcontainers
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 @Transactional
 @Rollback
 class BackupMapperTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @Autowired
     private BackupMapper backupMapper;
@@ -129,5 +138,43 @@ class BackupMapperTest {
 
         // Assert
         assertThat(foundBackup).isNull();
+    }
+
+    @Test
+    void insert_shouldPersistBackupAndGenerateId() {
+        // Arrange: create client + task, because backups reference both
+        Client client = createTestClient();
+        Task task = createTestTask(client.getId());
+
+        Backup backup = new Backup();
+        backup.setClientId(client.getId());
+        backup.setTaskId(task.getId());
+
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        backup.setStartTime(now);
+        backup.setStopTime(now.plusSeconds(3600)); // 1 hour later
+        backup.setSizeBytes(42L);
+        backup.setState(BackupState.COMPLETED);   // valid value from backup_state enum
+        backup.setMessage("insert integration test");
+        backup.setCreatedAt(now);
+
+        // Act
+        int rows = backupMapper.insert(backup);
+
+        // Assert: DB insert happened, ID generated, values round-trip correctly
+        assertThat(rows).isEqualTo(1);
+        assertThat(backup.getId()).isNotNull();
+
+        Backup persisted = backupMapper.findById(backup.getId());
+        assertThat(persisted).isNotNull();
+        assertThat(persisted.getId()).isEqualTo(backup.getId());
+        assertThat(persisted.getClientId()).isEqualTo(client.getId());
+        assertThat(persisted.getTaskId()).isEqualTo(task.getId());
+        assertThat(persisted.getStartTime()).isEqualTo(backup.getStartTime());
+        assertThat(persisted.getStopTime()).isEqualTo(backup.getStopTime());
+        assertThat(persisted.getSizeBytes()).isEqualTo(backup.getSizeBytes());
+        assertThat(persisted.getState()).isEqualTo(BackupState.COMPLETED);
+        assertThat(persisted.getMessage()).isEqualTo(backup.getMessage());
+        assertThat(persisted.getCreatedAt()).isEqualTo(backup.getCreatedAt());
     }
 }

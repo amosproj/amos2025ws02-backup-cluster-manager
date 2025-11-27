@@ -2,7 +2,6 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.repository.UserGroupRelationMapper;
 import com.bcm.cluster_manager.repository.UserMapper;
-import com.bcm.cluster_manager.service.UserMService;
 import com.bcm.cluster_manager.model.database.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +15,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UserMServiceTest {
+class UserServiceTest {
 
     @Mock
     private UserMapper userMapper;
@@ -25,7 +24,7 @@ class UserMServiceTest {
     private UserGroupRelationMapper userGroupRelationMapper;
 
     @InjectMocks
-    private UserMService userMService; // nimmt den Konstruktor und injiziert Mocks
+    private UserService userService; // nimmt den Konstruktor und injiziert Mocks
 
     @Test
     void addUserAndAssignGroup_insertsUser_andCreatesRelation() {
@@ -55,7 +54,7 @@ class UserMServiceTest {
         ))).thenReturn(1);
 
         // Act
-        User result = userMService.addUserAndAssignGroup(newUser, groupId);
+        User result = userService.addUserAndAssignGroup(newUser, groupId);
 
         // Assert – Ergebnis
         assertNotNull(result);

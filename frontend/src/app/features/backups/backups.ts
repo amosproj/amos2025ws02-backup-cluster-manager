@@ -1,10 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { ApiService } from '../../core/services/api.service';
-import { BackupsService } from './backups.service';
-import { AsyncPipe } from '@angular/common';
-import { DataTable } from '../../shared/components/data-table/data-table';
-import { SortOrder} from '../../shared/types/SortTypes';
-import {ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import {Component, signal, ViewChild, OnInit} from '@angular/core';
+import {ApiService} from '../../core/services/api.service';
+import {BackupsService} from './backups.service';
+import {AsyncPipe} from '@angular/common';
+import {DataTable} from '../../shared/components/data-table/data-table';
+import {SortOrder} from '../../shared/types/SortTypes';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 
 @Component({
   selector: 'app-backups',
@@ -17,6 +17,8 @@ import {ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular
   styleUrl: './backups.css',
 })
 export class Backups {
+  @ViewChild(DataTable) dataTable!: DataTable;
+
   tableColumns = signal([
     { field: 'id', header: 'ID' },
     { field: 'clientId', header: 'Client ID' },
@@ -26,6 +28,35 @@ export class Backups {
     { field: 'startTime', header: 'Start Time' }
   ]);
 
+  selectedBackups: any[] = [];
+  onSelectionChange(rows: any[]): void {
+    this.selectedBackups = rows;
+  }
+
+  onDeleteSelection(rows: any[]): void {
+    if (!rows.length) return;
+
+    const ids = rows.map(r => r.id);
+    let completed = 0;
+
+    ids.forEach(id => {
+      this.backupsService.deleteBackup(id).subscribe({
+        next: () => {
+          completed++;
+
+          // Refresh only once, after last item is deleted
+          if (completed === ids.length) {
+            if (this.dataTable) {
+              this.dataTable.loadData();
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting backup:', error);
+        }
+      });
+    });
+  }
   //  filter
   tableFilters = signal([
     {
@@ -76,12 +107,17 @@ export class Backups {
     this.apiService.post('backup', this.addForm.value).subscribe({
       next: () => {
         this.closeAddModal();
+
       },
     });
+
     this.backupsService.createBackup(this.addForm.value).subscribe({
       next: (response) => {
         //console.log('Backup created:', response);
         this.closeAddModal();
+        if (this.dataTable) {
+          this.dataTable.loadData();
+        }
       },
       error: (error) => {
         console.error('Error creating backup:', error);

@@ -27,8 +27,10 @@ export class DataTable implements OnInit, OnChanges {
   @Input() columns: { field: string, header: string }[] = [];
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
+  @Input() isNodeButtonEnabled = true;
   @Input() fetchData!: (page: number, itemsPerPage: number, filter:string, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
   @Input() loading: boolean | null = false;
+  @Output() selectionChange = new EventEmitter<any[]>();
 
   data: any[] = [];
   currentPage: number = 1;
@@ -36,6 +38,7 @@ export class DataTable implements OnInit, OnChanges {
   totalPages: number = 1;
   availablePageSizes = [1,2,3,15, 25, 50, 100];
   filterParam = "";
+  selectedIds = new Set<string>();
 
   @Input() addButtonText = 'Add';
 
@@ -44,7 +47,7 @@ export class DataTable implements OnInit, OnChanges {
   @Output() add = new EventEmitter<void>();
   @Output() addClicked = new EventEmitter<void>();
   currentAddButtonText = this.addButtonText;
-
+  @Output() deleteSelection = new EventEmitter<any[]>();
 
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
@@ -62,6 +65,49 @@ export class DataTable implements OnInit, OnChanges {
     this.loadData();
   }
 
+  isRowSelected(row: any): boolean {
+    return this.selectedIds.has(row.id);
+  }
+
+  allRowsSelected(): boolean {
+    const data = this.tableData();
+    return data.length > 0 && data.every(row => this.selectedIds.has(row.id));
+  }
+
+  toggleSelectAll(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const checked = input?.checked ?? false;
+
+    if (checked) {
+      this.tableData().forEach(row => this.selectedIds.add(row.id));
+    } else {
+      this.selectedIds.clear();
+    }
+  }
+
+  hasSelection(): boolean {
+    return this.selectedIds && this.selectedIds.size > 0;
+  }
+
+  toggleRowSelection(row: any, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const checked = input?.checked ?? false;
+
+    if (checked) {
+      this.selectedIds.add(row.id);
+    } else {
+      this.selectedIds.delete(row.id);
+    }
+  }
+
+
+  private emitSelectionChange(): void {
+    const data = this.tableData();
+    const selectedRows = data.filter(row => this.selectedIds.has(row.id));
+    this.selectionChange.emit(selectedRows);
+  }
+
+
   loadData() {
     this.loading = true;
     this.fetchData(this.currentPage, this.itemsPerPage, this.filterParam, this.currentSearchQuery, this.currentSortBy(),this.currentSortOrder()).subscribe({
@@ -77,6 +123,10 @@ export class DataTable implements OnInit, OnChanges {
         this.error.set("Error: " + error.message);
       }
     })
+  }
+  onDeleteClick(): void {
+    const selectedRows = this.tableData().filter(row => this.selectedIds.has(row.id));
+    this.deleteSelection.emit(selectedRows);
   }
 
   // Lifecycle hook to detect changes in input properties

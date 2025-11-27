@@ -19,6 +19,17 @@ public class BackupController {
     private BackupService backupService;
 
 
+    @DeleteMapping("/backups/{id}")
+    public ResponseEntity<Void> deleteBackup(@PathVariable Long id) {
+        try {
+            backupService.deleteBackup(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/backups")
     public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
         return backupService.getPaginatedItems(pagination);

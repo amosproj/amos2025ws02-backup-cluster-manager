@@ -28,4 +28,19 @@ public class BackupManagerService {
         }
 
     }
+
+    public void deleteBackup(Long backupId, List<String> nodeAddresses) {
+
+        // delete on other nodes from the list CM provided
+        if (nodeAddresses != null) {
+            for (String nodeAddress : nodeAddresses) {
+                try {
+                    String url = "http://" + nodeAddress + "/api/v1/backups/" + backupId;
+                    restTemplate.delete(url);
+                } catch (Exception e) {
+                    System.out.println("Failed to delete backup on " + nodeAddress + ": " + e.getMessage());
+                }
+            }
+        }
+    }
 }

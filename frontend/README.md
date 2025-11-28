@@ -30,7 +30,7 @@
 │   │   │   └── clusters.module.ts
 │   │   └── nodes
 │   │       ├── nodes.component.ts
-│   │       ├── nodes.service.ts
+│   │       ├── tasks.service.ts
 │   │       └── nodes.module.ts
 │   │
 │   ├── app.component.ts

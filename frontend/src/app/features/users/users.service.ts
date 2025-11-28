@@ -18,6 +18,6 @@ export class UsersService {
       sortBy:sortBy.toString(),
       sortOrder:sortOrder.toString(),
     }
-    return this.apiService.get('userlist',{params});
+    return this.apiService.get('users/userlist',{params});
   }
 }

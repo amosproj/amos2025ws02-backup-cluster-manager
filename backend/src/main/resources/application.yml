@@ -57,7 +57,8 @@ spring:
   config:
     activate:
       on-profile: backup_manager
-
+  flyway:
+    locations: classpath:db/migration/backup_manager
 ---
 spring:
   config:

@@ -5,13 +5,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("cluster_manager")
 class NodeStartupRegisterTests {
 
     private NodeStartupRegister nodeStartupRegister;
@@ -58,7 +56,7 @@ class NodeStartupRegisterTests {
         verify(restTemplateMock, times(1))
                 .postForEntity(urlCaptor.capture(), requestCaptor.capture(), eq(Void.class));
 
-        assertThat(urlCaptor.getValue()).isEqualTo("http://localhost:8080/api/v1/register");
+        assertThat(urlCaptor.getValue()).isEqualTo("http://localhost:8080/api/v1/cm/register");
         assertThat(requestCaptor.getValue().getAddress()).isEqualTo("localhost:8081");
     }
 

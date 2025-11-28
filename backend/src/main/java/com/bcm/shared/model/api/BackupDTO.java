@@ -1,6 +1,6 @@
 package com.bcm.shared.model.api;
 
-import com.bcm.shared.model.database.BackupState;
+import com.bcm.cluster_manager.model.database.BackupState;
 
 import java.time.LocalDateTime;
 import java.util.List;

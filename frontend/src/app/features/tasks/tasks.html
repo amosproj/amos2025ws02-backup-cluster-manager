@@ -1,0 +1,78 @@
+<app-data-table
+  [fetchData]="fetchTasks"
+  [columns]="tableColumns()"
+  [filters]="tableFilters()"
+  [loading]="loading$ | async"
+  [addButtonText]="'Add Task'"
+  (add)="openAddModal()"
+/>
+
+@if (showAddModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="fixed inset-0 bg-black opacity-50" (click)="closeAddModal()"></div>
+    <div class="relative bg-primary-2 text-foreground rounded-lg p-6 w-full max-w-md shadow-lg">
+      <h2 class="text-lg font-semibold mb-4">Add Task</h2>
+      <form [formGroup]="addForm" (ngSubmit)="submitTask()" class="space-y-4">
+
+        <div>
+          <label class="block text-sm mb-1">Name</label>
+          <input type="text"
+                 formControlName="name"
+                 class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Client</label>
+          <select formControlName="clientId"
+                  class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none">
+            <option value="" disabled selected>Bitte wählen</option>
+            @for (client of clients(); track client.id) {
+              <option [value]="client.id">{{client.nameOrIp}}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Source</label>
+          <input type="text"
+                 formControlName="source"
+                 class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Enabled</label>
+          <input type="checkbox"
+                 formControlName="enabled"
+                 class="accent-primary-3"
+                 [checked]="addForm.get('enabled')?.value"/>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Interval</label>
+          <select formControlName="interval"
+                  class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none">
+            <option value="" disabled selected>Bitte wählen</option>
+            @for (option of intervalOptions; track option.value) {
+              <option [value]="option.value">{{option.label}}</option>
+            }
+          </select>
+        </div>
+
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button"
+                  class="px-4 h-10 rounded bg-primary-3"
+                  (click)="closeAddModal()">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="px-4 h-10 rounded bg-primary-2 border border-primary-4"
+                  [disabled]="addForm.invalid || (loading$ | async)">
+            Create
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+}

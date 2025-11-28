@@ -1,29 +1,37 @@
 package com.bcm.cluster_manager.service;
 
-import java.util.*;
-
+import com.bcm.cluster_manager.model.api.BackupDeleteDTO;
+import com.bcm.cluster_manager.model.api.CreateBackupRequest;
+import com.bcm.cluster_manager.model.database.Backup;
+import com.bcm.cluster_manager.model.database.BackupState;
+import com.bcm.cluster_manager.repository.BackupMapper;
+import com.bcm.cluster_manager.service.sort.BackupComparators;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.BackupDTO;
-import com.bcm.shared.model.database.Backup;
-import com.bcm.shared.model.database.BackupState;
+import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.PaginationProvider;
-import com.bcm.shared.repository.BackupMapper;
-import com.bcm.shared.sort.BackupComparators;
 import com.bcm.shared.sort.SortProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
-import static com.bcm.shared.service.BackupStorageService.toLdt;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
-@Profile("cluster_manager")
 @Service
 public class BackupService implements PaginationProvider<BackupDTO> {
 
     private final RegistryService registryService;
     private final RestTemplate restTemplate;
     private final BackupMapper backupMapper;
+
+    @Value("${application.bm.public-address:localhost:8082}")
+    private String backupManagerBaseUrl;
 
     public BackupService(RegistryService registryService,
                          BackupMapper backupMapper,
@@ -62,7 +70,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
     }
 
     public List<BackupDTO> getAllBackups() {
-        List<Backup> backups =  backupMapper.findAll();
+        List<Backup> backups = backupMapper.findAll();
         List<BackupDTO> backupDTOs = new ArrayList<>();
 
         for (Backup backup : backups) {
@@ -95,8 +103,11 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                 .filter(s -> !s.isEmpty())
                 .map(String::toUpperCase)
                 .map(s -> {
-                    try { return BackupState.valueOf(s); }
-                    catch (IllegalArgumentException ex) { return null; }
+                    try {
+                        return BackupState.valueOf(s);
+                    } catch (IllegalArgumentException ex) {
+                        return null;
+                    }
                 })
                 .filter(state -> state != null)
                 .distinct()
@@ -126,6 +137,99 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                     .toList();
         }
         return backups;
+    }
+
+
+    public BackupDTO createBackup(CreateBackupRequest request) {
+        // select nodes
+        List<String> activeNodes = registryService.getActiveNodes().stream()
+                .map(NodeDTO::getAddress)
+                .toList();
+
+        //System.out.println("Active nodes: " + activeNodes);
+
+        if (activeNodes.isEmpty()) {
+            throw new RuntimeException("No active nodes available");
+        }
+
+        BackupDTO dto = new BackupDTO(
+                null,
+                request.getClientId(),
+                request.getTaskId(),
+                "Backup-" + request.getTaskId(),
+                BackupState.RUNNING,
+                request.getSizeBytes(),
+                null,
+                null,
+                LocalDateTime.now(),
+                activeNodes
+        );
+
+        try {
+            BackupDTO savedDto = store(dto);
+            restTemplate.postForEntity(
+                    "http://" + backupManagerBaseUrl + "/api/v1/bm/backups",
+                    savedDto,
+                    Void.class
+            );
+            return dto;
+
+        } catch (Exception e) {
+            System.out.println("Failed to forward to backup_manager: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public BackupDTO store(BackupDTO dto) {
+        Backup backup = new Backup();
+        backup.setClientId(dto.getClientId());
+        backup.setTaskId(dto.getTaskId());
+        backup.setSizeBytes(dto.getSizeBytes() != null ? dto.getSizeBytes() : 0L);
+        backup.setStartTime(Instant.now());
+        backup.setState(BackupState.RUNNING);
+        backup.setMessage(null);
+        backup.setCreatedAt(Instant.now());
+
+        backupMapper.insert(backup);
+        return new BackupDTO(
+                backup.getId(),
+                backup.getClientId(),
+                backup.getTaskId(),
+                "Backup-" + backup.getTaskId(),
+                backup.getState(),
+                backup.getSizeBytes(),
+                toLdt(backup.getStartTime()),
+                toLdt(backup.getStopTime()),
+                toLdt(backup.getCreatedAt()),
+                dto.getReplicationNodes()
+        );
+
+    }
+
+    public void deleteBackup(Long backupId) {
+
+        try {
+            // build list of node addresses that should delete this backup
+            List<String> nodesToDeleteOn = registryService.getAllNodes().stream()
+                    .map(NodeDTO::getAddress)
+                    .toList();
+
+            BackupDeleteDTO request = new BackupDeleteDTO(backupId, nodesToDeleteOn);
+
+            // 2. notify backup_manager with backupId + nodes
+            String url = "http://" + backupManagerBaseUrl + "/api/v1/bm/backups/delete";
+            restTemplate.postForEntity(url, request, Void.class);
+
+            // 3. delete backup metadata from CM
+            backupMapper.delete(backupId);
+
+        } catch (Exception e) {
+            System.err.println("Failed to delete backup via " + backupManagerBaseUrl + ": " + e.getMessage());
+        }
+    }
+
+    public static LocalDateTime toLdt(Instant t) {
+        return t == null ? null : LocalDateTime.ofInstant(t, ZoneOffset.UTC);
     }
 
 }

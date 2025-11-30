@@ -7,6 +7,7 @@ import com.bcm.cluster_manager.repository.UserGroupRelationMapper;
 import com.bcm.cluster_manager.repository.UserMapper;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +24,12 @@ public class UserService implements PaginationProvider<UserDTO> {
 
     final UserMapper userMapper;
     final UserGroupRelationMapper userGroupRelationMapper;
+    final PasswordEncoder passwordEncoder;
 
-    public UserService(UserMapper userMapper, UserGroupRelationMapper userGroupRelationMapper) {
+    public UserService(UserMapper userMapper, UserGroupRelationMapper userGroupRelationMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
         this.userGroupRelationMapper = userGroupRelationMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -82,6 +85,7 @@ public class UserService implements PaginationProvider<UserDTO> {
     @Transactional
     public User addUserAndAssignGroup(User user, Long groupID) {
         // Groups give users permissions. So a user without a group would be awkward.
+        user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         userMapper.insert(user);
         UserGroupRelation userGroupRelation = new UserGroupRelation();
         userGroupRelation.setUserId(user.getId());

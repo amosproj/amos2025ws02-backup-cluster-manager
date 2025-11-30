@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.controller;
 
 import com.bcm.cluster_manager.model.api.CreateBackupRequest;
+import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.cluster_manager.service.BackupService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.pagination.PaginationRequest;
@@ -24,6 +25,17 @@ public class BackupController {
         try {
             backupService.deleteBackup(id);
             return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/backups/{id}/execute")
+    public ResponseEntity<BackupDTO> executeBackup(@PathVariable Long id, @RequestBody ExecuteBackupRequest req) {
+        try {
+            BackupDTO result = backupService.executeBackup(id, req.getDuration(), req.getShouldSucceed());
+            return ResponseEntity.accepted().body(result);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

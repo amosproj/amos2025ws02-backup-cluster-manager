@@ -2,6 +2,7 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.model.api.BackupDeleteDTO;
 import com.bcm.cluster_manager.model.api.CreateBackupRequest;
+import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.cluster_manager.model.database.Backup;
 import com.bcm.cluster_manager.model.database.BackupState;
 import com.bcm.cluster_manager.repository.BackupMapper;
@@ -12,7 +13,8 @@ import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.sort.SortProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -178,6 +180,99 @@ public class BackupService implements PaginationProvider<BackupDTO> {
             System.out.println("Failed to forward to backup_manager: " + e.getMessage());
             throw e;
         }
+    }
+
+    public BackupDTO executeBackup(Long id, Long duration, Boolean shouldSucceed) {
+        try {
+            // Update CM metadata to RUNNING
+            Backup b = updateBackupMetadata(id, BackupState.RUNNING, "Backup is running", Instant.now(), null);
+            System.out.println("CM metadata updated to RUNNING for backup " + id);
+
+            // async forwarding
+            executeAndUpdate(id, duration, shouldSucceed, b);
+
+            return toDTO(b);
+
+        } catch (Exception e) {
+            System.out.println("✗ Failed to execute backup: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Async
+    public void executeAndUpdate(Long id, Long duration, Boolean shouldSucceed, Backup b) {
+        try {
+            // Build list of node addresses
+            List<String> nodes = registryService.getActiveNodes().stream()
+                    .map(NodeDTO::getAddress)
+                    .toList();
+
+            if (nodes.isEmpty()) {
+                System.out.println("No active nodes available");
+                return;
+            }
+
+            ExecuteBackupRequest request = new ExecuteBackupRequest(duration, shouldSucceed, nodes);
+
+            // Notify backup_manager
+            String url = "http://" + backupManagerBaseUrl + "/api/v1/bm/backups/" + id + "/execute";
+            ResponseEntity<BackupDTO> response = restTemplate.postForEntity(url, request, BackupDTO.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && shouldSucceed) {
+                // Update CM metadata based on BM result
+                updateBackupMetadata(id, BackupState.COMPLETED, "Backup completed successfully", null, Instant.now());
+                System.out.println("CM metadata updated to COMPLETED for backup " + id);
+            } else {
+                updateBackupMetadata(id, BackupState.FAILED, "Backup failed", null, Instant.now());
+            }
+
+            System.out.println("Forwarded execute to backup_manager");
+
+        } catch (Exception e) {
+            System.out.println("Failed to notify backup_manager: " + e.getMessage());
+        }
+    }
+
+
+    private Backup updateBackupMetadata(Long id, BackupState state, String message, Instant startTime, Instant stopTime) {
+        try {
+            Backup b = backupMapper.findById(id);
+            if (b != null) {
+
+                b.setState(state);
+                b.setMessage(message);
+
+                if (startTime != null) {
+                    b.setStartTime(startTime);
+                }
+
+                if (stopTime != null) {
+                    b.setStopTime(stopTime);
+                }
+
+                backupMapper.update(b);
+                return b;
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to update metadata for backup " + id);
+            throw e;
+        }
+        return null;
+    }
+
+    private BackupDTO toDTO(Backup metadata) {
+        return new BackupDTO(
+                metadata.getId(),
+                metadata.getClientId(),
+                metadata.getTaskId(),
+                "Backup-" + metadata.getId(),
+                metadata.getState(),
+                metadata.getSizeBytes(),
+                toLdt(metadata.getStartTime()),
+                toLdt(metadata.getStopTime()),
+                toLdt(metadata.getCreatedAt()),
+                null
+        );
     }
 
     public BackupDTO store(BackupDTO dto) {

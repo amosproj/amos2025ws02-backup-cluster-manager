@@ -1,5 +1,7 @@
 package com.bcm.backup_manager.service;
+import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.model.api.BackupDTO;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,5 +46,33 @@ public class BackupManagerService {
                 }
             }
         }
+    }
+
+    public boolean execute(Long id, ExecuteBackupRequest request) {
+
+        List<String> nodes = request.getNodes();
+        boolean allSucceeded = true;
+
+        for (String nodeAddress : nodes) {
+
+            try {
+                String url = "http://" + nodeAddress + backupNodeApiPath + "/backups/" + id + "/execute";
+
+                // Wait for BM response
+                ResponseEntity<Void> response = restTemplate.postForEntity(
+                        url,
+                        request,
+                        Void.class
+                );
+
+                if (!response.getStatusCode().is2xxSuccessful()) {
+                    allSucceeded = false;
+                }
+            }catch (Exception e) {
+                allSucceeded = false;
+            }
+        }
+
+        return allSucceeded && request.getShouldSucceed();
     }
 }

@@ -73,6 +73,8 @@ export class Backups {
   showAddModal = signal(false);
   addForm!: FormGroup;
 
+  private refreshIntervalId: any;
+
   constructor(
     private backupsService: BackupsService,
     private apiService: ApiService,
@@ -130,5 +132,18 @@ export class Backups {
 
   }
 
+  ngOnInit(): void {
+    this.refreshIntervalId = setInterval(() => {
+      if (this.dataTable) {
+        this.dataTable.loadData();
+      }
+    }, 5000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+    }
+  }
 
 }

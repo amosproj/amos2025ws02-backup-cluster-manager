@@ -159,7 +159,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                 request.getClientId(),
                 request.getTaskId(),
                 "Backup-" + request.getTaskId(),
-                BackupState.RUNNING,
+                BackupState.QUEUED,
                 request.getSizeBytes(),
                 null,
                 null,
@@ -242,12 +242,16 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                 b.setState(state);
                 b.setMessage(message);
 
-                if (startTime != null) {
-                    b.setStartTime(startTime);
-                }
-
-                if (stopTime != null) {
-                    b.setStopTime(stopTime);
+                if (state == BackupState.RUNNING) {
+                    b.setStartTime(startTime != null ? startTime : Instant.now());
+                    b.setStopTime(null);
+                } else {
+                    if (startTime != null) {
+                        b.setStartTime(startTime);
+                    }
+                    if (stopTime != null) {
+                        b.setStopTime(stopTime);
+                    }
                 }
 
                 backupMapper.update(b);
@@ -281,7 +285,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         backup.setTaskId(dto.getTaskId());
         backup.setSizeBytes(dto.getSizeBytes() != null ? dto.getSizeBytes() : 0L);
         backup.setStartTime(Instant.now());
-        backup.setState(BackupState.RUNNING);
+        backup.setState(BackupState.QUEUED);
         backup.setMessage(null);
         backup.setCreatedAt(Instant.now());
 

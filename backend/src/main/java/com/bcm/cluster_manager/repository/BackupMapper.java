@@ -142,7 +142,7 @@ public interface BackupMapper {
                 stop_time = #{stopTime},
                 size_bytes = #{sizeBytes},
                 state = #{state}::backup_state,
-                message = #{message},
+                message = #{message}
             WHERE id = #{id}
             """)
     int update(Backup b);

@@ -16,11 +16,6 @@ public class BackupManagerController {
         this.backupManagerService = backupManagerService;
     }
 
-    @PostMapping("/backups")
-    public ResponseEntity<Void> createBackup(@RequestBody BackupDTO dto) {
-        backupManagerService.distributeBackup(dto);
-        return ResponseEntity.ok().build();
-    }
 
     @PostMapping("/backups/delete")
     public ResponseEntity<Void> deleteBackup(@RequestBody BackupDeleteDTO request) {

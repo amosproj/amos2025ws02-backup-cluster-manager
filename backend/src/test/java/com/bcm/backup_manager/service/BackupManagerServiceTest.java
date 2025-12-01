@@ -1,6 +1,5 @@
-package com.bcm.backup_manager.controller;
+package com.bcm.backup_manager.service;
 
-import com.bcm.backup_manager.service.BackupManagerService;
 import com.bcm.backup_node.service.BackupNodeService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.cluster_manager.model.database.BackupState;
@@ -15,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatCode;

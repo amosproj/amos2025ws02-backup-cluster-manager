@@ -4,6 +4,9 @@ import {ApiService} from '../../core/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
+import {map} from 'rxjs';
+import {formatDateFields} from '../../shared/utils/date_utils';
+import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 
 @Component({
   selector: 'app-nodes',
@@ -39,6 +42,10 @@ export class Nodes {
   ) {}
 
   fetchNodes = (page: number, itemsPerPage: number, filters: string, search:string, sortBy: string, sortOrder:SortOrder) => {
-    return this.nodesService.getNodes(page, itemsPerPage, filters, search, sortBy, sortOrder);
+    return this.nodesService
+      .getNodes(page, itemsPerPage, filters, search, sortBy, sortOrder)
+      .pipe(map((result: PaginatedResponse) =>
+        formatDateFields(result, ['createdAt'])
+      ));
   }
 }

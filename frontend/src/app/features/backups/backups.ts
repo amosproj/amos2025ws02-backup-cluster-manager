@@ -5,6 +5,8 @@ import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {map} from 'rxjs';
+import {formatDateFields} from '../../shared/utils/date_utils';
 
 @Component({
   selector: 'app-backups',
@@ -25,7 +27,8 @@ export class Backups {
     { field: 'taskId', header: 'Task ID' },
     { field: 'sizeBytes', header: 'Size (Bytes)' },
     { field: 'state', header: 'State' },
-    { field: 'startTime', header: 'Start Time' }
+    { field: 'startTime', header: 'Start Time' },
+    { field: 'stopTime', header: 'End Time' }
   ]);
 
   selectedBackups: any[] = [];
@@ -85,9 +88,10 @@ export class Backups {
 
   }
 
-  fetchBackups = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder:SortOrder) => {
-    return this.backupsService.getBackups(page, itemsPerPage, filters, search, sortBy, sortOrder);
-  }
+  fetchBackups = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder: SortOrder) => {
+    return this.backupsService.getBackups(page, itemsPerPage, filters, search, sortBy, sortOrder).
+    pipe(map((result: any) => formatDateFields(result, ['startTime', 'stopTime'])));
+  };
 
   openAddModal() {
     this.addForm.reset();

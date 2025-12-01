@@ -35,12 +35,13 @@ public class BackupNodeService {
     public void executeBackupSync(Long id, ExecuteBackupRequest request) {
         // Mock implementation: In a real scenario, this would trigger the backup process.
         // wait request.getDuration() and then return
+        long now = System.currentTimeMillis();
 
          try {
             Thread.sleep(request.getDuration());
 
             BackupData data = backupDataMapper.findById(id);
-            data.setBackup_data("{\"mock\": \"backup content updated " + System.currentTimeMillis() + "\"}");
+            data.setBackup_data("{\"mock\": \"backup content updated " + "\"durationMs\": " + request.getDuration() + "," + "\"updatedAt\": " + now + "\"}");
             backupDataMapper.update(data);
 
         } catch (InterruptedException e) {

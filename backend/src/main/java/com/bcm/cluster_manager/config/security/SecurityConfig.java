@@ -17,12 +17,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) // Es wäre möglich CSRF-Token für das FE zu konfigurieren
+                .csrf(AbstractHttpConfigurer::disable) // It would be possible to configure CSRF tokens for the FE
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/logout"
-                        ).permitAll()
+                        ).permitAll() // Only auth/login and auth/logout are accessible without authentication.
+                        // Here more requestMatchers can be added also with hasRole
+                        // but without prefix ROLE_ as that is attached automatically by Spring security
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)

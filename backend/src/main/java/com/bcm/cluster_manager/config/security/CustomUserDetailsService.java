@@ -35,6 +35,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         var relations = userGroupRelationMapper.findByUser(u.getId());
 
+        // ROLE_ prefix is required by Spring Security!
         List<SimpleGrantedAuthority> authorities = relations.stream()
                 .map(rel -> groupMapper.findById(rel.getGroupId()))
                 .map(g -> new SimpleGrantedAuthority("ROLE_" + g.getName().toUpperCase().replace(' ', '_')))

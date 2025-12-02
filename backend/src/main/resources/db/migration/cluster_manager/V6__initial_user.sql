@@ -1,0 +1,2 @@
+INSERT INTO "users" (name,password_hash,enabled,created_at,updated_at)
+ VALUES ('admin','$2a$12$wxrkPYfyqnmZ3s2xEKLtteoVcJWZStxGjFLpaE9UxnQVyLz0UHSNe',true,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP); -- password is 'hello'

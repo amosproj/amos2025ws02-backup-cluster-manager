@@ -52,6 +52,10 @@ spring:
       on-profile: cluster_manager
   flyway:
     locations: classpath:db/migration/cluster_manager
+server:
+  servlet:
+    session:
+      timeout: 30m
 ---
 spring:
   config:

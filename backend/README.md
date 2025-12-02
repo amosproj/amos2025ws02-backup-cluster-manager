@@ -135,3 +135,16 @@ To start the test setup with the current code base for the docker images:
 ```bash
 docker compose --profile test up --build
 ```
+
+## Run Backup Task (test)
+- time-controlled mock backup
+- duration in ms
+- shouldSucceed: true/false
+- id: backup task id
+
+```bash
+curl -X POST   http://localhost:8080/api/v1/cm/backups/{id}/execute
+   -H "Content-Type: application/json"
+      -H "Accept: application/json"
+         -d '{"duration":20000,"shouldSucceed":true}'
+```

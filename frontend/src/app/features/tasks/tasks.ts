@@ -1,4 +1,4 @@
-import {Component, OnInit, signal} from '@angular/core';
+import {Component, OnInit, signal, ViewChild} from '@angular/core';
 import {TasksService } from './tasks.service';
 import {ClientsService} from '../clients/clients.service';
 import {ApiService} from '../../core/services/api.service';
@@ -18,6 +18,7 @@ import {SortOrder} from '../../shared/types/SortTypes';
   styleUrl: './tasks.css',
 })
 export class Tasks implements OnInit {
+  @ViewChild(DataTable) dataTable!: DataTable;
   tableColumns = signal([
     {field: 'id', header: 'ID'},
     {field: 'name', header: 'Name'},
@@ -94,6 +95,9 @@ export class Tasks implements OnInit {
       next: (response) => {
         //console.log('Backup created:', response);
         this.closeAddModal();
+        if (this.dataTable) {
+          this.dataTable.loadData();
+        }
       },
       error: (error) => {
         console.error('Error creating backup:', error);

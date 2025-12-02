@@ -50,7 +50,7 @@ public interface BackupDataMapper {
     @Update("""
         UPDATE backups_data SET
             id = #{id},
-            backup_data = #{backup_data},
+            backup_data = #{backup_data}
         WHERE id = #{id}
         """)
     int update(BackupData b);

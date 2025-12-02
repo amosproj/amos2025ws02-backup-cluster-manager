@@ -12,12 +12,13 @@ describe('Backups', () => {
   const backupsServiceMock = {
     getBackups: (page = 1, itemsPerPage = 15, filters = '', search = '', sortBy = '', order: SortOrder = SortOrder.ASC) =>
       of({ items: [], currentPage: page, totalPages: 1 }),
-    createBackup: () => of({})
+    createBackup: jasmine.createSpy('createBackup').and.returnValue(of({})),
+    deleteBackup: jasmine.createSpy('deleteBackup').and.returnValue(of({})),
   };
 
   const apiServiceMock = {
     loading$: of(false),
-    post: () => of({})
+    post: jasmine.createSpy('post').and.returnValue(of({})),
   };
 
   beforeEach(async () => {
@@ -31,13 +32,10 @@ describe('Backups', () => {
 
     fixture = TestBed.createComponent(Backups);
     component = fixture.componentInstance;
-
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 });

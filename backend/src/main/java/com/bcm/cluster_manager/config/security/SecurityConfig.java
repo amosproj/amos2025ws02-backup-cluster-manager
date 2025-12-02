@@ -24,9 +24,14 @@ public class SecurityConfig {
                                 "/api/v1/cm/auth/login",
                                 "/api/v1/cm/auth/logout"
                         ).permitAll() // Only auth/login and auth/logout are accessible without authentication.
+                        .requestMatchers(
+                                "/api/v1/ping",
+                                "/api/v1/sync",
+                                "/api/v1/example"
+                        ).permitAll() // Node-to-node communication endpoints
                         // Here more requestMatchers can be added also with hasRole
                         // but without prefix ROLE_ as that is attached automatically by Spring security
-                        .anyRequest().authenticated() // Only authenticated users can sign in, if needed change to premitAll() to skip authentication
+                        .anyRequest().authenticated() // All other requests require authentication / can be turned off by using .permitAll()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)

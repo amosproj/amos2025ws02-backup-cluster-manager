@@ -21,7 +21,6 @@ export class Login {
   ){}
 
   login(form: NgForm){
-    console.log("SHould see toast")
     if (form.valid) {
       const { username, password } = form.value;
       this.loginService.login(username, password).subscribe({

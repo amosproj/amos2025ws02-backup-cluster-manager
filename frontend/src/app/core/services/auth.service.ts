@@ -1,25 +1,21 @@
 import {Injectable, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, of, tap, catchError, map} from 'rxjs';
-import {Router} from '@angular/router';
-import {environment} from '../../../environments/environment';
-import {ApiService} from './api.service';
+import {Observable, of, catchError, map} from 'rxjs';
 
+import {environment} from '../../../environments/environment';
+import {Router} from '@angular/router';
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = "http://localhost:8080/api/v1/auth";
+  private baseUrl = environment.apiEndpoint + '/auth';
   private isAuthenticatedSignal = signal<boolean>(false);
-  private checkingAuth = false;
 
   constructor(
     private router: Router,
-    private http: HttpClient,
-    private apiService: ApiService
+    private http: HttpClient
   ) {
-    // Check authentication status on service initialization
-    this.checkAuthStatus();
+    // Auth status will be checked by APP_INITIALIZER before app starts
   }
 
   // Public method to get authentication status
@@ -27,15 +23,26 @@ export class AuthService {
     return this.isAuthenticatedSignal();
   }
 
-  // Internal method to check authentication status
-  private checkAuthStatus(): void {
-    if (this.checkingAuth) return;
-    this.checkingAuth = true;
-
+  //method to check authentication status
+  checkAuthStatus(): Observable<boolean> {
     // TODO: Implement real API call to check session validity
-
-    this.isAuthenticatedSignal.set(true); // demo purpose
-    this.checkingAuth = false;
+    return this.http.get(`${this.baseUrl}/validate`, {observe: 'response'}).pipe(
+      map(response => {
+        if (response.status === 200) {
+          this.isAuthenticatedSignal.set(true);
+          return true;
+        } else {
+          this.isAuthenticatedSignal.set(false);
+          console.log("Session invalid - Status:", response.status);
+          return false;
+        }
+      }),
+      catchError(error => {
+        console.error('Error checking auth status:', error);
+        this.isAuthenticatedSignal.set(false);
+        return of(false);
+      })
+    )
   }
 
   // Login method - Authenticate with backend

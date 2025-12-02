@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
+
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v1/cm/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -30,9 +32,15 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(req.username, req.password);
 
         Authentication auth = authenticationManager.authenticate(token);
+
+        // You have to explicitly pass auth to context and context to session. As of this version, I guess.
         SecurityContextHolder.getContext().setAuthentication(auth);
+        var context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
 
         HttpSession session = request.getSession(true);
+        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, context);
 
         return ResponseEntity.ok().build();
     }

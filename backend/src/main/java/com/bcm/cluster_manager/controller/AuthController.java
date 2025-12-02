@@ -52,5 +52,14 @@ public class AuthController {
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/validate")
+    public ResponseEntity<Void> validateSession() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(401).build();
+    }
 }
 

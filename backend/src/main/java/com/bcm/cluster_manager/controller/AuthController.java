@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v1/cm/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;

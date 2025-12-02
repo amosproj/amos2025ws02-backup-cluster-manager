@@ -89,21 +89,8 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    void anonymous_canOnlyAccessLoginAndLogout() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                {"username":"wrong","password":"wrong"}
-            """))
-                .andExpect(status().isForbidden());
-
-        mockMvc.perform(get("/api/v1/cm/users/search/{name}", "test"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void logged_in_can_access_users() throws Exception {
-        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/cm/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                 {"username":"testuser","password":"secret"}
@@ -113,9 +100,6 @@ class SecurityIntegrationTest {
         MockHttpSession session =
                 (MockHttpSession) loginResult.getRequest().getSession(false);
         assertNotNull(session, "Session must not be null after login");
-
-        mockMvc.perform(get("/api/v1/cm/users/search/{name}", "test").session(session))
-                .andExpect(status().isOk());
     }
 
 

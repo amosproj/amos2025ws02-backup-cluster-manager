@@ -39,14 +39,83 @@ describe('AuthService', () => {
 
   describe('isAuthenticated', () => {
     it('should return authentication status', () => {
-      expect(service.isAuthenticated()).toBe(true); // Initially true based on demo implementation
+      expect(service.isAuthenticated()).toBe(false); // Initially false until checkAuthStatus is called
+    });
+
+    it('should return true after successful checkAuthStatus', (done) => {
+      const validateUrl = 'http://localhost:8080/api/v1/cm/auth/validate';
+
+      service.checkAuthStatus().subscribe(() => {
+        expect(service.isAuthenticated()).toBe(true);
+        done();
+      });
+
+      const req = httpMock.expectOne(validateUrl);
+      req.flush({}, { status: 200, statusText: 'OK' });
+    });
+  });
+
+  describe('checkAuthStatus', () => {
+    const validateUrl = 'http://localhost:8080/api/v1/cm/auth/validate';
+
+    it('should send validation request to backend', () => {
+      service.checkAuthStatus().subscribe();
+
+      const req = httpMock.expectOne(validateUrl);
+      expect(req.request.method).toBe('GET');
+
+      req.flush({}, { status: 200, statusText: 'OK' });
+    });
+
+    it('should return true and set authenticated status on successful validation (status 200)', (done) => {
+      service.checkAuthStatus().subscribe({
+        next: (result) => {
+          expect(result).toBe(true);
+          expect(service.isAuthenticated()).toBe(true);
+          done();
+        }
+      });
+
+      const req = httpMock.expectOne(validateUrl);
+      req.flush({}, { status: 200, statusText: 'OK' });
+    });
+
+    it('should return false and set authenticated status to false on failed validation', (done) => {
+      spyOn(console, 'error');
+
+      service.checkAuthStatus().subscribe({
+        next: (result) => {
+          expect(result).toBe(false);
+          expect(service.isAuthenticated()).toBe(false);
+          expect(console.error).toHaveBeenCalledWith('Error checking auth status:', jasmine.any(Object));
+          done();
+        }
+      });
+
+      const req = httpMock.expectOne(validateUrl);
+      req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+    });
+
+    it('should handle network errors gracefully', (done) => {
+      spyOn(console, 'error');
+
+      service.checkAuthStatus().subscribe({
+        next: (result) => {
+          expect(result).toBe(false);
+          expect(service.isAuthenticated()).toBe(false);
+          done();
+        }
+      });
+
+      const req = httpMock.expectOne(validateUrl);
+      req.error(new ProgressEvent('Network error'));
     });
   });
 
   describe('login', () => {
     const mockUsername = 'testuser';
     const mockPassword = 'testpass';
-    const loginUrl = 'http://localhost:8080/api/v1/auth/login';
+    const loginUrl = 'http://localhost:8080/api/v1/cm/auth/login';
 
     it('should send login request with correct credentials', () => {
       service.login(mockUsername, mockPassword).subscribe();
@@ -106,7 +175,7 @@ describe('AuthService', () => {
   });
 
   describe('logout', () => {
-    const logoutUrl = 'http://localhost:8080/api/v1/auth/logout';
+    const logoutUrl = 'http://localhost:8080/api/v1/cm/auth/logout';
 
     it('should send logout request', () => {
       service.logout().subscribe();

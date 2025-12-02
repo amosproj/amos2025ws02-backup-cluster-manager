@@ -32,17 +32,25 @@ export class AuthService {
     if (this.checkingAuth) return;
     this.checkingAuth = true;
 
-    // TODO: Implement real API call to check session validity
-
-    this.isAuthenticatedSignal.set(true); // demo purpose
-    this.checkingAuth = false;
+    // Check session validity with backend
+    this.http.post(`${this.baseUrl}/check-auth`, {}, {observe: 'response', withCredentials: true})
+      .subscribe({
+        next: (response) => {
+          this.isAuthenticatedSignal.set(response.status === 200);
+          this.checkingAuth = false;
+        },
+        error: () => {
+          this.isAuthenticatedSignal.set(false);
+          this.checkingAuth = false;
+        }
+      });
   }
 
   // Login method - Authenticate with backend
   login(username: string, password: string): Observable<boolean> {
     return this.http.post(`${this.baseUrl}/login`,
       {username, password},
-      {observe: 'response'}
+      {observe: 'response', withCredentials: true}
     ).pipe(
       map(response => {
         console.log('Login response status:', response.status);
@@ -69,7 +77,7 @@ export class AuthService {
   logout(): Observable<boolean> {
     console.log('Logging out...');
 
-    return this.http.post(`${this.baseUrl}/logout`, {} , {observe: 'response'}
+    return this.http.post(`${this.baseUrl}/logout`, {} , {observe: 'response', withCredentials: true}
     ).pipe(
       map(response => {
         console.log('Logout response:', response);

@@ -3,6 +3,7 @@ package com.bcm.cluster_manager.config.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,11 +18,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults()) // Enable CORS with defaults from CorsConfig
                 .csrf(AbstractHttpConfigurer::disable) // It would be possible to configure CSRF tokens for the FE
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/login",
-                                "/api/v1/auth/logout"
+                                "/api/v1/auth/logout",
+                                "/api/v1/auth/check-auth"
                         ).permitAll() // Only auth/login and auth/logout are accessible without authentication.
                         // Here more requestMatchers can be added also with hasRole
                         // but without prefix ROLE_ as that is attached automatically by Spring security

@@ -1,0 +1,41 @@
+@if (isVisible) {
+  <div
+    class="fixed bottom-4 right-4 z-50 min-w-[300px] max-w-md px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 ease-out"
+    [ngClass]="{
+      'bg-white text-gray-800 border-2 border-gray-300 shadow-lg': type === ToastTypeEnum.INFO,
+      'bg-green-500 text-white border-2 border-green-600': type === ToastTypeEnum.SUCCESS,
+      'bg-red-500 text-white border-2 border-red-600': type === ToastTypeEnum.ERROR,
+      'animate-slide-in': isVisible,
+      'animate-slide-out': !isVisible
+    }">
+
+    <!-- Icon based on type -->
+    @if (type === 'success') {
+      <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+    } @else if (type === 'error') {
+      <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+    } @else {
+      <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+    }
+
+    <!-- Message -->
+    <p class="flex-1 font-medium text-sm">{{ message }}</p>
+
+    <!-- Close Button -->
+    <button
+      (click)="isVisible = false"
+      class="flex-shrink-0 ml-2 hover:opacity-70 transition-opacity focus:outline-none"
+      aria-label="Close toast">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+}
+

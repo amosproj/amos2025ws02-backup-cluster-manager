@@ -1,7 +1,9 @@
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
-import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import {TestBed} from '@angular/core/testing';
+import {App} from './app';
+import {ActivatedRoute} from '@angular/router';
+import {of} from 'rxjs';
+import {provideHttpClient} from '@angular/common/http';
+import {provideHttpClientTesting} from '@angular/common/http/testing';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -11,10 +13,12 @@ describe('App', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { paramMap: { get: () => null } }, // Mock snapshot if used
+            snapshot: {paramMap: {get: () => null}}, // Mock snapshot if used
             queryParams: of({}), // Mock queryParams observable
           },
         },
+        provideHttpClient(),
+        provideHttpClientTesting()
       ],
     }).compileComponents();
   });

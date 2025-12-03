@@ -17,7 +17,7 @@ class NodeStartupRegisterTests {
 
     @BeforeEach
     void setup() {
-        nodeStartupRegister = new NodeStartupRegister();
+        nodeStartupRegister = new NodeStartupRegister(null);
 
         restTemplateMock = mock(RestTemplate.class);
         try {

@@ -1,6 +1,10 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.model.api.NodeMode;
+
+import ch.qos.logback.core.pattern.parser.Node;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -41,8 +45,8 @@ class HeartbeatServiceTests {
 
     @Test
     void heartbeatAll_callsPingForActiveAndInactive_andPushesTables() {
-    NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, LocalDateTime.now());
-    NodeDTO i1 = new NodeDTO(2L, "B","10.1.1.2:9000", com.bcm.shared.model.api.NodeStatus.INACTIVE, LocalDateTime.now());
+    NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.BACKUP_NODE, LocalDateTime.now());
+    NodeDTO i1 = new NodeDTO(2L, "B","10.1.1.2:9000", com.bcm.shared.model.api.NodeStatus.INACTIVE, NodeMode.BACKUP_NODE, LocalDateTime.now());
 
         when(registry.getActiveNodes()).thenReturn(List.of(a1));
         when(registry.getInactiveNodes()).thenReturn(List.of(i1));
@@ -54,7 +58,7 @@ class HeartbeatServiceTests {
 
         verify(restTemplate, times(2)).getForEntity(contains("/api/v1/ping"), eq(String.class));
 
-        verify(registry, times(2)).markActive(anyString());
+        verify(registry, times(2)).markActive(anyString(), any());
 
         verify(syncService, times(1)).pushTablesToAllNodes();
     }
@@ -66,11 +70,11 @@ class HeartbeatServiceTests {
         when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>("pong", HttpStatus.OK));
 
-        CompletableFuture<Void> f = heartbeatService.pingNodeAsync(addr);
+        CompletableFuture<Void> f = heartbeatService.pingNodeAsync(addr, NodeMode.BACKUP_NODE);
         f.join();
 
-        verify(registry, times(1)).markActive(addr);
-        verify(registry, never()).markInactive(anyString());
+        verify(registry, times(1)).markActive(addr, NodeMode.BACKUP_NODE);
+        verify(registry, never()).markInactive(anyString(), any());
     }
 
     @Test
@@ -80,10 +84,10 @@ class HeartbeatServiceTests {
         when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>("fail", HttpStatus.BAD_REQUEST));
 
-        heartbeatService.pingNodeAsync(addr).join();
+        heartbeatService.pingNodeAsync(addr, NodeMode.BACKUP_NODE).join();
 
-        verify(registry).markInactive(addr);
-        verify(registry, never()).markActive(anyString());
+        verify(registry).markInactive(addr, NodeMode.BACKUP_NODE);
+        verify(registry, never()).markActive(anyString(), any());
     }
 
     @Test
@@ -93,9 +97,9 @@ class HeartbeatServiceTests {
         when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenThrow(new RuntimeException("Connection refused"));
 
-        heartbeatService.pingNodeAsync(addr).join();
+        heartbeatService.pingNodeAsync(addr, NodeMode.BACKUP_NODE).join();
 
-        verify(registry).markInactive(addr);
-        verify(registry, never()).markActive(anyString());
+        verify(registry).markInactive(addr, NodeMode.BACKUP_NODE);
+        verify(registry, never()).markActive(anyString(), any());
     }
 }

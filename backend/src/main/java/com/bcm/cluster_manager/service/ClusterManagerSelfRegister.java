@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import com.bcm.shared.model.api.NodeMode;
+
 /**
  * Registers the Cluster Manager itself as a node in the registry on startup.
  * This allows the CM to be visible in the node list and participate as a node in the cluster.
@@ -32,7 +34,7 @@ public class ClusterManagerSelfRegister {
             
             try {
                 // Register the cluster manager as a node in its own registry
-                registryService.register(nodePublicAddress);
+                registryService.register(nodePublicAddress, NodeMode.CLUSTER_MANAGER);
                 log.info("Successfully registered Cluster Manager as a node in the registry.");
             } catch (Exception e) {
                 log.error("Failed to register Cluster Manager as a node: {}", e.getMessage(), e);

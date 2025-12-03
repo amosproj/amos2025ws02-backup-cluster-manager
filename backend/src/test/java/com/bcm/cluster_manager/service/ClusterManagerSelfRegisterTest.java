@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.ApplicationArguments;
 
+import com.bcm.shared.model.api.NodeMode;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -39,20 +41,20 @@ class ClusterManagerSelfRegisterTest {
         clusterManagerSelfRegister.registerClusterManagerAsNode().run(args);
 
         // Then
-        verify(registryServiceMock, times(1)).register("cluster-manager:8080");
+        verify(registryServiceMock, times(1)).register("cluster-manager:8080", NodeMode.CLUSTER_MANAGER);
     }
 
     @Test
     void testRegisterClusterManagerAsNodeWithException() throws Exception {
         // Given
         ApplicationArguments args = mock(ApplicationArguments.class);
-        doThrow(new RuntimeException("Test exception")).when(registryServiceMock).register("cluster-manager:8080");
+        doThrow(new RuntimeException("Test exception")).when(registryServiceMock).register("cluster-manager:8080", NodeMode.CLUSTER_MANAGER);
 
         // When - Should not throw exception, just log the error
         clusterManagerSelfRegister.registerClusterManagerAsNode().run(args);
 
         // Then
-        verify(registryServiceMock, times(1)).register("cluster-manager:8080");
+        verify(registryServiceMock, times(1)).register("cluster-manager:8080", NodeMode.CLUSTER_MANAGER);
     }
 
     @Test

@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.bcm.shared.model.api.NodeMode;
+
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -25,28 +27,28 @@ public class HeartbeatService {
 
     public void heartbeatAll() {
         logger.info("Heartbeat started at {}", Instant.now());
-        registry.getActiveNodes().forEach(node -> pingNodeAsync(node.getAddress()));
+        registry.getActiveNodes().forEach(node -> pingNodeAsync(node.getAddress(), node.getMode()));
         // optionally ping inactive nodes to try revive them (if they respond successfully, entry is set active or added)
-        registry.getInactiveNodes().forEach(node -> pingNodeAsync(node.getAddress()));
+        registry.getInactiveNodes().forEach(node -> pingNodeAsync(node.getAddress(), node.getMode()));
         // after heartbeats, push updated tables to all nodes
         syncService.pushTablesToAllNodes();
     }
 
     @Async
-    public CompletableFuture<Void> pingNodeAsync(String address) {
+    public CompletableFuture<Void> pingNodeAsync(String address, NodeMode mode) {
         String url = "http://" + address + "/api/v1/ping";
         try {
             ResponseEntity<String> r = rest.getForEntity(url, String.class);
             if (r.getStatusCode().is2xxSuccessful()) {
                 logger.info("Node {} is alive", address);
-                registry.markActive(address);
+                registry.markActive(address, mode);
             } else {
                 logger.warn("Node {} returned non-2xx: {}", address, r.getStatusCodeValue());
-                registry.markInactive(address);
+                registry.markInactive(address, mode);
             }
         } catch (Exception e) {
             logger.warn("Node {} is unreachable: {}", address, e.toString());
-            registry.markInactive(address);
+            registry.markInactive(address, mode);
         }
         return CompletableFuture.completedFuture(null);
     }

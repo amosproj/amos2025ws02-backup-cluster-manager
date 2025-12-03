@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.model.api.NodeMode;
 import com.bcm.shared.service.NodeIdGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ class RegistryServiceTests {
     void register_addsNodeToActiveAndRemovesFromInactive() {
         String addr = "10.0.0.1:9000";
 
-        registry.register(addr);
+        registry.register(addr,NodeMode.BACKUP_NODE);
 
         Collection<NodeDTO> active = registry.getActiveNodes();
         Collection<NodeDTO> inactive = registry.getInactiveNodes();
@@ -38,9 +39,9 @@ class RegistryServiceTests {
     @Test
     void markInactive_movesNodeToInactive() {
         String addr = "nodeA";
-        registry.register(addr);
+        registry.register(addr, NodeMode.BACKUP_NODE);
 
-        registry.markInactive(addr);
+        registry.markInactive(addr, NodeMode.BACKUP_NODE);
 
         assertThat(registry.getActiveNodes()).isEmpty();
         assertThat(registry.getInactiveNodes()).hasSize(1);
@@ -53,7 +54,7 @@ class RegistryServiceTests {
     void markActive_createsNodeIfMissing() {
         String addr = "newNode";
 
-        registry.markActive(addr);
+        registry.markActive(addr, NodeMode.BACKUP_NODE);
 
         assertThat(registry.getActiveNodes()).hasSize(1);
         assertThat(registry.getInactiveNodes()).isEmpty();
@@ -67,7 +68,7 @@ class RegistryServiceTests {
     void markInactive_createsNodeIfMissing() {
         String addr = "ghostNode";
 
-        registry.markInactive(addr);
+        registry.markInactive(addr, NodeMode.BACKUP_NODE);
 
         assertThat(registry.getInactiveNodes()).hasSize(1);
         assertThat(registry.getActiveNodes()).isEmpty();
@@ -78,8 +79,8 @@ class RegistryServiceTests {
 
     @Test
     void getAllNodes_returnsMergedActiveAndInactive() {
-        registry.register("A");
-        registry.markInactive("B");
+        registry.register("A", NodeMode.BACKUP_NODE);
+        registry.markInactive("B", NodeMode.BACKUP_NODE);
 
         Collection<NodeDTO> all = registry.getAllNodes();
 
@@ -90,9 +91,9 @@ class RegistryServiceTests {
 
     @Test
     void register_overwritesInactiveEntry() {
-        registry.markInactive("nodeX");
+        registry.markInactive("nodeX", NodeMode.BACKUP_NODE);
 
-        registry.register("nodeX");
+        registry.register("nodeX", NodeMode.BACKUP_NODE);
 
         assertThat(registry.getActiveNodes()).hasSize(1);
         assertThat(registry.getInactiveNodes()).isEmpty();
@@ -103,9 +104,9 @@ class RegistryServiceTests {
 
     @Test
     void markActive_movesFromInactiveToActive() {
-        registry.markInactive("node1");
+        registry.markInactive("node1", NodeMode.BACKUP_NODE);
 
-        registry.markActive("node1");
+        registry.markActive("node1", NodeMode.BACKUP_NODE);
 
         assertThat(registry.getInactiveNodes()).isEmpty();
         assertThat(registry.getActiveNodes()).hasSize(1);

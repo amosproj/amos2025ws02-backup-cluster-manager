@@ -1,13 +1,17 @@
 package com.bcm.shared.service;
 
+import com.bcm.shared.model.api.NodeMode;
 import com.bcm.shared.model.api.RegisterRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -24,7 +28,12 @@ public class NodeStartupRegister {
 
     @Value("${application.node.public-address:localhost:8081}")
     private String nodePublicAddress;
+        
+    private final Environment environment;
 
+    public NodeStartupRegister(Environment environment) {
+        this.environment = environment;
+    }
 
     @Bean
     public ApplicationRunner registerAtStartup() {
@@ -34,7 +43,18 @@ public class NodeStartupRegister {
             log.info("Node starting with address: {}", nodePublicAddress);
             log.info("CM register endpoint: {}", cmRegisterUrl);
 
-            RegisterRequest req = new RegisterRequest(nodePublicAddress);
+            NodeMode nodeType = NodeMode.BACKUP_NODE;
+            for (String p : environment.getActiveProfiles()) {
+                if (p.equalsIgnoreCase("backup_manager")) {
+                    nodeType = NodeMode.BACKUP_MANAGER;
+                    break;
+                }
+                if (p.equalsIgnoreCase("backup_node")) {
+                    nodeType = NodeMode.BACKUP_NODE;
+                }
+            }
+
+            RegisterRequest req = new RegisterRequest(nodePublicAddress, nodeType);
 
             boolean registered = false;
             int attempts = 0;

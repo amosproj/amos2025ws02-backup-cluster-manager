@@ -1,10 +1,12 @@
 package com.bcm.shared.service;
 
+import com.bcm.shared.model.api.NodeMode;
 import com.bcm.shared.model.api.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,10 +16,12 @@ class NodeStartupRegisterTests {
 
     private NodeStartupRegister nodeStartupRegister;
     private RestTemplate restTemplateMock;
+    private Environment environmentMock;
 
     @BeforeEach
     void setup() {
-        nodeStartupRegister = new NodeStartupRegister(null);
+        environmentMock = mock(Environment.class);
+        nodeStartupRegister = new NodeStartupRegister(environmentMock);
 
         restTemplateMock = mock(RestTemplate.class);
         try {
@@ -43,27 +47,25 @@ class NodeStartupRegisterTests {
 
     @Test
     void registerAtStartup_sendsRequestToCM() throws Exception {
-        when(restTemplateMock.postForEntity(anyString(), any(RegisterRequest.class), eq(Void.class)))
-                .thenReturn(null);
+        // active profile should default to BACKUP_NODE when none provided
+        when(environmentMock.getActiveProfiles()).thenReturn(new String[]{});
+    doReturn(null).when(restTemplateMock).postForEntity(anyString(), any(), any());
 
         ApplicationArguments args = mock(ApplicationArguments.class);
 
         nodeStartupRegister.registerAtStartup().run(args);
 
-        ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<RegisterRequest> requestCaptor = ArgumentCaptor.forClass(RegisterRequest.class);
-
-        verify(restTemplateMock, times(1))
-                .postForEntity(urlCaptor.capture(), requestCaptor.capture(), eq(Void.class));
-
-        assertThat(urlCaptor.getValue()).isEqualTo("http://localhost:8080/api/v1/cm/register");
+    verify(restTemplateMock, times(1))
+        .postForEntity(eq("http://localhost:8080/api/v1/cm/register"), requestCaptor.capture(), eq((Class)Void.class));
         assertThat(requestCaptor.getValue().getAddress()).isEqualTo("localhost:8081");
+    assertThat(requestCaptor.getValue().getMode()).isEqualTo(NodeMode.BACKUP_NODE);
     }
 
     @Test
     void registerAtStartup_retriesOnFailure() throws Exception {
-        when(restTemplateMock.postForEntity(anyString(), any(RegisterRequest.class), eq(Void.class)))
-                .thenThrow(new RuntimeException("Connection failed"));
+        when(environmentMock.getActiveProfiles()).thenReturn(new String[]{});
+    doThrow(new RuntimeException("Connection failed")).when(restTemplateMock).postForEntity(anyString(), any(), any());
 
         ApplicationArguments args = mock(ApplicationArguments.class);
 
@@ -72,7 +74,19 @@ class NodeStartupRegisterTests {
         } catch (InterruptedException ignored) {
         }
 
-        verify(restTemplateMock, times(10))
-                .postForEntity(anyString(), any(RegisterRequest.class), eq(Void.class));
+    verify(restTemplateMock, times(10))
+        .postForEntity(anyString(), any(RegisterRequest.class), eq((Class)Void.class));
+    }
+
+    @Test
+    void registerAtStartup_setsBackupManagerModeWhenProfileActive() throws Exception {
+        when(environmentMock.getActiveProfiles()).thenReturn(new String[]{"backup_manager"});
+    doReturn(null).when(restTemplateMock).postForEntity(anyString(), any(), any());
+
+        nodeStartupRegister.registerAtStartup().run(mock(ApplicationArguments.class));
+
+        ArgumentCaptor<RegisterRequest> requestCaptor = ArgumentCaptor.forClass(RegisterRequest.class);
+    verify(restTemplateMock).postForEntity(anyString(), requestCaptor.capture(), eq((Class)Void.class));
+    assertThat(requestCaptor.getValue().getMode()).isEqualTo(NodeMode.BACKUP_MANAGER);
     }
 }

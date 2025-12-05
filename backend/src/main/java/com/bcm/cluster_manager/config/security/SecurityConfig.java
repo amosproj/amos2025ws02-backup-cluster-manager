@@ -3,6 +3,7 @@ package com.bcm.cluster_manager.config.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,7 +35,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated() // All other requests require authentication / can be turned off by using .permitAll()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
+                .httpBasic(Customizer.withDefaults())
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 );

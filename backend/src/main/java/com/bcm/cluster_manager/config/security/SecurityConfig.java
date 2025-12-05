@@ -28,7 +28,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/ping",
                                 "/api/v1/sync",
-                                "/api/v1/example"
+                                "/api/v1/example",
+                                "/api/v1/cm/register"
                         ).permitAll() // Node-to-node communication endpoints
                         // Here more requestMatchers can be added also with hasRole
                         // but without prefix ROLE_ as that is attached automatically by Spring security

@@ -16,7 +16,7 @@ import java.time.Duration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
-class SystemRegistrationE2EIT {
+class NodeRegistrationE2ETest {
 
     // Etablieren eines gemeinsamen Netzwerks für alle Container
     static Network network = Network.newNetwork();

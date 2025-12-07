@@ -2,13 +2,11 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
-import com.bcm.shared.model.database.Backup;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.repository.BackupMapper;
 import com.bcm.shared.service.sort.BackupComparators;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.BackupDTO;
-import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.util.NodeUtils;
@@ -24,7 +22,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static com.bcm.shared.mapper.BackupConverter.toDTO;
 import static com.bcm.shared.mapper.BackupConverter.toLdt;
 
 @Service
@@ -32,14 +29,12 @@ public class BackupService implements PaginationProvider<BackupDTO> {
 
     private final RegistryService registryService;
     private final RestTemplate restTemplate;
-    private final BackupMapper backupMapper;
 
 
     public BackupService(RegistryService registryService,
                          BackupMapper backupMapper,
                          RestTemplate restTemplate) {
         this.registryService = registryService;
-        this.backupMapper = backupMapper;
         this.restTemplate = restTemplate;
     }
 
@@ -71,30 +66,50 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         return sorted.subList(fromIndex, toIndex);
     }
 
+    //TODO: functionality -> To be tested
     public List<BackupDTO> getAllBackups() {
 
-
-
-        List<Backup> backups = backupMapper.findAll();
         List<BackupDTO> backupDTOs = new ArrayList<>();
+        var seenIds = new java.util.HashSet<Long>();
 
-        for (Backup backup : backups) {
-            BackupDTO dto = new BackupDTO(
-                    backup.getId(),
-                    backup.getClientId(),
-                    backup.getTaskId(),
-                    backup.getMessage(),
-                    backup.getState(),
-                    backup.getSizeBytes(),
-                    toLdt(backup.getStartTime()),
-                    toLdt(backup.getStopTime()),
-                    toLdt(backup.getCreatedAt())
-            );
-            backupDTOs.add(dto);
+        List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
+
+        List<CompletableFuture<BackupDTO[]>> futures = nodeAddresses.stream()
+                .map(nodeAddress -> CompletableFuture.supplyAsync(() -> {
+                    try {
+                        String url = "http://" + nodeAddress + "/api/v1/bn/backups";
+                        ResponseEntity<BackupDTO[]> response = restTemplate.getForEntity(url, BackupDTO[].class);
+                        return response.getBody();
+                    } catch (Exception e) {
+                        System.out.println("Fehler beim Abruf von Backups von Node " + nodeAddress + ": " + e.getMessage());
+                        return null;
+                    }
+                }))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        for (CompletableFuture<BackupDTO[]> future : futures) {
+            try {
+                BackupDTO[] body = future.get();
+                if (body == null || body.length == 0) continue;
+                for (BackupDTO b : body) {
+                    if (b == null) continue;
+                    Long id = b.getId();
+                    if (id != null) {
+                        if (seenIds.add(id)) {
+                            backupDTOs.add(b);
+                        }
+                    } else {
+                        backupDTOs.add(b);
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ignored) {
+            }
         }
-
         return backupDTOs;
-
     }
 
     // Filters by BackupState parsed from filter.getFilters()

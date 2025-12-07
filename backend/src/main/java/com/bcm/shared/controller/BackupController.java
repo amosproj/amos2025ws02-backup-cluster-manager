@@ -39,6 +39,16 @@ public class BackupController {
         }
     }
 
+    @GetMapping("/backups")
+    public ResponseEntity<?> getBackups() {
+        try {
+            return ResponseEntity.ok(backupNodeService.getAllBackups());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/backupNode/test")
     public String test(){
         return "This is a backup node endpoint";

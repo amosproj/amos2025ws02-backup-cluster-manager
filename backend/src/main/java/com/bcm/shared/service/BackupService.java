@@ -5,8 +5,10 @@ import com.bcm.shared.model.database.Backup;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.repository.BackupMapper;
 import org.springframework.stereotype.Service;
-
+import com.bcm.shared.mapper.BackupConverter;
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BackupService {
@@ -17,6 +19,22 @@ public class BackupService {
         this.backupMapper = backupMapper;
     }
 
+
+    public List<BackupDTO> getAllBackups() {
+        try {
+            List<Backup> backups = backupMapper.findAll();
+            if (backups == null || backups.isEmpty()) {
+                return List.of();
+            }
+            return backups.stream()
+                    .map(BackupConverter::toDTO)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
 
     public void deleteBackup(Long backupId) {
             backupMapper.delete(backupId);
@@ -60,4 +78,5 @@ public class BackupService {
         backupMapper.insert(backup);
 
     }
+
 }

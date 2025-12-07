@@ -19,7 +19,6 @@ public class BackupDTO {
     private LocalDateTime startTime;
     private LocalDateTime stopTime;
     private LocalDateTime createdAt;
-    private List<String> replicationNodes;
 
 
     public BackupDTO(Long id, Long clientId, Long taskId, String name, BackupState state,

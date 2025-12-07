@@ -1,6 +1,5 @@
 package com.bcm.cluster_manager.service;
 
-import com.bcm.shared.model.api.BackupDeleteDTO;
 import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.model.database.Backup;
@@ -12,7 +11,7 @@ import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
-import org.springframework.beans.factory.annotation.Value;
+import com.bcm.shared.util.NodeUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -20,10 +19,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+import static com.bcm.shared.mapper.BackupConverter.toDTO;
+import static com.bcm.shared.mapper.BackupConverter.toLdt;
 
 @Service
 public class BackupService implements PaginationProvider<BackupDTO> {
@@ -32,8 +34,6 @@ public class BackupService implements PaginationProvider<BackupDTO> {
     private final RestTemplate restTemplate;
     private final BackupMapper backupMapper;
 
-    @Value("${application.bm.public-address:localhost:8082}")
-    private String backupManagerBaseUrl;
 
     public BackupService(RegistryService registryService,
                          BackupMapper backupMapper,
@@ -88,8 +88,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                     backup.getSizeBytes(),
                     toLdt(backup.getStartTime()),
                     toLdt(backup.getStopTime()),
-                    toLdt(backup.getCreatedAt()),
-                    null
+                    toLdt(backup.getCreatedAt())
             );
             backupDTOs.add(dto);
         }
@@ -144,21 +143,71 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         return backups;
     }
 
-
+    //TODO: functionality to be tested, this is just a draft
     public BackupDTO createBackup(CreateBackupRequest request) {
-        return null;
+
+        BackupDTO backupDTO = new BackupDTO(
+                null,
+                request.getClientId(),
+                request.getTaskId(),
+                "Backup creation initiated",
+                BackupState.QUEUED,
+                request.getSizeBytes(),
+                null,
+                null,
+                toLdt(Instant.now())
+        );
+
+        //get active nodes from registry
+        List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
+
+        // send a request to backup nodes to create the backup
+        for (String nodeAddress : nodeAddresses) {
+            try {
+                String url = "http://" + nodeAddress + "/api/v1/bn/backups/sync";
+                ResponseEntity<BackupDTO> response = restTemplate.postForEntity(url, request, BackupDTO.class);
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    System.out.println("Backup creation request sent to node " + nodeAddress);
+                    return backupDTO;
+                } else {
+                    System.out.println("Failed to send backup creation request to node " + nodeAddress);
+                    return null;
+                }
+            } catch (Exception e) {
+                System.out.println("Error sending backup creation request to node " + nodeAddress + ": " + e.getMessage());
+                throw new RuntimeException("Error sending backup creation request to node " + nodeAddress, e);
+            }
+        }
+        return backupDTO;
     }
 
-    public BackupDTO executeBackup(Long id, Long duration, Boolean shouldSucceed) {
+    //TODO: functionality to be tested, this is just a draft
+    public void deleteBackup(Long id) {
         try {
-            // Update CM metadata to RUNNING
-            Backup b = updateBackupMetadata(id, BackupState.RUNNING, "Backup is running", Instant.now(), null);
-            System.out.println("CM metadata updated to RUNNING for backup " + id);
 
+            // Notify all active backup nodes to delete the backup
+            List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
+            for (String nodeAddress : nodeAddresses) {
+                try {
+                    String url = "http://" + nodeAddress + "/api/v1/bn/backups/" + id;
+                    restTemplate.delete(url);
+                    System.out.println("Delete request sent to node " + nodeAddress + " for backup " + id);
+                } catch (Exception e) {
+                    System.out.println("Error sending delete request to node " + nodeAddress + ": " + e.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("✗ Failed to delete backup: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    //TODO: functionality to be tested, this is just a draft
+    public void executeBackup(Long id, Long duration, Boolean shouldSucceed) {
+        try {
             // async forwarding
-            executeAndUpdate(id, duration, shouldSucceed, b);
-
-            return toDTO(b);
+            executeAndUpdate(id, duration, shouldSucceed);
 
         } catch (Exception e) {
             System.out.println("✗ Failed to execute backup: " + e.getMessage());
@@ -167,12 +216,10 @@ public class BackupService implements PaginationProvider<BackupDTO> {
     }
 
     @Async
-    public void executeAndUpdate(Long id, Long duration, Boolean shouldSucceed, Backup b) {
+    public void executeAndUpdate(Long id, Long duration, Boolean shouldSucceed) {
         try {
             // Build list of node addresses
-            List<String> nodes = registryService.getActiveNodes().stream()
-                    .map(NodeDTO::getAddress)
-                    .toList();
+            List<String> nodes = NodeUtils.addresses(registryService.getActiveNodes());
 
             if (nodes.isEmpty()) {
                 System.out.println("No active nodes available");
@@ -181,54 +228,31 @@ public class BackupService implements PaginationProvider<BackupDTO> {
 
             ExecuteBackupRequest request = new ExecuteBackupRequest(duration, shouldSucceed, nodes);
 
-            // Notify backup_manager
-            String url = "http://" + backupManagerBaseUrl + "/api/v1/bm/backups/" + id + "/execute";
-            ResponseEntity<BackupDTO> response = restTemplate.postForEntity(url, request, BackupDTO.class);
+            // Notify backup nodes
+            List<CompletableFuture<Boolean>> futures = nodes.stream().map(nodeAddress -> CompletableFuture.supplyAsync(() -> {
+                try {
+                    String url = "http://" + nodeAddress + "/api/v1/bn/" + "/backups/" + id + "/execute";
 
-            if (response.getStatusCode().is2xxSuccessful() && shouldSucceed) {
-                // Update CM metadata based on BM result
-                updateBackupMetadata(id, BackupState.COMPLETED, "Backup completed successfully", null, Instant.now());
-                System.out.println("CM metadata updated to COMPLETED for backup " + id);
-            } else {
-                updateBackupMetadata(id, BackupState.FAILED, "Backup failed", null, Instant.now());
-            }
+                    ResponseEntity<Void> response = restTemplate.postForEntity(
+                                url,
+                                request,
+                                Void.class
+                    );
 
-            System.out.println("Forwarded execute to backup_manager");
+                        return response.getStatusCode().is2xxSuccessful();
+                    } catch (Exception e) {
+                        return false;
+                    }
+            })).toList();
+
+            CompletableFuture<Void> all = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            all.join();
 
         } catch (Exception e) {
-            System.out.println("Failed to notify backup_manager: " + e.getMessage());
+            System.out.println("Failed to notify backup nodes: " + e.getMessage());
         }
     }
 
 
-    private Backup updateBackupMetadata(Long id, BackupState state, String message, Instant startTime, Instant stopTime) {
-        try {
-            Backup b = backupMapper.findById(id);
-            if (b != null) {
-
-                b.setState(state);
-                b.setMessage(message);
-
-                if (state == BackupState.RUNNING) {
-                    b.setStartTime(startTime != null ? startTime : Instant.now());
-                    b.setStopTime(null);
-                } else {
-                    if (startTime != null) {
-                        b.setStartTime(startTime);
-                    }
-                    if (stopTime != null) {
-                        b.setStopTime(stopTime);
-                    }
-                }
-
-                backupMapper.update(b);
-                return b;
-            }
-        } catch (Exception e) {
-            System.out.println("Failed to update metadata for backup " + id);
-            throw e;
-        }
-        return null;
-    }
 
 }

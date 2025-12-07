@@ -1,9 +1,11 @@
 package com.bcm.shared.controller;
 
 
-import com.bcm.shared.service.BackupNodeService;
+import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
-import com.bcm.shared.model.api.BackupDTO;
+import com.bcm.shared.repository.BackupMapper;
+import com.bcm.shared.repository.ClientMapper;
+import com.bcm.shared.service.BackupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,22 +16,22 @@ import org.springframework.web.bind.annotation.*;
 public class BackupController {
 
     @Autowired
-    private BackupNodeService backupNodeService;
+    private BackupService backupNodeService;
 
-    public BackupController(BackupNodeService backupNodeService) {
+    private final ClientMapper clientMapper;
+    @Autowired
+    private BackupMapper backupMapper;
+
+    public BackupController(BackupService backupNodeService, ClientMapper clientMapper) {
         this.backupNodeService = backupNodeService;
-    }
-
-    @DeleteMapping("/backups/{id}")
-    public void deleteBackup(@PathVariable Long id) {
-        backupNodeService.deleteBackupData(id);
+        this.clientMapper = clientMapper;
     }
 
 
     @DeleteMapping("/backups/{id}")
     public ResponseEntity<Void> deleteBackup(@PathVariable Long id) {
         try {
-            backupService.deleteBackup(id);
+            backupNodeService.deleteBackup(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -43,8 +45,16 @@ public class BackupController {
     }
 
     @PostMapping("/backups/sync")
-    public void receiveBackup(@RequestBody BackupDTO dto) {
-        backupNodeService.storeBackup(dto);
+    public void receiveBackup(@RequestBody CreateBackupRequest dto) {
+
+        // get all clients and check if dto client id is in the list
+        if ( clientMapper.findById(dto.getClientId()) != null) {
+
+            backupNodeService.store(dto.getClientId(), dto.getTaskId(), dto.getSizeBytes());
+
+        } else {
+            System.out.println("Received backup for unknown client id: " + dto.getClientId());
+        }
     }
 
     @PostMapping("/backups/{id}/execute")
@@ -53,9 +63,10 @@ public class BackupController {
             @RequestBody ExecuteBackupRequest request
     ) {
         try {
-            backupNodeService.executeBackupSync(id, request);
+            if (backupMapper.findById(id) != null) {
+                backupNodeService.executeBackupSync(id, request);
+            }
 
-            // return 200
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {

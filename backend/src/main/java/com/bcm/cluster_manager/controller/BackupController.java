@@ -32,10 +32,10 @@ public class BackupController {
     }
 
     @PostMapping("/backups/{id}/execute")
-    public ResponseEntity<BackupDTO> executeBackup(@PathVariable Long id, @RequestBody ExecuteBackupRequest req) {
+    public ResponseEntity<Void> executeBackup(@PathVariable Long id, @RequestBody ExecuteBackupRequest req) {
         try {
-            BackupDTO result = backupService.executeBackup(id, req.getDuration(), req.getShouldSucceed());
-            return ResponseEntity.accepted().body(result);
+            backupService.executeBackup(id, req.getDuration(), req.getShouldSucceed());
+            return ResponseEntity.accepted().build();
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

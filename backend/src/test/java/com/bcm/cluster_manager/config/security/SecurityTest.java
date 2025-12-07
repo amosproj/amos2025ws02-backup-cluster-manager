@@ -1,11 +1,11 @@
 package com.bcm.cluster_manager.config.security;
 
-import com.bcm.cluster_manager.model.database.Group;
-import com.bcm.cluster_manager.model.database.User;
-import com.bcm.cluster_manager.model.database.UserGroupRelation;
-import com.bcm.cluster_manager.repository.GroupMapper;
-import com.bcm.cluster_manager.repository.UserGroupRelationMapper;
-import com.bcm.cluster_manager.repository.UserMapper;
+import com.bcm.shared.model.database.Group;
+import com.bcm.shared.model.database.User;
+import com.bcm.shared.model.database.UserGroupRelation;
+import com.bcm.shared.repository.GroupMapper;
+import com.bcm.shared.repository.UserGroupRelationMapper;
+import com.bcm.shared.repository.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

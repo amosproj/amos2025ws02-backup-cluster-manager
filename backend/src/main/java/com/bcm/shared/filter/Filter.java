@@ -3,7 +3,7 @@ package com.bcm.shared.filter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.bcm.shared.sort.SortOrder;
+import com.bcm.shared.pagination.sort.SortOrder;
 
 import lombok.Getter;
 import lombok.Setter;

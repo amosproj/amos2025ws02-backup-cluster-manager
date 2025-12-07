@@ -1,7 +1,6 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
-import com.bcm.shared.service.NodeIdGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

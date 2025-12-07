@@ -1,12 +1,12 @@
 package com.bcm.cluster_manager.service;
 
 
-import com.bcm.cluster_manager.service.sort.NodeComparators;
+import com.bcm.shared.service.sort.NodeComparators;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.pagination.PaginationProvider;
-import com.bcm.shared.sort.SortProvider;
+import com.bcm.shared.pagination.sort.SortProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

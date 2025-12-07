@@ -4,6 +4,7 @@ import com.bcm.backup_node.model.database.BackupData;
 import com.bcm.backup_node.repository.BackupDataMapper;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
+import com.bcm.shared.service.BackupNodeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.repository;
 
-import com.bcm.cluster_manager.model.database.Client;
+import com.bcm.shared.model.database.Client;
+import com.bcm.shared.repository.ClientMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

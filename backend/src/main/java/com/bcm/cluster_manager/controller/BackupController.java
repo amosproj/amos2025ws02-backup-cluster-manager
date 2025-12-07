@@ -1,6 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
-import com.bcm.cluster_manager.model.api.CreateBackupRequest;
+import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.cluster_manager.service.BackupService;
 import com.bcm.shared.model.api.BackupDTO;

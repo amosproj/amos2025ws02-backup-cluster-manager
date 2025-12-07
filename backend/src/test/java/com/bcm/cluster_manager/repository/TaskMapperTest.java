@@ -1,8 +1,10 @@
 package com.bcm.cluster_manager.repository;
 
-import com.bcm.cluster_manager.model.database.Client;
-import com.bcm.cluster_manager.model.database.Task;
-import com.bcm.cluster_manager.model.database.TaskFrequency;
+import com.bcm.shared.model.database.Client;
+import com.bcm.shared.model.database.Task;
+import com.bcm.shared.model.database.TaskFrequency;
+import com.bcm.shared.repository.ClientMapper;
+import com.bcm.shared.repository.TaskMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

@@ -1,49 +1,48 @@
-package com.bcm.shared.service;
+package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.TaskDTO;
 import com.bcm.shared.model.database.Task;
 import com.bcm.shared.model.database.TaskFrequency;
-import com.bcm.shared.repository.ClientMapper;
-import com.bcm.shared.repository.TaskMapper;
 import com.bcm.shared.service.sort.TaskComparators;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.bcm.shared.util.NodeUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
 public class TaskService implements PaginationProvider<TaskDTO> {
 
-    @Autowired
-    private TaskMapper taskMapper;
+    private final RegistryService registryService;
+    private final RestTemplate restTemplate;
 
-    private ClientMapper clientMapper;
-
-    public TaskService (ClientMapper clientMapper) {
-        this.clientMapper = clientMapper;
+    public TaskService(RegistryService registryService) {
+        this.registryService = registryService;
+        this.restTemplate = new RestTemplate();
     }
-    /**
-     * Pagination
-     */
 
     @Override
     public long getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
-        List<TaskDTO> base = (getAllBackups());
+        List<TaskDTO> base = (getAllTasks());
         return applySearch(applyFilters(base, filter), filter).size();
 
     }
 
     @Override
     public List<TaskDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
-        List<TaskDTO> allBackups = (getAllBackups());
+        List<TaskDTO> allBackups = (getAllTasks());
 
         List<TaskDTO> filtered = applyFilters(allBackups, filter);
         List<TaskDTO> searched = applySearch(filtered, filter);
@@ -61,15 +60,44 @@ public class TaskService implements PaginationProvider<TaskDTO> {
         return sorted.subList(fromIndex, toIndex);
     }
 
-    public List<TaskDTO> getAllBackups() {
-        List<Task> tasks = taskMapper.findAll();
-        List<TaskDTO> taskDTOS = new ArrayList<>();
+    //TODO: functionality to be tested, just a draft
+    public List<TaskDTO> getAllTasks() {
+        List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
+        if (nodeAddresses.isEmpty()) return List.of();
 
-        for (Task task : tasks) {
-            taskDTOS.add(toDto(task));
+        List<CompletableFuture<TaskDTO[]>> futures = nodeAddresses.stream().map(address -> CompletableFuture.supplyAsync(() -> {
+                    try {
+                        String url = "http://" + address + "/api/v1/bn/tasks";
+                        ResponseEntity<TaskDTO[]> response = restTemplate.getForEntity(url, TaskDTO[].class);
+                        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                            return response.getBody();
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Fehler beim Abruf von Tasks von Node " + address);
+                    }
+                    return null;
+                })).toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        List<TaskDTO> allTasks = new ArrayList<>();
+        Set<Long> seenIds = new HashSet<>();
+
+        for (CompletableFuture<TaskDTO[]> future : futures) {
+            try {
+                TaskDTO[] tasks = future.get();
+                if (tasks != null) {
+                    for (TaskDTO task : tasks) {
+                        if (task != null && seenIds.add(task.getId())) {
+                            allTasks.add(task);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
         }
-        return taskDTOS;
 
+        return allTasks;
     }
 
     // Filters by BackupState parsed from filter.getFilters()
@@ -123,23 +151,51 @@ public class TaskService implements PaginationProvider<TaskDTO> {
      */
 
     @Transactional
-    public TaskDTO addTask(Task task) {
-        if(clientMapper.findById(task.getClientId()) != null) {
-            taskMapper.insert(task);
-            return toDto(taskMapper.findById(task.getId()));
+    public TaskDTO addTask(TaskDTO task) {
+        List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
+        if (nodeAddresses.isEmpty()) return (TaskDTO) List.of();
+
+        if (task == null || task.getClientId() == null) {
+            return null;
+        }
+
+        List<CompletableFuture<TaskDTO>> futures = nodeAddresses.stream()
+                .map(address -> CompletableFuture.supplyAsync(() -> {
+                    try {
+                        String url = "http://" + address + "/api/v1/bn/tasks";
+                        ResponseEntity<TaskDTO> response = restTemplate.postForEntity(url, task, TaskDTO.class);
+                        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                            return response.getBody();
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Fehler beim Hinzufügen von Task an Node " + address);
+                    }
+                    return null;
+                })).toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        for (CompletableFuture<TaskDTO> future : futures) {
+            try {
+                TaskDTO result = future.get();
+                if (result != null) {
+                    return result;
+                }
+            } catch (Exception ignored) {
+            }
         }
         return null;
     }
 
+
     @Transactional
     public Task editTask(Task task) {
-        taskMapper.update(task);
-        return taskMapper.findById(task.getId());
+        return null;
     }
 
     @Transactional
     public boolean deleteTask(Long taskId) {
-        return taskMapper.delete(taskId) == 1;
+        return false;
     }
 
 

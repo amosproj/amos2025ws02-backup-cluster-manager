@@ -1,16 +1,16 @@
-package com.bcm.shared.controller;
+package com.bcm.cluster_manager.controller;
 
 
 import com.bcm.shared.model.api.TaskDTO;
 import com.bcm.shared.model.database.Task;
-import com.bcm.shared.service.TaskService;
+import com.bcm.cluster_manager.service.TaskService;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController()
-@RequestMapping("/api/v1/bn")
+@RequestMapping("/api/v1/cm")
 public class TaskController {
 
     @Autowired
@@ -23,7 +23,7 @@ public class TaskController {
 
     @PostMapping("/task")
     public TaskDTO createTask(@RequestBody TaskDTO taskDTO) {
-        return taskService.addTask(toEntity(taskDTO));
+        return taskService.addTask(taskDTO);
     }
 
     private Task toEntity(TaskDTO taskDTO) {

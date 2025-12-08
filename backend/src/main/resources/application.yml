@@ -12,15 +12,19 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration/base
-  datasource:
-    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
-    username: ${POSTGRES_USER:appuser}
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node4}
+    user: ${POSTGRES_USER:appuser}
     password: ${POSTGRES_PASSWORD:apppassword}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
+  datasource:
+    bn:
+      url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node4}
+      username: ${POSTGRES_USER:appuser}
+      password: ${POSTGRES_PASSWORD:apppassword}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
   logging:
     level:
       root: INFO
@@ -49,8 +53,21 @@ spring:
   config:
     activate:
       on-profile: cluster_manager
+  datasource:
+    cm:
+      url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
+      username: ${POSTGRES_USER:appuser}
+      password: ${POSTGRES_PASSWORD:apppassword}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
   flyway:
     locations: classpath:db/migration/cluster_manager
+    url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
+    user: ${POSTGRES_USER:appuser}
+    password: ${POSTGRES_PASSWORD:apppassword}
 server:
   servlet:
     session:

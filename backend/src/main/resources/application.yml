@@ -34,8 +34,6 @@ application:
     public-address: ${CM_ADDRESS}
   node:
     public-address: ${NODE_ADDRESS}
-  bm:
-    public-address: ${BM_ADDRESS}
 
 mybatis:
   type-aliases-package: com.bcm.shared.model.database
@@ -57,12 +55,6 @@ server:
   servlet:
     session:
       timeout: 30m
----
-# Prod profile
-spring:
-  config:
-    activate:
-      on-profile: prod
 ---
 # Development profile
 spring:

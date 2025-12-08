@@ -3,8 +3,6 @@ package com.bcm.shared.controller;
 
 import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
-import com.bcm.shared.repository.BackupMapper;
-import com.bcm.shared.repository.ClientMapper;
 import com.bcm.shared.service.BackupService;
 import com.bcm.shared.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.bcm.shared.filter;
+package com.bcm.shared.pagination.filter;
 
 import java.util.*;
 import java.util.stream.Collectors;

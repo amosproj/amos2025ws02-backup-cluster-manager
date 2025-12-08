@@ -10,32 +10,32 @@ import org.springframework.web.client.RestTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-class NodeStartupRegisterTests {
+class NodeStartupRegisterServiceTests {
 
-    private NodeStartupRegister nodeStartupRegister;
+    private NodeStartupRegisterService nodeStartupRegisterService;
     private RestTemplate restTemplateMock;
 
     @BeforeEach
     void setup() {
-        nodeStartupRegister = new NodeStartupRegister();
+        nodeStartupRegisterService = new NodeStartupRegisterService();
 
         restTemplateMock = mock(RestTemplate.class);
         try {
-            var field = NodeStartupRegister.class.getDeclaredField("restTemplate");
+            var field = NodeStartupRegisterService.class.getDeclaredField("restTemplate");
             field.setAccessible(true);
-            field.set(nodeStartupRegister, restTemplateMock);
+            field.set(nodeStartupRegisterService, restTemplateMock);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         try {
-            var cmField = NodeStartupRegister.class.getDeclaredField("cmPublicAddress");
+            var cmField = NodeStartupRegisterService.class.getDeclaredField("cmPublicAddress");
             cmField.setAccessible(true);
-            cmField.set(nodeStartupRegister, "localhost:8080");
+            cmField.set(nodeStartupRegisterService, "localhost:8080");
 
-            var nodeField = NodeStartupRegister.class.getDeclaredField("nodePublicAddress");
+            var nodeField = NodeStartupRegisterService.class.getDeclaredField("nodePublicAddress");
             nodeField.setAccessible(true);
-            nodeField.set(nodeStartupRegister, "localhost:8081");
+            nodeField.set(nodeStartupRegisterService, "localhost:8081");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -48,7 +48,7 @@ class NodeStartupRegisterTests {
 
         ApplicationArguments args = mock(ApplicationArguments.class);
 
-        nodeStartupRegister.registerAtStartup().run(args);
+        nodeStartupRegisterService.registerAtStartup().run(args);
 
         ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<RegisterRequest> requestCaptor = ArgumentCaptor.forClass(RegisterRequest.class);
@@ -68,7 +68,7 @@ class NodeStartupRegisterTests {
         ApplicationArguments args = mock(ApplicationArguments.class);
 
         try {
-            nodeStartupRegister.registerAtStartup().run(args);
+            nodeStartupRegisterService.registerAtStartup().run(args);
         } catch (InterruptedException ignored) {
         }
 

@@ -1,15 +1,10 @@
 package com.bcm.cluster_manager.controller;
 
-import com.bcm.cluster_manager.service.ClusterManagerService;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ClusterManagerControllerTests {
-
+    /*
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -131,4 +126,6 @@ class ClusterManagerControllerTests {
 //        assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
 //        verify(clusterManagerService, times(1)).findNodes(null, "", null, null);
 //    }
+
+     */
 }

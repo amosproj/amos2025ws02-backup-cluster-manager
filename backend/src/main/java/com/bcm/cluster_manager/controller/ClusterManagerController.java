@@ -1,6 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
-import com.bcm.cluster_manager.service.ClusterManagerService;
+import com.bcm.cluster_manager.service.NodeManagementService;
 import com.bcm.cluster_manager.service.RegistryService;
 import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.api.NodeDTO;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class ClusterManagerController {
 
     @Autowired
-    private ClusterManagerService clusterManagerService;
+    private NodeManagementService nodeManagementService;
 
     @Autowired
     private RegistryService registry;
@@ -28,7 +28,7 @@ public class ClusterManagerController {
 
     @GetMapping("/nodes")
     public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination) {
-        return clusterManagerService.getPaginatedItems(pagination);
+        return nodeManagementService.getPaginatedItems(pagination);
     }
 
     @PostMapping("/register")

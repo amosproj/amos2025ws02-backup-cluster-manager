@@ -1,4 +1,4 @@
-package com.bcm.shared.service.sort;
+package com.bcm.shared.pagination.sort;
 
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.pagination.sort.SortProvider;

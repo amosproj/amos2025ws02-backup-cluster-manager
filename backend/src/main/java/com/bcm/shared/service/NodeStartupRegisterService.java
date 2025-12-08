@@ -13,9 +13,9 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @Profile({"backup_node & !test", "backup_manager & !test"})
-public class NodeStartupRegister {
+public class NodeStartupRegisterService {
 
-    private static final Logger log = LoggerFactory.getLogger(NodeStartupRegister.class);
+    private static final Logger log = LoggerFactory.getLogger(NodeStartupRegisterService.class);
 
     @Autowired
     private RestTemplate restTemplate;

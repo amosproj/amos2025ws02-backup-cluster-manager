@@ -1,4 +1,4 @@
-package com.bcm.cluster_manager.config.security;
+package com.bcm.shared.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

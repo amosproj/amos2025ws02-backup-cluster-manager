@@ -1,8 +1,8 @@
 package com.bcm.cluster_manager.service;
 
 
-import com.bcm.shared.service.sort.NodeComparators;
-import com.bcm.shared.filter.Filter;
+import com.bcm.shared.pagination.sort.NodeComparators;
+import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.pagination.PaginationProvider;
@@ -15,7 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ClusterManagerService implements PaginationProvider<NodeDTO> {
+public class NodeManagementService implements PaginationProvider<NodeDTO> {
+
     @Autowired
     private RegistryService registry;
 

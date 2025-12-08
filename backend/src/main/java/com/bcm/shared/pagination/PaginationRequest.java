@@ -2,7 +2,7 @@ package com.bcm.shared.pagination;
 
 import lombok.Getter;
 import lombok.Setter;
-import com.bcm.shared.filter.Filter;
+import com.bcm.shared.pagination.filter.Filter;
 
 @Setter
 @Getter

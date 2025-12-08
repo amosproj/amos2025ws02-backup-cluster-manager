@@ -1,4 +1,4 @@
-package com.bcm.cluster_manager.repository;
+package com.bcm.shared.repository;
 
 import com.bcm.shared.model.database.Client;
 import com.bcm.shared.model.database.Task;

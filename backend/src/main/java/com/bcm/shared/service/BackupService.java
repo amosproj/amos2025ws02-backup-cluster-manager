@@ -7,7 +7,6 @@ import com.bcm.shared.repository.BackupMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.bcm.shared.mapper.BackupConverter;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Instant;
 import java.util.List;

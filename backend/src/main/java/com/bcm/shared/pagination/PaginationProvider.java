@@ -1,6 +1,6 @@
 package com.bcm.shared.pagination;
 
-import com.bcm.shared.filter.Filter;
+import com.bcm.shared.pagination.filter.Filter;
 
 import java.util.List;
 

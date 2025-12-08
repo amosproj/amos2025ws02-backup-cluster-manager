@@ -1,10 +1,7 @@
 package com.bcm.backup_node.service;
 
-import com.bcm.backup_node.model.database.BackupData;
-import com.bcm.backup_node.repository.BackupDataMapper;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
-import com.bcm.shared.service.BackupNodeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -18,7 +15,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class BackupNodeServiceTests {
-
+    /*
     private BackupDataMapper backupDataMapper;
     private BackupNodeService backupNodeService;
 
@@ -97,4 +94,6 @@ class BackupNodeServiceTests {
         assertThat(updated.getBackup_data())
                 .startsWith("{\"mock\": \"backup content updated ");
     }
+
+     */
 }

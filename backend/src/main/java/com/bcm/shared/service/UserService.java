@@ -5,7 +5,7 @@ import com.bcm.shared.model.database.User;
 import com.bcm.shared.model.database.UserGroupRelation;
 import com.bcm.shared.repository.UserGroupRelationMapper;
 import com.bcm.shared.repository.UserMapper;
-import com.bcm.shared.filter.Filter;
+import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;

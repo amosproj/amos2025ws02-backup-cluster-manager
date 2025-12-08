@@ -3,7 +3,6 @@ package com.bcm.cluster_manager.service;
 import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.model.database.BackupState;
-import com.bcm.shared.repository.BackupMapper;
 import com.bcm.shared.service.NodeHttpClient;
 import com.bcm.shared.pagination.sort.BackupComparators;
 import com.bcm.shared.pagination.filter.Filter;
@@ -12,6 +11,7 @@ import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.util.NodeUtils;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -30,24 +30,21 @@ import org.slf4j.Logger;
 import static com.bcm.shared.mapper.BackupConverter.toLdt;
 
 @Service
-public class BackupService implements PaginationProvider<BackupDTO> {
+public class CMBackupService implements PaginationProvider<BackupDTO> {
 
-    private final RegistryService registryService;
-    private final RestTemplate restTemplate;
-    private final NodeHttpClient nodeHttpClient;
+    @Autowired
+    private  RegistryService registryService;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private NodeHttpClient nodeHttpClient;
+
     private static final String BACKUPS_ENDPOINT = "/api/v1/bn/backups";
 
-    private static final Logger logger =LoggerFactory.getLogger(BackupService.class);
+    private static final Logger logger =LoggerFactory.getLogger(CMBackupService.class);
 
-    public BackupService(RegistryService registryService,
-                         BackupMapper backupMapper,
-                         RestTemplate restTemplate,
-                         NodeHttpClient nodeHttpClient) {
-        this.registryService = registryService;
-        this.restTemplate = restTemplate;
-        this.nodeHttpClient = nodeHttpClient;
-
-    }
 
     @Override
     public long getTotalItemsCount(Filter filter) {

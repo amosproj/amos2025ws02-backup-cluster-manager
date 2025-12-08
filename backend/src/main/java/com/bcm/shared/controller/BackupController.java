@@ -42,7 +42,7 @@ public class BackupController {
         }
     }
 
-    @GetMapping("/backupNode/test")
+    @GetMapping("/backups/test")
     public String test(){
         return "This is a backup node endpoint";
     }

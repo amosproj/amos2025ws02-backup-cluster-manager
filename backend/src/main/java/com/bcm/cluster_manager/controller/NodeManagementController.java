@@ -1,8 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
 import com.bcm.cluster_manager.service.NodeManagementService;
-import com.bcm.cluster_manager.service.RegistryService;
-import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.pagination.PaginationRequest;
@@ -14,17 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController()
 @RequestMapping("/api/v1/cm")
-public class ClusterManagerController {
+public class NodeManagementController {
 
     @Autowired
     private NodeManagementService nodeManagementService;
-
-    @Autowired
-    private RegistryService registry;
-
-    @Autowired
-    private SyncService syncService;
-
 
     @GetMapping("/nodes")
     public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination) {
@@ -33,8 +24,6 @@ public class ClusterManagerController {
 
     @PostMapping("/register")
     public void register(@RequestBody RegisterRequest req) {
-        registry.register(req.getAddress());
-        // push updated tables to all nodes
-        syncService.pushTablesToAllNodes();
+        nodeManagementService.registerNode(req);
     }
 }

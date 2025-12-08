@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class BackupServiceTest {
+class CMBackupServiceTest {
     /*
     @Mock
     private RegistryService registryService;

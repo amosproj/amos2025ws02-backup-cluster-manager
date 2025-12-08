@@ -8,6 +8,7 @@ import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.util.NodeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,15 +23,14 @@ import java.util.concurrent.CompletableFuture;
 
 
 @Service
-public class TaskService implements PaginationProvider<TaskDTO> {
+public class CMTaskService implements PaginationProvider<TaskDTO> {
 
-    private final RegistryService registryService;
-    private final RestTemplate restTemplate;
+    @Autowired
+    private RegistryService registryService;
 
-    public TaskService(RegistryService registryService) {
-        this.registryService = registryService;
-        this.restTemplate = new RestTemplate();
-    }
+    @Autowired
+    private RestTemplate restTemplate;
+
 
     @Override
     public long getTotalItemsCount(Filter filter) {

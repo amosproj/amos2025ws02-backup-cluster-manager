@@ -2,7 +2,7 @@ package com.bcm.cluster_manager.controller;
 
 import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
-import com.bcm.cluster_manager.service.BackupService;
+import com.bcm.cluster_manager.service.CMBackupService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
@@ -13,17 +13,17 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController()
 @RequestMapping("/api/v1/cm")
-public class BackupController {
+public class CMBackupController {
 
 
     @Autowired
-    private BackupService backupService;
+    private CMBackupService CMBackupService;
 
 
     @DeleteMapping("/backups/{id}")
     public ResponseEntity<Void> deleteBackup(@PathVariable Long id) {
         try {
-            backupService.deleteBackup(id);
+            CMBackupService.deleteBackup(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -34,7 +34,7 @@ public class BackupController {
     @PostMapping("/backups/{id}/execute")
     public ResponseEntity<Void> executeBackup(@PathVariable Long id, @RequestBody ExecuteBackupRequest req) {
         try {
-            backupService.executeBackup(id, req.getDuration(), req.getShouldSucceed());
+            CMBackupService.executeBackup(id, req.getDuration(), req.getShouldSucceed());
             return ResponseEntity.accepted().build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -44,14 +44,14 @@ public class BackupController {
 
     @GetMapping("/backups")
     public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
-        return backupService.getPaginatedItems(pagination);
+        return CMBackupService.getPaginatedItems(pagination);
     }
 
     @PostMapping("/backups")
     public ResponseEntity<BackupDTO> createBackup(@RequestBody CreateBackupRequest request) {
         try {
 
-            BackupDTO result = backupService.createBackup(request);
+            BackupDTO result = CMBackupService.createBackup(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception e) {
             e.printStackTrace();

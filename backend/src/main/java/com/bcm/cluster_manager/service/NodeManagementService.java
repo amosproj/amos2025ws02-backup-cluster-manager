@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 
+import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.pagination.sort.NodeComparators;
 import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.model.api.NodeDTO;
@@ -20,6 +21,8 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
     @Autowired
     private RegistryService registry;
 
+    @Autowired
+    private SyncService syncService;
 
     @Override
     public long getTotalItemsCount(Filter filter) {
@@ -90,5 +93,13 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
                     .toList();
         }
         return nodes;
+    }
+
+
+    public void registerNode(RegisterRequest req) {
+        registry.register(req.getAddress());
+        // push updated tables to all nodes
+        syncService.pushTablesToAllNodes();
+
     }
 }

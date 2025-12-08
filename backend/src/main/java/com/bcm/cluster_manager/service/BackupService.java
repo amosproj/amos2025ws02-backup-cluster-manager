@@ -4,12 +4,14 @@ import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.repository.BackupMapper;
+import com.bcm.shared.service.NodeHttpClient;
 import com.bcm.shared.service.sort.BackupComparators;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.util.NodeUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -18,9 +20,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import org.slf4j.Logger;
 
 import static com.bcm.shared.mapper.BackupConverter.toLdt;
 
@@ -29,13 +34,19 @@ public class BackupService implements PaginationProvider<BackupDTO> {
 
     private final RegistryService registryService;
     private final RestTemplate restTemplate;
+    private final NodeHttpClient nodeHttpClient;
+    private static final String BACKUPS_ENDPOINT = "/api/v1/bn/backups";
 
+    private static final Logger logger =LoggerFactory.getLogger(BackupService.class);
 
     public BackupService(RegistryService registryService,
                          BackupMapper backupMapper,
-                         RestTemplate restTemplate) {
+                         RestTemplate restTemplate,
+                         NodeHttpClient nodeHttpClient) {
         this.registryService = registryService;
         this.restTemplate = restTemplate;
+        this.nodeHttpClient = nodeHttpClient;
+
     }
 
     @Override
@@ -75,16 +86,11 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
 
         List<CompletableFuture<BackupDTO[]>> futures = nodeAddresses.stream()
-                .map(nodeAddress -> CompletableFuture.supplyAsync(() -> {
-                    try {
-                        String url = "http://" + nodeAddress + "/api/v1/bn/backups";
-                        ResponseEntity<BackupDTO[]> response = restTemplate.getForEntity(url, BackupDTO[].class);
-                        return response.getBody();
-                    } catch (Exception e) {
-                        System.out.println("Fehler beim Abruf von Backups von Node " + nodeAddress + ": " + e.getMessage());
-                        return null;
-                    }
-                }))
+                .map(nodeAddress -> nodeHttpClient.callNodeAsync(
+                        nodeAddress,
+                        BACKUPS_ENDPOINT,
+                        BackupDTO[].class
+                ))
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -92,21 +98,17 @@ public class BackupService implements PaginationProvider<BackupDTO> {
         for (CompletableFuture<BackupDTO[]> future : futures) {
             try {
                 BackupDTO[] body = future.get();
-                if (body == null || body.length == 0) continue;
-                for (BackupDTO b : body) {
-                    if (b == null) continue;
-                    Long id = b.getId();
-                    if (id != null) {
-                        if (seenIds.add(id)) {
-                            backupDTOs.add(b);
-                        }
-                    } else {
-                        backupDTOs.add(b);
-                    }
+                if (body != null) {
+                    Arrays.stream(body)
+                            .filter(Objects::nonNull)
+                            .filter(b -> b.getId() == null || seenIds.add(b.getId()))
+                            .forEach(backupDTOs::add);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-            } catch (ExecutionException ignored) {
+                logger.warn("Thread interrupted while fetching backups", e);
+            } catch (ExecutionException e) {
+                logger.warn("Error fetching backups: {}", e.getMessage());
             }
         }
         return backupDTOs;
@@ -182,14 +184,14 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                 String url = "http://" + nodeAddress + "/api/v1/bn/backups/sync";
                 ResponseEntity<BackupDTO> response = restTemplate.postForEntity(url, request, BackupDTO.class);
                 if (response.getStatusCode().is2xxSuccessful()) {
-                    System.out.println("Backup creation request sent to node " + nodeAddress);
+                    logger.info("Backup creation request sent to node {}", nodeAddress);
                     return backupDTO;
                 } else {
-                    System.out.println("Failed to send backup creation request to node " + nodeAddress);
+                    logger.info("Backup creation request failed to node {}", nodeAddress);
                     return null;
                 }
             } catch (Exception e) {
-                System.out.println("Error sending backup creation request to node " + nodeAddress + ": " + e.getMessage());
+                logger.error("Error sending backup creation request to node {}: {}", nodeAddress, e.getMessage());
                 throw new RuntimeException("Error sending backup creation request to node " + nodeAddress, e);
             }
         }
@@ -206,14 +208,14 @@ public class BackupService implements PaginationProvider<BackupDTO> {
                 try {
                     String url = "http://" + nodeAddress + "/api/v1/bn/backups/" + id;
                     restTemplate.delete(url);
-                    System.out.println("Delete request sent to node " + nodeAddress + " for backup " + id);
+                    logger.info("Delete backup {} from node {}", id, nodeAddress);
                 } catch (Exception e) {
-                    System.out.println("Error sending delete request to node " + nodeAddress + ": " + e.getMessage());
+                    logger.error("Error deleting backup {} from node {}", id, nodeAddress, e);
                 }
             }
 
         } catch (Exception e) {
-            System.out.println("✗ Failed to delete backup: " + e.getMessage());
+            logger.error("Error deleting backup {} from node {}", id, e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -225,7 +227,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
             executeAndUpdate(id, duration, shouldSucceed);
 
         } catch (Exception e) {
-            System.out.println("✗ Failed to execute backup: " + e.getMessage());
+            logger.error("Error executing backup {} from node {}", id, e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -264,7 +266,7 @@ public class BackupService implements PaginationProvider<BackupDTO> {
             all.join();
 
         } catch (Exception e) {
-            System.out.println("Failed to notify backup nodes: " + e.getMessage());
+            logger.error("Error executing backup {} from node {}", id, e.getMessage());
         }
     }
 

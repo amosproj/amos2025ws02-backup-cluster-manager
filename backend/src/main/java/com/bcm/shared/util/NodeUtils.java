@@ -20,4 +20,9 @@ public final class NodeUtils {
                 .collect(Collectors.toList());
     }
 
+    public static String buildNodeUrl(String nodeAddress, String endpoint) {
+        Objects.requireNonNull(nodeAddress, "Node address cannot be null");
+        Objects.requireNonNull(endpoint, "Endpoint cannot be null");
+        return "http://" + nodeAddress + endpoint;
+    }
 }

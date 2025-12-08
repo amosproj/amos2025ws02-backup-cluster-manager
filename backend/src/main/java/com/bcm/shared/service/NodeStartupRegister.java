@@ -12,20 +12,42 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * Handles registration of both regular nodes and cluster manager to the CM registry.
+ * Uses profile-based configuration to determine the node type:
+ * - With 'cluster_manager' profile: registers as CLUSTER_MANAGER
+ * - Without 'cluster_manager' profile: registers as NODE
+ */
 @Configuration
-@Profile("!cluster_manager & !test")
+@Profile("!test")
 public class NodeStartupRegister {
 
     private static final Logger log = LoggerFactory.getLogger(NodeStartupRegister.class);
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
-    // These values come from environment variables or application.properties
     @Value("${application.cm.public-address:localhost:8080}")
     private String cmPublicAddress;
 
     @Value("${application.node.public-address:localhost:8081}")
     private String nodePublicAddress;
+
+    @Value("${application.register.max-attempts:10}")
+    private int maxAttempts = 10;
+
+    @Value("${application.register.retry-delay-ms:3000}")
+    private long retryDelayMs = 3000;
+
+    @Value("${application.is-cluster-manager:false}")
+    private boolean isClusterManager;
+
+    public NodeStartupRegister() {
+        this(new RestTemplate());
+    }
+
+    public NodeStartupRegister(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Bean
     public ApplicationRunner registerAtStartup() {
@@ -35,23 +57,25 @@ public class NodeStartupRegister {
             log.info("Node starting with address: {}", nodePublicAddress);
             log.info("CM register endpoint: {}", cmRegisterUrl);
 
-            // All nodes without cluster_manager profile are NODE type
-            NodeMode nodeType = NodeMode.NODE;
+            // Determine node type based on profile or property
+            NodeMode nodeType = isClusterManager ? NodeMode.CLUSTER_MANAGER : NodeMode.NODE;
 
             RegisterRequest req = new RegisterRequest(nodePublicAddress, nodeType);
 
             boolean registered = false;
             int attempts = 0;
 
-            while (!registered && attempts < 10) {
+            while (!registered && attempts < maxAttempts) {
                 attempts++;
                 try {
                     restTemplate.postForEntity(cmRegisterUrl, req, Void.class);
-                    log.info("Successfully registered node with CM.");
+                    log.info("Successfully registered node with CM as {}.", nodeType);
                     registered = true;
                 } catch (Exception e) {
                     log.warn("Register attempt {} failed: {}", attempts, e.getMessage());
-                    Thread.sleep(3000);
+                    if (attempts < maxAttempts) {
+                        Thread.sleep(retryDelayMs);
+                    }
                 }
             }
 

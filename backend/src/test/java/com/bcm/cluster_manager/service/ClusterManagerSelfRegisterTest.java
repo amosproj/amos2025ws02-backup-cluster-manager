@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
 import com.bcm.shared.model.api.NodeMode;
@@ -19,11 +20,14 @@ class ClusterManagerSelfRegisterTest {
 
     private NodeStartupRegister nodeRegistration;
     private RestTemplate restTemplate;
+    private Environment environment;
 
     @BeforeEach
     void setup() {
         restTemplate = mock(RestTemplate.class);
-        nodeRegistration = new NodeStartupRegister(restTemplate);
+        environment = mock(Environment.class);
+        when(environment.getActiveProfiles()).thenReturn(new String[]{"cluster_manager"});
+        nodeRegistration = new NodeStartupRegister(restTemplate, environment);
 
         try {
             var cmAddressField = NodeStartupRegister.class.getDeclaredField("cmPublicAddress");
@@ -33,10 +37,6 @@ class ClusterManagerSelfRegisterTest {
             var nodeAddressField = NodeStartupRegister.class.getDeclaredField("nodePublicAddress");
             nodeAddressField.setAccessible(true);
             nodeAddressField.set(nodeRegistration, "cluster-manager:8080");
-
-            var isClusterManagerField = NodeStartupRegister.class.getDeclaredField("isClusterManager");
-            isClusterManagerField.setAccessible(true);
-            isClusterManagerField.setBoolean(nodeRegistration, true);
 
             var attemptsField = NodeStartupRegister.class.getDeclaredField("maxAttempts");
             attemptsField.setAccessible(true);

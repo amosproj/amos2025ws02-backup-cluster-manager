@@ -10,7 +10,10 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Arrays;
 
 /**
  * Handles registration of both regular nodes and cluster manager to the CM registry.
@@ -25,6 +28,7 @@ public class NodeStartupRegister {
     private static final Logger log = LoggerFactory.getLogger(NodeStartupRegister.class);
 
     private final RestTemplate restTemplate;
+    private final Environment environment;
 
     @Value("${application.cm.public-address:localhost:8080}")
     private String cmPublicAddress;
@@ -42,11 +46,16 @@ public class NodeStartupRegister {
     private boolean isClusterManager;
 
     public NodeStartupRegister() {
-        this(new RestTemplate());
+        this(new RestTemplate(), null);
     }
 
     public NodeStartupRegister(RestTemplate restTemplate) {
+        this(restTemplate, null);
+    }
+
+    public NodeStartupRegister(RestTemplate restTemplate, Environment environment) {
         this.restTemplate = restTemplate;
+        this.environment = environment;
     }
 
     @Bean
@@ -57,8 +66,10 @@ public class NodeStartupRegister {
             log.info("Node starting with address: {}", nodePublicAddress);
             log.info("CM register endpoint: {}", cmRegisterUrl);
 
-            // Determine node type based on profile or property
-            NodeMode nodeType = isClusterManager ? NodeMode.CLUSTER_MANAGER : NodeMode.NODE;
+            boolean profileSaysClusterManager = environment != null && Arrays.asList(environment.getActiveProfiles()).contains("cluster_manager");
+
+            // Determine node type based on active profiles or explicit property
+            NodeMode nodeType = (profileSaysClusterManager || isClusterManager) ? NodeMode.CLUSTER_MANAGER : NodeMode.NODE;
 
             RegisterRequest req = new RegisterRequest(nodePublicAddress, nodeType);
 

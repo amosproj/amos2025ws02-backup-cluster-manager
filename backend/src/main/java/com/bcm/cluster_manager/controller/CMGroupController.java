@@ -1,4 +1,4 @@
-package com.bcm.shared.controller;
+package com.bcm.cluster_manager.controller;
 
 import com.bcm.shared.model.database.Group;
 import com.bcm.shared.service.GroupService;
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController()
-@RequestMapping("/api/v1/bn")
-public class GroupController {
+@RequestMapping("/api/v1/cm")
+public class CMGroupController {
 
     @Autowired
     private GroupService groupService;

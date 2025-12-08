@@ -1,10 +1,10 @@
-package com.bcm.shared.controller;
+package com.bcm.cluster_manager.controller;
 
 import com.bcm.shared.model.api.UserDTO;
-import com.bcm.shared.service.UserService;
 import com.bcm.shared.model.database.User;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
+import com.bcm.shared.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +12,8 @@ import java.time.Instant;
 import java.util.List;
 
 @RestController()
-@RequestMapping("/api/v1/bn/users")
-public class UserController {
+@RequestMapping("/api/v1/cm/users")
+public class CMUserController {
 
     @Autowired
     private UserService userService;

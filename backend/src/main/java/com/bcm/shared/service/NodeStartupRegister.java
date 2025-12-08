@@ -5,6 +5,7 @@ import com.bcm.shared.model.api.RegisterRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -53,6 +54,17 @@ public class NodeStartupRegister {
         this(restTemplate, null);
     }
 
+    /**
+     * Primary constructor used by Spring; inject Environment, use a local RestTemplate.
+     */
+    @Autowired
+    public NodeStartupRegister(Environment environment) {
+        this(new RestTemplate(), environment);
+    }
+
+    /**
+     * Testing/override constructor.
+     */
     public NodeStartupRegister(RestTemplate restTemplate, Environment environment) {
         this.restTemplate = restTemplate;
         this.environment = environment;

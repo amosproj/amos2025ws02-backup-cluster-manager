@@ -1,9 +1,11 @@
 package com.bcm.cluster_manager.config.datasource;
 
+import com.bcm.shared.repository.GroupMapper;
+import com.bcm.shared.repository.UserGroupRelationMapper;
+import com.bcm.shared.repository.UserMapper;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.mybatis.spring.annotation.MapperScan;
+import org.mybatis.spring.mapper.MapperFactoryBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -13,10 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 @Configuration
-@MapperScan(
-        basePackages = "com.bcm.cluster_manager",
-        sqlSessionFactoryRef = "sqlSessionFactoryCM"
-)
 public class DataSourceCMConfig {
 
     @Bean
@@ -27,17 +25,35 @@ public class DataSourceCMConfig {
 
     @Bean
     public SqlSessionFactory sqlSessionFactoryCM(
-            @Qualifier("dataSourceCM") DataSource dsCM) throws Exception {
+            @Qualifier("dataSourceCM") DataSource ds) throws Exception {
 
         SqlSessionFactoryBean factory = new SqlSessionFactoryBean();
-        factory.setDataSource(dsCM);
+        factory.setDataSource(ds);
         return factory.getObject();
     }
 
-    @Bean
-    public SqlSessionTemplate sqlSessionTemplateCM(
-            @Qualifier("sqlSessionFactoryCM") SqlSessionFactory sfCM) {
+    @Bean(name = "userMapperCM")
+    public MapperFactoryBean<UserMapper> userMapperCM(
+            @Qualifier("sqlSessionFactoryCM") SqlSessionFactory factory) {
 
-        return new SqlSessionTemplate(sfCM);
+        MapperFactoryBean<UserMapper> bean = new MapperFactoryBean<>(UserMapper.class);
+        bean.setSqlSessionFactory(factory);
+        return bean;
+    }
+
+    @Bean(name = "groupMapperCM")
+    public MapperFactoryBean<GroupMapper> groupMapperCM(
+            @Qualifier("sqlSessionFactoryCM") SqlSessionFactory factory) {
+        MapperFactoryBean<GroupMapper> bean = new MapperFactoryBean<>(GroupMapper.class);
+        bean.setSqlSessionFactory(factory);
+        return bean;
+    }
+
+    @Bean(name = "userGroupRelationMapperCM")
+    public MapperFactoryBean<UserGroupRelationMapper> userGroupRelationMapperCM(
+            @Qualifier("sqlSessionFactoryCM") SqlSessionFactory factory) {
+        MapperFactoryBean<UserGroupRelationMapper> bean = new MapperFactoryBean<>(UserGroupRelationMapper.class);
+        bean.setSqlSessionFactory(factory);
+        return bean;
     }
 }

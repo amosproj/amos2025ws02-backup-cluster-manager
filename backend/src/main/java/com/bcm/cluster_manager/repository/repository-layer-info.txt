@@ -1,0 +1,3 @@
+The repository layer for the CM reuses the Mybatis mapper interfaces from the shared.repository-module for limited code duplication, but they are configured with a different datasource.
+Bean creation for the CM repository layer is defined in com.bcm.cluster_manager.config.datasource.DataSourceCMConfig.java.
+Call userMapper, groupMapper and userGroupRelationMapperCM with a CM suffix to distinguish them from the shared mappers e.g. userMapperCM and create a Constructor with Qualifier-Annotations.

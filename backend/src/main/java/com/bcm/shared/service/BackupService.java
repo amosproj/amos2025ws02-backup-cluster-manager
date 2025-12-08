@@ -5,6 +5,7 @@ import com.bcm.shared.model.database.Backup;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.repository.BackupMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import com.bcm.shared.mapper.BackupConverter;
 
@@ -15,8 +16,11 @@ import java.util.stream.Collectors;
 @Service
 public class BackupService {
 
-    @Autowired
-    private BackupMapper backupMapper;
+    private final BackupMapper backupMapper;
+
+    public BackupService(@Qualifier("backupMapperBN") BackupMapper backupMapper) {
+        this.backupMapper = backupMapper;
+    }
 
 
     public BackupDTO findBackupById(Long id) {
@@ -39,7 +43,7 @@ public class BackupService {
     }
 
     public void deleteBackup(Long backupId) {
-            backupMapper.delete(backupId);
+        backupMapper.delete(backupId);
     }
 
     public void executeBackupSync(Long id, ExecuteBackupRequest request) {
@@ -59,7 +63,7 @@ public class BackupService {
                 backup.setMessage("Backup failed due to an error.");
             }
             backup.setStopTime(Instant.ofEpochMilli(now + request.getDuration()));
-            backupMapper.update(backup);
+             backupMapper.update(backup);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: test,cluster_manager,backup_manager,backup_node
+    active: test,cluster_manager
 
 server:
   port: 0

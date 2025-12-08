@@ -3,6 +3,7 @@ package com.bcm.shared.service;
 import com.bcm.shared.model.database.Client;
 import com.bcm.shared.repository.ClientMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,9 +12,11 @@ import java.util.List;
 @Service
 public class ClientService {
 
-    @Autowired
-    private ClientMapper clientMapper;
+    private final ClientMapper clientMapper;
 
+    public ClientService(@Qualifier("clientMapperBN") ClientMapper clientMapper) {
+        this.clientMapper = clientMapper;
+    }
 
     @Transactional
     public Client getClientById(Long id) {

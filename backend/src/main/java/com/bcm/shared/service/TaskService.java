@@ -9,6 +9,7 @@ import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -21,10 +22,13 @@ import java.util.List;
 public class TaskService implements PaginationProvider<TaskDTO> {
 
     @Autowired
-    private TaskMapper taskMapper;
-
-    @Autowired
     private ClientService clientService;
+
+    private final TaskMapper taskMapper;
+
+    public TaskService(@Qualifier("taskMapperBN") TaskMapper taskMapper) {
+        this.taskMapper = taskMapper;
+    }
 
     /**
      * Pagination

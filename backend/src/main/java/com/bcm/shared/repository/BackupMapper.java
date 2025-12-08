@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.*;
 import java.time.Instant;
 import java.util.List;
 
-@Mapper
+
 public interface BackupMapper {
 
     @Select("""

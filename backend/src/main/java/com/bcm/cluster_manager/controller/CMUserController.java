@@ -6,6 +6,7 @@ import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import com.bcm.shared.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -15,8 +16,12 @@ import java.util.List;
 @RequestMapping("/api/v1/cm/users")
 public class CMUserController {
 
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+
+    public CMUserController(@Qualifier("userServiceCM") UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/userlist")
     public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination){

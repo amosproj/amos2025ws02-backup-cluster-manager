@@ -7,6 +7,8 @@ import {SortOrder} from '../../shared/types/SortTypes';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {map} from 'rxjs';
 import {formatDateFields} from '../../shared/utils/date_utils';
+import {AuthService} from '../../core/services/auth.service';
+import UserPermissionsEnum from '../../shared/types/Permissions';
 
 @Component({
   selector: 'app-backups',
@@ -78,7 +80,8 @@ export class Backups {
   constructor(
     private backupsService: BackupsService,
     private apiService: ApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public authService: AuthService
   ) {
     this.loading$ = this.apiService.loading$;
 
@@ -146,4 +149,5 @@ export class Backups {
     }
   }
 
+  protected readonly UserPermissionsEnum = UserPermissionsEnum;
 }

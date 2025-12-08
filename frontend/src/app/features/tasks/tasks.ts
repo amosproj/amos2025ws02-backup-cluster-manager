@@ -6,6 +6,8 @@ import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import {SortOrder} from '../../shared/types/SortTypes';
+import {AuthService} from '../../core/services/auth.service';
+import UserPermissionsEnum from '../../shared/types/Permissions';
 
 @Component({
   selector: 'app-tasks',
@@ -59,7 +61,8 @@ export class Tasks implements OnInit {
     private tasksService: TasksService,
     private clientsService: ClientsService,
     private fb: FormBuilder,
-    private apiService: ApiService
+    private apiService: ApiService,
+    public authService: AuthService
   ) {
     this.loading$ = this.apiService.loading$;
 
@@ -105,4 +108,6 @@ export class Tasks implements OnInit {
     });
 
   }
+
+  protected readonly UserPermissionsEnum = UserPermissionsEnum;
 }

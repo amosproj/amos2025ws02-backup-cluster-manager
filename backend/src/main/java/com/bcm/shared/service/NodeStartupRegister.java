@@ -3,6 +3,7 @@ package com.bcm.shared.service;
 import com.bcm.shared.model.api.RegisterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,8 @@ public class NodeStartupRegister {
 
     private static final Logger log = LoggerFactory.getLogger(NodeStartupRegister.class);
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private RestTemplate restTemplate;
 
     // These values come from environment variables or application.properties
     @Value("${application.cm.public-address:localhost:8080}")

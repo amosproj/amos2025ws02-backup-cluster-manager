@@ -24,11 +24,9 @@ public class TaskService implements PaginationProvider<TaskDTO> {
     @Autowired
     private TaskMapper taskMapper;
 
-    private ClientMapper clientMapper;
+    @Autowired
+    private ClientService clientService;
 
-    public TaskService (ClientMapper clientMapper) {
-        this.clientMapper = clientMapper;
-    }
     /**
      * Pagination
      */
@@ -123,8 +121,8 @@ public class TaskService implements PaginationProvider<TaskDTO> {
      */
 
     @Transactional
-    public TaskDTO addTask(Task task) {
-        if(clientMapper.findById(task.getClientId()) != null) {
+    public TaskDTO createTask(Task task) {
+        if(clientService.getClientById(task.getClientId()) != null) {
             taskMapper.insert(task);
             return toDto(taskMapper.findById(task.getId()));
         }

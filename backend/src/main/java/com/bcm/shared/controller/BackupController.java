@@ -6,6 +6,7 @@ import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.repository.BackupMapper;
 import com.bcm.shared.repository.ClientMapper;
 import com.bcm.shared.service.BackupService;
+import com.bcm.shared.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +19,8 @@ public class BackupController {
     @Autowired
     private BackupService backupNodeService;
 
-    private final ClientMapper clientMapper;
     @Autowired
-    private BackupMapper backupMapper;
-
-    public BackupController(BackupService backupNodeService, ClientMapper clientMapper) {
-        this.backupNodeService = backupNodeService;
-        this.clientMapper = clientMapper;
-    }
+    private ClientService clientService;
 
 
     @DeleteMapping("/backups/{id}")
@@ -58,7 +53,7 @@ public class BackupController {
     public void receiveBackup(@RequestBody CreateBackupRequest dto) {
 
         // get all clients and check if dto client id is in the list
-        if ( clientMapper.findById(dto.getClientId()) != null) {
+        if ( clientService.getClientById(dto.getClientId()) != null) {
 
             backupNodeService.store(dto.getClientId(), dto.getTaskId(), dto.getSizeBytes());
 
@@ -73,7 +68,7 @@ public class BackupController {
             @RequestBody ExecuteBackupRequest request
     ) {
         try {
-            if (backupMapper.findById(id) != null) {
+            if (backupNodeService.findBackupById(id) != null) {
                 backupNodeService.executeBackupSync(id, request);
             }
 

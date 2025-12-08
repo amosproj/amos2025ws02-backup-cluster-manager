@@ -2,6 +2,7 @@ package com.bcm.shared.service;
 
 import com.bcm.shared.repository.GroupMapper;
 import com.bcm.shared.model.database.Group;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,11 +11,8 @@ import java.util.List;
 @Service
 public class GroupService {
 
-    private final GroupMapper groupMapper;
-
-    public GroupService(GroupMapper groupMapper) {
-        this.groupMapper = groupMapper;
-    }
+    @Autowired
+    private GroupMapper groupMapper;
 
     @Transactional
     public Group getGroupById(Long id) {

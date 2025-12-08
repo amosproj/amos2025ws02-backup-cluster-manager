@@ -7,6 +7,7 @@ import com.bcm.shared.repository.UserGroupRelationMapper;
 import com.bcm.shared.repository.UserMapper;
 import com.bcm.shared.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,15 +23,14 @@ import java.util.Set;
 @Service
 public class UserService implements PaginationProvider<UserDTO> {
 
-    final UserMapper userMapper;
-    final UserGroupRelationMapper userGroupRelationMapper;
-    final PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserMapper userMapper;
 
-    public UserService(UserMapper userMapper, UserGroupRelationMapper userGroupRelationMapper, PasswordEncoder passwordEncoder) {
-        this.userMapper = userMapper;
-        this.userGroupRelationMapper = userGroupRelationMapper;
-        this.passwordEncoder = passwordEncoder;
-    }
+    @Autowired
+    private UserGroupRelationMapper userGroupRelationMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Retrieves a user by their unique identifier.

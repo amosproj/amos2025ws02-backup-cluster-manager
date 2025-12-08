@@ -2,6 +2,7 @@ package com.bcm.shared.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -13,11 +14,9 @@ import java.util.concurrent.CompletableFuture;
 public class NodeHttpClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeHttpClient.class);
-    private final RestTemplate restTemplate;
 
-    public NodeHttpClient(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    @Autowired
+    private RestTemplate restTemplate;
 
     public String buildNodeUrl(String nodeAddress, String endpoint) {
         Objects.requireNonNull(nodeAddress, "Node address cannot be null");

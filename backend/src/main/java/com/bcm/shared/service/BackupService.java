@@ -4,8 +4,11 @@ import com.bcm.shared.model.api.*;
 import com.bcm.shared.model.database.Backup;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.repository.BackupMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.bcm.shared.mapper.BackupConverter;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,13 +16,13 @@ import java.util.stream.Collectors;
 @Service
 public class BackupService {
 
-    private final BackupMapper backupMapper;
+    @Autowired
+    private BackupMapper backupMapper;
 
-    public BackupService(BackupMapper backupMapper) {
-        this.backupMapper = backupMapper;
+
+    public BackupDTO findBackupById(Long id) {
+        return BackupConverter.toDTO(backupMapper.findById(id));
     }
-
-
     public List<BackupDTO> getAllBackups() {
         try {
             List<Backup> backups = backupMapper.findAll();

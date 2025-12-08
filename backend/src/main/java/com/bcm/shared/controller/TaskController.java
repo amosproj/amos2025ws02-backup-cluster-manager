@@ -23,7 +23,7 @@ public class TaskController {
 
     @PostMapping("/task")
     public TaskDTO createTask(@RequestBody TaskDTO taskDTO) {
-        return taskService.addTask(toEntity(taskDTO));
+        return taskService.createTask(toEntity(taskDTO));
     }
 
     private Task toEntity(TaskDTO taskDTO) {

@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum NodeMode {
     CLUSTER_MANAGER,
-    BACKUP_MANAGER,
-    BACKUP_NODE;
+    NODE;
 
     @JsonCreator
     public static NodeMode from(String value) {

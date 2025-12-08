@@ -10,11 +10,10 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@Profile({"backup_node & !test", "backup_manager & !test"})
+@Profile("!cluster_manager & !test")
 public class NodeStartupRegister {
 
     private static final Logger log = LoggerFactory.getLogger(NodeStartupRegister.class);
@@ -27,12 +26,6 @@ public class NodeStartupRegister {
 
     @Value("${application.node.public-address:localhost:8081}")
     private String nodePublicAddress;
-        
-    private final Environment environment;
-
-    public NodeStartupRegister(Environment environment) {
-        this.environment = environment;
-    }
 
     @Bean
     public ApplicationRunner registerAtStartup() {
@@ -42,16 +35,8 @@ public class NodeStartupRegister {
             log.info("Node starting with address: {}", nodePublicAddress);
             log.info("CM register endpoint: {}", cmRegisterUrl);
 
-            NodeMode nodeType = NodeMode.BACKUP_NODE;
-            for (String p : environment.getActiveProfiles()) {
-                if (p.equalsIgnoreCase("backup_manager")) {
-                    nodeType = NodeMode.BACKUP_MANAGER;
-                    break;
-                }
-                if (p.equalsIgnoreCase("backup_node")) {
-                    nodeType = NodeMode.BACKUP_NODE;
-                }
-            }
+            // All nodes without cluster_manager profile are NODE type
+            NodeMode nodeType = NodeMode.NODE;
 
             RegisterRequest req = new RegisterRequest(nodePublicAddress, nodeType);
 

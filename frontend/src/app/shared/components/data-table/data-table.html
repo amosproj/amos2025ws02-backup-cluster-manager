@@ -117,9 +117,6 @@
                     @if (dataItem?.mode === 'cluster_manager') { 
                       <span class="bg-danger-soft border border-danger-subtle text-fg-danger-strong text-xs font-medium px-1.5 py-0.5 rounded">cm</span>
                      }
-                     @else if (dataItem?.mode === 'backup_manager') {
-                      <span class="bg-brand-soft border border-brand-subtle text-fg-brand-strong text-xs font-medium px-1.5 py-0.5 rounded">bm</span>
-                     }
                   } @else {
                     {{ getColumnValue(dataItem, column.field) }}
                   }

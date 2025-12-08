@@ -33,7 +33,8 @@ public class ClusterManagerController {
 
     @PostMapping("/register")
     public void register(@RequestBody RegisterRequest req) {
-        registry.register(req.getAddress(), req.getMode());
+        NodeDTO nodeDto = new NodeDTO(null, req.getAddress(), req.getAddress(), null, req.getMode(), null);
+        registry.register(nodeDto);
         // push updated tables to all nodes
         syncService.pushTablesToAllNodes();
     }

@@ -43,9 +43,6 @@ public class NodeStartupRegister {
     @Value("${application.register.retry-delay-ms:3000}")
     private long retryDelayMs = 3000;
 
-    @Value("${application.is-cluster-manager:false}")
-    private boolean isClusterManager;
-
     public NodeStartupRegister() {
         this(new RestTemplate(), null);
     }
@@ -81,7 +78,7 @@ public class NodeStartupRegister {
             boolean profileSaysClusterManager = environment != null && Arrays.asList(environment.getActiveProfiles()).contains("cluster_manager");
 
             // Determine node type based on active profiles or explicit property
-            NodeMode nodeType = (profileSaysClusterManager || isClusterManager) ? NodeMode.CLUSTER_MANAGER : NodeMode.NODE;
+            NodeMode nodeType = profileSaysClusterManager ? NodeMode.CLUSTER_MANAGER : NodeMode.NODE;
 
             RegisterRequest req = new RegisterRequest(nodePublicAddress, nodeType);
 

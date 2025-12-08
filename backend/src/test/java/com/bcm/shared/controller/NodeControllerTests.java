@@ -45,9 +45,9 @@ class NodeControllerTests {
     @Test
     void syncEndpoint_callsReplaceAllOnLocalTablesService() {
         ClusterTablesDTO dto = new ClusterTablesDTO();
-        dto.setActive(List.of(new NodeDTO(1L, "Node A","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.BACKUP_NODE, LocalDateTime.now().minusDays(1)),
-                new NodeDTO(2L, "Node B","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.BACKUP_NODE, LocalDateTime.now().minusDays(1))));
-        dto.setInactive(List.of(new NodeDTO(3L, "Node C","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.INACTIVE, NodeMode.BACKUP_NODE, LocalDateTime.now().minusDays(1))));
+        dto.setActive(List.of(new NodeDTO(1L, "Node A","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(1)),
+                new NodeDTO(2L, "Node B","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(1))));
+        dto.setInactive(List.of(new NodeDTO(3L, "Node C","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.INACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(1))));
 
         HttpEntity<ClusterTablesDTO> request = new HttpEntity<>(dto);
 

@@ -51,8 +51,8 @@ class BackupServiceTest {
     void createBackup_withActiveNodes_shouldCreateQueuedBackupAndForwardSavedDto() {
         // Arrange
         List<NodeDTO> nodes = List.of(
-                new NodeDTO(1L, "node1:8081", "node1:8081", NodeStatus.ACTIVE, NodeMode.BACKUP_NODE, LocalDateTime.now()),
-                new NodeDTO(2L, "node2:8082", "node2:8082", NodeStatus.ACTIVE, NodeMode.BACKUP_NODE, LocalDateTime.now())
+                new NodeDTO(1L, "node1:8081", "node1:8081", NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now()),
+                new NodeDTO(2L, "node2:8082", "node2:8082", NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now())
         );
         when(registryService.getActiveNodes()).thenReturn(nodes);
 
@@ -126,7 +126,7 @@ class BackupServiceTest {
     void createBackup_whenForwardingFails_shouldStillHaveStoredBackupAndThrow() {
         // Arrange
         List<NodeDTO> nodes = List.of(
-                new NodeDTO(1L, "node2:8082", "node2:8082", NodeStatus.ACTIVE, NodeMode.BACKUP_NODE, LocalDateTime.now())
+                new NodeDTO(1L, "node2:8082", "node2:8082", NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now())
         );
         when(registryService.getActiveNodes()).thenReturn(nodes);
 

@@ -3,30 +3,48 @@ package com.bcm.cluster_manager.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import com.bcm.shared.model.api.NodeMode;
+import com.bcm.shared.model.api.RegisterRequest;
+import com.bcm.shared.service.NodeStartupRegister;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("null")
 class ClusterManagerSelfRegisterTest {
 
-    private ClusterManagerSelfRegister clusterManagerSelfRegister;
-    private RegistryService registryServiceMock;
+    private NodeStartupRegister nodeRegistration;
+    private RestTemplate restTemplate;
 
     @BeforeEach
     void setup() {
-        clusterManagerSelfRegister = new ClusterManagerSelfRegister();
-        registryServiceMock = mock(RegistryService.class);
+        restTemplate = mock(RestTemplate.class);
+        nodeRegistration = new NodeStartupRegister(restTemplate);
 
         try {
-            var registryField = ClusterManagerSelfRegister.class.getDeclaredField("registryService");
-            registryField.setAccessible(true);
-            registryField.set(clusterManagerSelfRegister, registryServiceMock);
+            var cmAddressField = NodeStartupRegister.class.getDeclaredField("cmPublicAddress");
+            cmAddressField.setAccessible(true);
+            cmAddressField.set(nodeRegistration, "localhost:8080");
 
-            var addressField = ClusterManagerSelfRegister.class.getDeclaredField("nodePublicAddress");
-            addressField.setAccessible(true);
-            addressField.set(clusterManagerSelfRegister, "cluster-manager:8080");
+            var nodeAddressField = NodeStartupRegister.class.getDeclaredField("nodePublicAddress");
+            nodeAddressField.setAccessible(true);
+            nodeAddressField.set(nodeRegistration, "cluster-manager:8080");
+
+            var isClusterManagerField = NodeStartupRegister.class.getDeclaredField("isClusterManager");
+            isClusterManagerField.setAccessible(true);
+            isClusterManagerField.setBoolean(nodeRegistration, true);
+
+            var attemptsField = NodeStartupRegister.class.getDeclaredField("maxAttempts");
+            attemptsField.setAccessible(true);
+            attemptsField.setInt(nodeRegistration, 1);
+
+            var delayField = NodeStartupRegister.class.getDeclaredField("retryDelayMs");
+            delayField.setAccessible(true);
+            delayField.setLong(nodeRegistration, 0L);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -36,31 +54,38 @@ class ClusterManagerSelfRegisterTest {
     void testRegisterClusterManagerAsNode() throws Exception {
         // Given
         ApplicationArguments args = mock(ApplicationArguments.class);
+        when(restTemplate.postForEntity(anyString(), any(RegisterRequest.class), eq(Void.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         // When
-        clusterManagerSelfRegister.registerClusterManagerAsNode().run(args);
+        nodeRegistration.registerAtStartup().run(args);
 
         // Then
-        verify(registryServiceMock, times(1)).register("cluster-manager:8080", NodeMode.CLUSTER_MANAGER);
+        verify(restTemplate, times(1)).postForEntity(contains("/api/v1/cm/register"), 
+                argThat(req -> req instanceof RegisterRequest && ((RegisterRequest) req).getMode() == NodeMode.CLUSTER_MANAGER), 
+                eq(Void.class));
     }
 
     @Test
     void testRegisterClusterManagerAsNodeWithException() throws Exception {
         // Given
         ApplicationArguments args = mock(ApplicationArguments.class);
-        doThrow(new RuntimeException("Test exception")).when(registryServiceMock).register("cluster-manager:8080", NodeMode.CLUSTER_MANAGER);
+        doThrow(new RuntimeException("Test exception")).when(restTemplate)
+                .postForEntity(anyString(), any(RegisterRequest.class), eq(Void.class));
 
         // When - Should not throw exception, just log the error
-        clusterManagerSelfRegister.registerClusterManagerAsNode().run(args);
+        nodeRegistration.registerAtStartup().run(args);
 
         // Then
-        verify(registryServiceMock, times(1)).register("cluster-manager:8080", NodeMode.CLUSTER_MANAGER);
+        verify(restTemplate, times(1)).postForEntity(contains("/api/v1/cm/register"), 
+                argThat(req -> req instanceof RegisterRequest && ((RegisterRequest) req).getMode() == NodeMode.CLUSTER_MANAGER), 
+                eq(Void.class));
     }
 
     @Test
     void testApplicationRunnerBeanCreation() {
         // When
-        var runner = clusterManagerSelfRegister.registerClusterManagerAsNode();
+        var runner = nodeRegistration.registerAtStartup();
 
         // Then
         assertThat(runner).isNotNull();

@@ -7,8 +7,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperFactoryBean;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,8 +19,13 @@ public class DataSourceCMConfig {
 
     @Bean
     @ConfigurationProperties("spring.datasource.cm")
+    public DataSourceProperties cmDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean
     public DataSource dataSourceCM() {
-        return DataSourceBuilder.create().build();
+        return cmDataSourceProperties().initializeDataSourceBuilder().build();
     }
 
     @Bean

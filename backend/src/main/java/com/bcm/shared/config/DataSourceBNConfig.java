@@ -5,8 +5,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperFactoryBean;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,10 +15,16 @@ import javax.sql.DataSource;
 @Configuration
 public class DataSourceBNConfig {
 
+
     @Bean
     @ConfigurationProperties("spring.datasource.bn")
+    public DataSourceProperties bnDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean
     public DataSource dataSourceBN() {
-        return DataSourceBuilder.create().build();
+        return bnDataSourceProperties().initializeDataSourceBuilder().build();
     }
 
     @Bean

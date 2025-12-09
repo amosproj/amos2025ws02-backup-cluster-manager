@@ -7,6 +7,8 @@
   (add)="openAddModal()"
   (selectionChange)="onSelectionChange($event)"
   (deleteSelection)="onDeleteSelection($event)"
+  [showAddButton]="authService.hasPermission(UserPermissionsEnum.BackupCreate)"
+  [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.BackupDelete)"
 />
 
 @if (showAddModal()){

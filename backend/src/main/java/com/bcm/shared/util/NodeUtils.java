@@ -16,7 +16,8 @@ public final class NodeUtils {
         return nodes.stream()
                 .filter(Objects::nonNull)
                 .map(NodeDTO::getAddress)
-                .filter(Objects::nonNull)
+                //TODO: remove hardcoded cluster manager address & find a better way to handle it
+                .filter(address -> !"cluster-manager:8080".equals(address))
                 .collect(Collectors.toList());
     }
 

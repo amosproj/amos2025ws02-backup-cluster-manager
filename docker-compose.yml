@@ -20,6 +20,7 @@ services:
       - ALLOWED_ORIGINS=http://localhost:4200,http://node1:8081,http://node2:8082
       #- APPLICATION_PORT=8080
       - SPRING_PROFILES_ACTIVE=cluster_manager
+      - NODE_ADDRESS=cluster-manager:8080
       - BM_ADDRESS=node2:8082
     ports:
       - "8080:8080"

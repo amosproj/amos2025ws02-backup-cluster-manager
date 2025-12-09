@@ -2,6 +2,8 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.ClusterTablesDTO;
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.model.api.NodeMode;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -40,8 +42,8 @@ class SyncServiceTests {
 
     @Test
     void pushTablesToAllNodes_sendsSyncToAllActiveNodes() {
-        NodeDTO n1 = new NodeDTO(1L, "Node A", "node1:8080", com.bcm.shared.model.api.NodeStatus.ACTIVE, LocalDateTime.now().minusDays(1));
-        NodeDTO n2 = new NodeDTO(2L, "Node B", "node2:8080" , com.bcm.shared.model.api.NodeStatus.ACTIVE, LocalDateTime.now().minusDays(2));
+        NodeDTO n1 = new NodeDTO(1L, "Node A", "node1:8080", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(1));
+        NodeDTO n2 = new NodeDTO(2L, "Node B", "node2:8080" , com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(2));
 
         when(registryMock.getActiveNodes()).thenReturn(List.of(n1, n2));
         when(registryMock.getInactiveNodes()).thenReturn(List.of());

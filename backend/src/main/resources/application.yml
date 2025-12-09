@@ -30,11 +30,11 @@ application:
   cors:
     allowed-origin: ${ALLOWED_ORIGINS:http://localhost:4200}
   cm:
-    public-address: ${CM_ADDRESS}
+    public-address: ${CM_ADDRESS:localhost:8080}
   node:
-    public-address: ${NODE_ADDRESS}
+    public-address: ${NODE_ADDRESS:localhost:8081}
   bm:
-    public-address: ${BM_ADDRESS}
+    public-address: ${BM_ADDRESS:localhost:8082}
 
 mybatis:
   type-aliases-package: com.bcm.shared.model.database

@@ -46,12 +46,14 @@ export class AuthService {
           // Should get the permission from the response body
           // const responseBody = response.body && (response.body as any);
           // For now, set dummy permissions
-          const metaData = {
-            username:"user123",
-            role:"ADMIN",
-            rank:50,
-            permissions:["user:read", "user:create","user:update","user:delete", "node:read", "backup:read", "task:read"] // etc
-          }
+          console.log("Response body:", response.body);
+          // const metaData = {
+          //   username:"user123",
+          //   role:"ADMIN",
+          //   rank:50,
+          //   permissions:["user:read", "user:create","user:update","user:delete", "node:read", "backup:read", "task:read"] // etc
+          // }
+          const metaData = response.body as AuthMetaData;
           this.permissionsSignal.set(metaData.permissions);
           this.rankSignal.set(metaData.rank);
           this.roleSignal.set(metaData.role);

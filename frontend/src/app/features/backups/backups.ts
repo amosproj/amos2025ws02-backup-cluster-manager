@@ -5,10 +5,11 @@ import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {map} from 'rxjs';
+import {map, Subscription} from 'rxjs';
 import {formatDateFields} from '../../shared/utils/date_utils';
 import {ClientsService} from '../clients/clients.service';
 import {TasksService} from '../tasks/tasks.service';
+import {AutoRefreshService} from '../../services/dynamic-page';
 
 @Component({
   selector: 'app-backups',
@@ -22,6 +23,7 @@ import {TasksService} from '../tasks/tasks.service';
 })
 export class Backups {
   @ViewChild(DataTable) dataTable!: DataTable;
+  private refreshSub?: Subscription;
 
   tableColumns = signal([
     { field: 'id', header: 'ID' },
@@ -84,7 +86,8 @@ export class Backups {
     private clientsService: ClientsService,
     private tasksService: TasksService,
     private apiService: ApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private autoRefreshService: AutoRefreshService
   ) {
     this.loading$ = this.apiService.loading$;
 
@@ -147,12 +150,12 @@ export class Backups {
       next: (response) => this.tasks.set(response.items),
       error: (err) => console.error('Fehler beim Laden der Tasks:', err)
     });
-
-    this.refreshIntervalId = setInterval(() => {
-      if (this.dataTable) {
+    this.refreshSub = this.autoRefreshService.refresh$.subscribe(() => {
+      if (!this.showAddModal() && this.dataTable) {
         this.dataTable.loadData();
       }
-    }, 5000);
+    });
+
   }
 
   ngOnDestroy(): void {

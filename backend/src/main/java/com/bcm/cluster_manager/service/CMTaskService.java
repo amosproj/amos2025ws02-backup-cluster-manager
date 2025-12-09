@@ -150,7 +150,7 @@ public class CMTaskService implements PaginationProvider<TaskDTO> {
     @Transactional
     public TaskDTO addTask(TaskDTO task) {
         List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
-        if (nodeAddresses.isEmpty()) return (TaskDTO) List.of();
+        if (nodeAddresses.isEmpty()) return null;
 
         if (task == null || task.getClientId() == null) {
             return null;
@@ -159,7 +159,7 @@ public class CMTaskService implements PaginationProvider<TaskDTO> {
         List<CompletableFuture<TaskDTO>> futures = nodeAddresses.stream()
                 .map(address -> CompletableFuture.supplyAsync(() -> {
                     try {
-                        String url = "http://" + address + "/api/v1/bn/tasks";
+                        String url = "http://" + address + "/api/v1/bn/task";
                         ResponseEntity<TaskDTO> response = restTemplate.postForEntity(url, task, TaskDTO.class);
                         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                             return response.getBody();

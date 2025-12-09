@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/root/.m2 \
 # Copy source code into container and build the application
 COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn clean package -DskipTests -B
+    mvn clean package -DskipTests -B -Dskip.docker.build=true # skip docker build so mvn -B test does not also build docker image in docker
 
 # Use JRE 21 image for running the app
 FROM eclipse-temurin:21-jre-alpine

@@ -1,5 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
+import com.bcm.shared.config.permissions.Permission;
 import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.cluster_manager.service.CMBackupService;
@@ -9,6 +10,7 @@ import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController()
@@ -20,6 +22,7 @@ public class CMBackupController {
     private CMBackupService CMBackupService;
 
 
+    @PreAuthorize(Permission.Require.BACKUP_DELETE)
     @DeleteMapping("/backups/{id}")
     public ResponseEntity<Void> deleteBackup(@PathVariable Long id) {
         try {
@@ -42,11 +45,13 @@ public class CMBackupController {
         }
     }
 
+    @PreAuthorize(Permission.Require.BACKUP_READ)
     @GetMapping("/backups")
     public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
         return CMBackupService.getPaginatedItems(pagination);
     }
 
+    @PreAuthorize(Permission.Require.BACKUP_CREATE)
     @PostMapping("/backups")
     public ResponseEntity<BackupDTO> createBackup(@RequestBody CreateBackupRequest request) {
         try {

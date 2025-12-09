@@ -1,5 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
+import com.bcm.shared.config.permissions.Permission;
 import com.bcm.shared.model.api.UserDTO;
 import com.bcm.shared.model.database.User;
 import com.bcm.shared.pagination.PaginationRequest;
@@ -7,6 +8,7 @@ import com.bcm.shared.pagination.PaginationResponse;
 import com.bcm.shared.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -23,6 +25,7 @@ public class CMUserController {
         this.userService = userService;
     }
 
+    @PreAuthorize(Permission.Require.USER_READ)
     @GetMapping("/userlist")
     public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination){
         return userService.getPaginatedItems(pagination);
@@ -34,6 +37,7 @@ public class CMUserController {
         return "Generated 50 example users";
     }
 
+    @PreAuthorize(Permission.Require.USER_READ)
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
@@ -50,11 +54,13 @@ public class CMUserController {
     //     return userMService.getUserByName(name);
     // }
 
+    @PreAuthorize(Permission.Require.USER_READ)
     @GetMapping("search/{name}")
     public List<User> getUserBySubtext(@PathVariable String name) {
         return userService.getUserBySubtext(name);
     }
 
+    @PreAuthorize(Permission.Require.USER_CREATE)
     @PostMapping("/{group_id}")
     public User createUser(@PathVariable Long group_id, @RequestBody User user) {
         user.setCreatedAt(Instant.now());
@@ -62,6 +68,7 @@ public class CMUserController {
         return userService.addUserAndAssignGroup(user, group_id);
     }
 
+    @PreAuthorize(Permission.Require.USER_UPDATE)
     @PutMapping("/{id:\\d+}")
     public User updateUser(@PathVariable Long id, @RequestBody User user) {
         user.setUpdatedAt(Instant.now());
@@ -69,6 +76,7 @@ public class CMUserController {
         return userService.editUser(user);
     }
 
+    @PreAuthorize(Permission.Require.USER_DELETE)
     @DeleteMapping("/{id:\\d+}")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);

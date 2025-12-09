@@ -7,6 +7,8 @@ import {SortOrder} from '../../shared/types/SortTypes';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {map} from 'rxjs';
 import {formatDateFields} from '../../shared/utils/date_utils';
+import {ClientsService} from '../clients/clients.service';
+import {TasksService} from '../tasks/tasks.service';
 
 @Component({
   selector: 'app-backups',
@@ -30,6 +32,8 @@ export class Backups {
     { field: 'startTime', header: 'Start Time' },
     { field: 'stopTime', header: 'End Time' }
   ]);
+  clients = signal<any[]>([]);
+  tasks = signal<any[]>([]);
 
   selectedBackups: any[] = [];
   onSelectionChange(rows: any[]): void {
@@ -77,6 +81,8 @@ export class Backups {
 
   constructor(
     private backupsService: BackupsService,
+    private clientsService: ClientsService,
+    private tasksService: TasksService,
     private apiService: ApiService,
     private fb: FormBuilder
   ) {
@@ -133,6 +139,15 @@ export class Backups {
   }
 
   ngOnInit(): void {
+    this.clientsService.getClients().subscribe({
+      next: (data) => this.clients.set(data),
+      error: (err) => console.error('Fehler beim Laden der Clients:', err)
+    });
+    this.tasksService.getTasks().subscribe({
+      next: (response) => this.tasks.set(response.items),
+      error: (err) => console.error('Fehler beim Laden der Tasks:', err)
+    });
+
     this.refreshIntervalId = setInterval(() => {
       if (this.dataTable) {
         this.dataTable.loadData();

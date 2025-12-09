@@ -17,17 +17,26 @@
       <form [formGroup]="addForm" (ngSubmit)="submitAddBackup()" class="space-y-4">
 
         <div>
-          <label class="block text-sm mb-1">Client ID</label>
-          <input type="text"
-                 formControlName="clientId"
-                 class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none"/>
+          <label class="block text-sm mb-1">Client</label>
+          <select formControlName="clientId"
+                  class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none">
+            <option value="" disabled selected>Bitte wählen</option>
+            @for (client of clients(); track client.id) {
+              <option [value]="client.id">{{client.nameOrIp}}</option>
+            }
+          </select>
+
         </div>
 
         <div>
           <label class="block text-sm mb-1">Task ID</label>
-          <input type="text"
-                 formControlName="taskId"
-                 class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none"/>
+          <select formControlName="taskId"
+                  class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none">
+            <option value="" disabled selected>Bitte wählen</option>
+            @for (task of tasks(); track task.id) {
+              <option [value]="task.id">{{task.id}}</option>
+            }
+          </select>
         </div>
 
         <div>

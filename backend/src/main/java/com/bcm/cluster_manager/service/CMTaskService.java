@@ -15,10 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -73,7 +70,7 @@ public class CMTaskService implements PaginationProvider<TaskDTO> {
                             return response.getBody();
                         }
                     } catch (Exception e) {
-                        System.out.println("Fehler beim Abruf von Tasks von Node " + address);
+                        System.out.println("Fehler beim Abruf von Tasks von Node " + address + ". Error: " + (e.getMessage()));
                     }
                     return null;
                 })).toList();

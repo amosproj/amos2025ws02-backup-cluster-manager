@@ -27,9 +27,19 @@ class ClusterManagerSelfRegisterTest {
         restTemplate = mock(RestTemplate.class);
         environment = mock(Environment.class);
         when(environment.getActiveProfiles()).thenReturn(new String[]{"cluster_manager"});
-        nodeRegistration = new NodeStartupRegister(restTemplate, environment);
+        nodeRegistration = new NodeStartupRegister(environment);
 
         try {
+            // Inject mocked RestTemplate
+            var restTemplateField = NodeStartupRegister.class.getDeclaredField("restTemplate");
+            restTemplateField.setAccessible(true);
+            restTemplateField.set(nodeRegistration, restTemplate);
+
+            // Inject mocked Environment
+            var environmentField = NodeStartupRegister.class.getDeclaredField("environment");
+            environmentField.setAccessible(true);
+            environmentField.set(nodeRegistration, environment);
+
             var cmAddressField = NodeStartupRegister.class.getDeclaredField("cmPublicAddress");
             cmAddressField.setAccessible(true);
             cmAddressField.set(nodeRegistration, "localhost:8080");
@@ -61,8 +71,8 @@ class ClusterManagerSelfRegisterTest {
         nodeRegistration.registerAtStartup().run(args);
 
         // Then
-        verify(restTemplate, times(1)).postForEntity(contains("/api/v1/cm/register"), 
-                argThat(req -> req instanceof RegisterRequest && ((RegisterRequest) req).getMode() == NodeMode.CLUSTER_MANAGER), 
+        verify(restTemplate, times(1)).postForEntity(contains("/api/v1/cm/register"),
+                argThat(req -> req instanceof RegisterRequest && ((RegisterRequest) req).getMode() == NodeMode.CLUSTER_MANAGER),
                 eq(Void.class));
     }
 
@@ -77,8 +87,8 @@ class ClusterManagerSelfRegisterTest {
         nodeRegistration.registerAtStartup().run(args);
 
         // Then
-        verify(restTemplate, times(1)).postForEntity(contains("/api/v1/cm/register"), 
-                argThat(req -> req instanceof RegisterRequest && ((RegisterRequest) req).getMode() == NodeMode.CLUSTER_MANAGER), 
+        verify(restTemplate, times(1)).postForEntity(contains("/api/v1/cm/register"),
+                argThat(req -> req instanceof RegisterRequest && ((RegisterRequest) req).getMode() == NodeMode.CLUSTER_MANAGER),
                 eq(Void.class));
     }
 

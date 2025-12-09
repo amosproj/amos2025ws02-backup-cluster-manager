@@ -28,8 +28,8 @@ public class NodeStartupRegister {
 
     private static final Logger log = LoggerFactory.getLogger(NodeStartupRegister.class);
 
-    private final RestTemplate restTemplate;
-    private final Environment environment;
+    private RestTemplate restTemplate;
+    private Environment environment;
 
     @Value("${application.cm.public-address:localhost:8080}")
     private String cmPublicAddress;
@@ -43,27 +43,8 @@ public class NodeStartupRegister {
     @Value("${application.register.retry-delay-ms:3000}")
     private long retryDelayMs = 3000;
 
-    public NodeStartupRegister() {
-        this(new RestTemplate(), null);
-    }
-
-    public NodeStartupRegister(RestTemplate restTemplate) {
-        this(restTemplate, null);
-    }
-
-    /**
-     * Primary constructor used by Spring; inject Environment, use a local RestTemplate.
-     */
-    @Autowired
     public NodeStartupRegister(Environment environment) {
-        this(new RestTemplate(), environment);
-    }
-
-    /**
-     * Testing/override constructor.
-     */
-    public NodeStartupRegister(RestTemplate restTemplate, Environment environment) {
-        this.restTemplate = restTemplate;
+        this.restTemplate = new RestTemplate();
         this.environment = environment;
     }
 

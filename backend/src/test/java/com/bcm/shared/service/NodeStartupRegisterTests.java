@@ -6,19 +6,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class NodeStartupRegisterTests {
 
     private NodeStartupRegister nodeStartupRegister;
     private RestTemplate restTemplateMock;
+        private Environment environment;
+
 
     @BeforeEach
     void setup() {
-        nodeStartupRegister = new NodeStartupRegister();
+        environment = mock(Environment.class);
+        when(environment.getActiveProfiles()).thenReturn(new String[]{});
+        nodeStartupRegister = new NodeStartupRegister(environment);
 
         restTemplateMock = mock(RestTemplate.class);
         try {

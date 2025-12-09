@@ -1,10 +1,12 @@
 package com.bcm.cluster_manager.config.security;
 
+import com.bcm.shared.config.permissions.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Set;
 
 public class CustomUserDetails implements UserDetails {
     private final Long id;
@@ -14,6 +16,7 @@ public class CustomUserDetails implements UserDetails {
     private final Instant createdAt;
     private final Instant updatedAt;
     private final Collection<? extends GrantedAuthority> authorities;
+    private final Set<Role> roles; // Store the original roles
 
     public CustomUserDetails(
             Long id,
@@ -22,7 +25,8 @@ public class CustomUserDetails implements UserDetails {
             boolean enabled,
             Instant createdAt,
             Instant updatedAt,
-            Collection<? extends GrantedAuthority> authorities
+            Collection<? extends GrantedAuthority> authorities,
+            Set<Role> roles
     ) {
         this.id = id;
         this.username = username;
@@ -31,8 +35,11 @@ public class CustomUserDetails implements UserDetails {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.authorities = authorities;
+        this.roles = roles;
     }
+
     public Long getId() { return id; }
+    public Set<Role> getRoles() { return roles; }
 
     @Override public Collection<? extends GrantedAuthority> getAuthorities() { return authorities; }
     @Override public String getPassword() { return passwordHash; }

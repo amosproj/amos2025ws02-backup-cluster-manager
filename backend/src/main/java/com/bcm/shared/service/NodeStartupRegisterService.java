@@ -9,10 +9,11 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@Profile({"backup_node & !test", "backup_manager & !test"})
+@Profile({"!test"})
 public class NodeStartupRegisterService {
 
     private static final Logger log = LoggerFactory.getLogger(NodeStartupRegisterService.class);
@@ -27,35 +28,29 @@ public class NodeStartupRegisterService {
     @Value("${application.node.public-address:localhost:8081}")
     private String nodePublicAddress;
 
+    private boolean registered = false;
 
-    @Bean
-    public ApplicationRunner registerAtStartup() {
-        return args -> {
-            String cmRegisterUrl = "http://" + cmPublicAddress + "/api/v1/cm/register";
+    @Scheduled(cron = "*/10 * * * * *") // every 10 seconds
+    public void registerAtStartup() {
 
-            log.info("Node starting with address: {}", nodePublicAddress);
-            log.info("CM register endpoint: {}", cmRegisterUrl);
+        if (registered) {
+            return; // skip once registration is done
+        }
 
-            RegisterRequest req = new RegisterRequest(nodePublicAddress);
+        String cmRegisterUrl = "http://" + cmPublicAddress + "/api/v1/cm/register";
 
-            boolean registered = false;
-            int attempts = 0;
+        log.info("Node starting with address: {}", nodePublicAddress);
+        log.info("CM register endpoint: {}", cmRegisterUrl);
 
-            while (!registered && attempts < 10) {
-                attempts++;
-                try {
-                    restTemplate.postForEntity(cmRegisterUrl, req, Void.class);
-                    log.info("Successfully registered node with CM.");
-                    registered = true;
-                } catch (Exception e) {
-                    log.warn("Register attempt {} failed: {}", attempts, e.getMessage());
-                    Thread.sleep(3000);
-                }
-            }
+        RegisterRequest req = new RegisterRequest(nodePublicAddress);
 
-            if (!registered) {
-                log.error("Node could NOT register with CM after {} attempts!", attempts);
-            }
-        };
+
+        try {
+            restTemplate.postForEntity(cmRegisterUrl, req, Void.class);
+            log.info("Successfully registered node with CM.");
+            registered = true; // stop future attempts
+        } catch (Exception e) {
+            log.warn("Register attempt failed: {}", e.getMessage());
+        }
     }
 }

@@ -11,7 +11,7 @@ services:
 
   cluster-manager:
     image: backend
-    container_name: cluster_manager
+    container_name: cluster-manager
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node0
       - CM_DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
@@ -22,7 +22,7 @@ services:
       - ALLOWED_ORIGINS=http://localhost:4200
       - CM_ADDRESS=cluster-manager:8080
       #- APPLICATION_PORT=8080
-      - NODE_ADDRESS=node0:8080
+      - NODE_ADDRESS=cluster-manager:8080
       - SPRING_PROFILES_ACTIVE=cluster_manager
     ports:
       - "8080:8080"

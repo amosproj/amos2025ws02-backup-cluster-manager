@@ -48,7 +48,7 @@ class NodeStartupRegisterServiceTests {
 
         ApplicationArguments args = mock(ApplicationArguments.class);
 
-        nodeStartupRegisterService.registerAtStartup().run(args);
+        nodeStartupRegisterService.registerAtStartup();
 
         ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<RegisterRequest> requestCaptor = ArgumentCaptor.forClass(RegisterRequest.class);
@@ -67,10 +67,8 @@ class NodeStartupRegisterServiceTests {
 
         ApplicationArguments args = mock(ApplicationArguments.class);
 
-        try {
-            nodeStartupRegisterService.registerAtStartup().run(args);
-        } catch (InterruptedException ignored) {
-        }
+        nodeStartupRegisterService.registerAtStartup();
+
 
         verify(restTemplateMock, times(10))
                 .postForEntity(anyString(), any(RegisterRequest.class), eq(Void.class));

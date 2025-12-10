@@ -2,7 +2,9 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.NodeStatus;
+import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.service.NodeIdGenerator;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,30 +17,30 @@ public class RegistryService {
     private final ConcurrentHashMap<String, NodeDTO> active = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NodeDTO> inactive = new ConcurrentHashMap<>();
 
-    public void register(String address) {
-        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), address, address, NodeStatus.ACTIVE, LocalDateTime.now());
-        inactive.remove(address);
-        active.put(address, info);
+    public void register(RegisterRequest req) {
+        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), LocalDateTime.now());
+        inactive.remove(info.getAddress());
+        active.put(info.getAddress(), info);
     }
 
-    public void markActive(String address) {
-        NodeDTO info = getOrCreate(address);
+    public void markActive(NodeDTO node) {
+        NodeDTO info = getOrCreate(node);
         info.setStatus(NodeStatus.ACTIVE);
-        inactive.remove(address);
-        active.put(address, info);
+        inactive.remove(node.getAddress());
+        active.put(node.getAddress(), info);
     }
 
-    public void markInactive(String address) {
-        NodeDTO info = getOrCreate(address);
+    public void markInactive(NodeDTO node) {
+        NodeDTO info = getOrCreate(node);
         info.setStatus(NodeStatus.INACTIVE);
-        active.remove(address);
-        inactive.put(address, info);
+        active.remove(node.getAddress());
+        inactive.put(node.getAddress(), info);
     }
 
-    private NodeDTO getOrCreate(String address) {
-        NodeDTO info = active.get(address);
-        if (info == null) info = inactive.get(address);
-        if (info == null) info = new NodeDTO(NodeIdGenerator.nextId(), address, address, NodeStatus.PENDING, LocalDateTime.now());
+    private NodeDTO getOrCreate(NodeDTO node) {
+        NodeDTO info = active.get(node.getAddress());
+        if (info == null) info = inactive.get(node.getAddress());
+        if (info == null) info = new NodeDTO(NodeIdGenerator.nextId(), node.getAddress(), node.getAddress(), NodeStatus.PENDING, node.getMode(), LocalDateTime.now());
         return info;
     }
 

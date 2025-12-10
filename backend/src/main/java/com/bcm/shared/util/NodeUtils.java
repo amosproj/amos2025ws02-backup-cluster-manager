@@ -16,7 +16,6 @@ public final class NodeUtils {
         return nodes.stream()
                 .filter(Objects::nonNull)
                 .map(NodeDTO::getAddress)
-                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

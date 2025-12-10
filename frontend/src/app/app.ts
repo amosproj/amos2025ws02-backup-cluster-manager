@@ -1,17 +1,18 @@
-import {Component, signal, OnInit, computed} from '@angular/core';
+import {Component, signal, OnInit, computed, inject} from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { initFlowbite } from 'flowbite';
-import { CommonModule } from '@angular/common';
+import {AsyncPipe, CommonModule} from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './core/services/auth.service';
 import {Toast} from './shared/components/toast/toast';
 import {ToastMessage, ToastTypeEnum} from './shared/types/toast';
 import {ToastService} from './core/services/toast.service';
 import UserPermissionsEnum from './shared/types/Permissions';
+import { AutoRefreshService } from './services/dynamic-page';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, Toast],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, Toast, AsyncPipe],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -19,8 +20,9 @@ export class App implements OnInit{
   constructor(
     private router: Router,
     protected authService: AuthService,
-    protected toast: ToastService
+    protected toast: ToastService,
   ) {
+    this.isAutoRefreshEnabled$ = this.autoRefreshService.isEnabled$;
     // Listen to route changes to hide/show layout
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -30,6 +32,9 @@ export class App implements OnInit{
         this.showLayout.set(!navigationEndEvent.url.includes('/login'));
       });
   }
+  isAutoRefreshEnabled$;
+  public autoRefreshService = inject(AutoRefreshService)
+
 
   protected readonly showLayout = signal(true);
 
@@ -76,6 +81,11 @@ export class App implements OnInit{
     // Check initial route
     this.showLayout.set(!this.router.url.includes('/login'));
   }
+
+  toggleAutoRefresh() {
+    this.autoRefreshService.toggle();
+  }
+
 
   logout(): void {
     this.authService.logout().subscribe({

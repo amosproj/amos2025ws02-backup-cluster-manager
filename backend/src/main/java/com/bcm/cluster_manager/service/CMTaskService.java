@@ -15,10 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -73,7 +70,7 @@ public class CMTaskService implements PaginationProvider<TaskDTO> {
                             return response.getBody();
                         }
                     } catch (Exception e) {
-                        System.out.println("Fehler beim Abruf von Tasks von Node " + address);
+                        System.out.println("Fehler beim Abruf von Tasks von Node " + address + ". Error: " + (e.getMessage()));
                     }
                     return null;
                 })).toList();
@@ -81,16 +78,16 @@ public class CMTaskService implements PaginationProvider<TaskDTO> {
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         List<TaskDTO> allTasks = new ArrayList<>();
-        Set<Long> seenIds = new HashSet<>();
+        //Set<Long> seenIds = new HashSet<>();
 
         for (CompletableFuture<TaskDTO[]> future : futures) {
             try {
                 TaskDTO[] tasks = future.get();
                 if (tasks != null) {
                     for (TaskDTO task : tasks) {
-                        if (task != null && seenIds.add(task.getId())) {
+                        //if (task != null && seenIds.add(task.getId())) {
                             allTasks.add(task);
-                        }
+                        //}
                     }
                 }
             } catch (Exception ignored) {
@@ -153,7 +150,7 @@ public class CMTaskService implements PaginationProvider<TaskDTO> {
     @Transactional
     public TaskDTO addTask(TaskDTO task) {
         List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
-        if (nodeAddresses.isEmpty()) return (TaskDTO) List.of();
+        if (nodeAddresses.isEmpty()) return null;
 
         if (task == null || task.getClientId() == null) {
             return null;
@@ -162,7 +159,7 @@ public class CMTaskService implements PaginationProvider<TaskDTO> {
         List<CompletableFuture<TaskDTO>> futures = nodeAddresses.stream()
                 .map(address -> CompletableFuture.supplyAsync(() -> {
                     try {
-                        String url = "http://" + address + "/api/v1/bn/tasks";
+                        String url = "http://" + address + "/api/v1/bn/task";
                         ResponseEntity<TaskDTO> response = restTemplate.postForEntity(url, task, TaskDTO.class);
                         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                             return response.getBody();

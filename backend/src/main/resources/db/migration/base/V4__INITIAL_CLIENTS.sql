@@ -53,31 +53,11 @@ VALUES ('Daily Backup', 1, '/dev', 'DAILY'),
        ('Performance Data Backup', 25, '/dev', 'MONTHLY');
 
 
--- Example insert for DAILY backups (75 rows)
 INSERT INTO backups (client_id, task_id, start_time, stop_time, size_bytes, state, message)
-SELECT (gs % 25) + 1                                AS client_id, -- cycle through clients 1..25
-       ((gs % 25) + 1)                              AS task_id,   -- cycle through tasks 1..25
+SELECT (gs % 25) + 1 AS client_id, -- cycle through clients 1..25
+       ((gs % 25) + 1) AS task_id,   -- cycle through tasks 1..25
        start_time,
        start_time + (random() * interval '2 hours') AS stop_time,
        (random() * 5000)::bigint AS size_bytes, (ARRAY['COMPLETED', 'FAILED'])[ceil(random()*2)::int]::backup_state AS state,
     'Backup generated for testing' AS message
-FROM generate_series(1, 625) gs, LATERAL (SELECT NOW() - (random() * interval '7 days') AS start_time) s;
--- Example insert for WEEKLY backups (75 rows)
-INSERT INTO backups (client_id, task_id, start_time, stop_time, size_bytes, state, message)
-SELECT (gs % 25) + 1                                AS client_id,
-       ((gs % 25) + 1)                              AS task_id,
-       start_time,
-       start_time + (random() * interval '2 hours') AS stop_time,
-       (random() * 5000)::bigint AS size_bytes, (ARRAY['COMPLETED', 'FAILED'])[ceil(random()*2)::int]::backup_state AS state,
-    'Backup generated for testing' AS message
-FROM generate_series(1, 625) gs, LATERAL (SELECT NOW() - (random() * interval '7 days') AS start_time) s;
-
--- Example insert for MONTHLY backups (75 rows)
-INSERT INTO backups (client_id, task_id, start_time, stop_time, size_bytes, state, message)
-SELECT (gs % 25) + 1                                AS client_id,
-       ((gs % 25) + 1)                              AS task_id,
-       start_time,
-       start_time + (random() * interval '2 hours') AS stop_time,
-       (random() * 5000)::bigint AS size_bytes, (ARRAY['COMPLETED', 'FAILED'])[ceil(random()*2)::int]::backup_state AS state,
-    'Backup generated for testing' AS message
-FROM generate_series(1, 625) gs, LATERAL (SELECT NOW() - (random() * interval '7 days') AS start_time) s;
+FROM generate_series(1, 1875) gs, LATERAL (SELECT NOW() - (random() * interval '7 days') AS start_time) s;

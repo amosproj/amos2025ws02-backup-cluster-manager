@@ -1,5 +1,6 @@
 package com.bcm.shared.service;
 
+import com.bcm.shared.model.api.NodeMode;
 import com.bcm.shared.model.api.RegisterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,16 +10,20 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
+
 @Configuration
-@Profile({"backup_node & !test", "backup_manager & !test"})
+@Profile({"!test"})
 public class NodeStartupRegisterService {
 
     private static final Logger log = LoggerFactory.getLogger(NodeStartupRegisterService.class);
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private final Environment environment;
 
     // These values come from environment variables or application.properties
     @Value("${application.cm.public-address:localhost:8080}")
@@ -27,35 +32,37 @@ public class NodeStartupRegisterService {
     @Value("${application.node.public-address:localhost:8081}")
     private String nodePublicAddress;
 
+    private boolean registered = false;
 
-    @Bean
-    public ApplicationRunner registerAtStartup() {
-        return args -> {
-            String cmRegisterUrl = "http://" + cmPublicAddress + "/api/v1/cm/register";
+    public NodeStartupRegisterService(Environment environment) {
+        this.restTemplate = new RestTemplate();
+        this.environment = environment;
+    }
 
-            log.info("Node starting with address: {}", nodePublicAddress);
-            log.info("CM register endpoint: {}", cmRegisterUrl);
+    @Scheduled(cron = "*/10 * * * * *") // every 10 seconds
+    public void registerAtStartup() {
 
-            RegisterRequest req = new RegisterRequest(nodePublicAddress);
+        boolean profileSaysClusterManager = environment != null && Arrays.asList(environment.getActiveProfiles()).contains("cluster_manager");
 
-            boolean registered = false;
-            int attempts = 0;
+        if (registered) {
+            return; // skip once registration is done
+        }
 
-            while (!registered && attempts < 10) {
-                attempts++;
-                try {
-                    restTemplate.postForEntity(cmRegisterUrl, req, Void.class);
-                    log.info("Successfully registered node with CM.");
-                    registered = true;
-                } catch (Exception e) {
-                    log.warn("Register attempt {} failed: {}", attempts, e.getMessage());
-                    Thread.sleep(3000);
-                }
-            }
+        NodeMode nodeType = profileSaysClusterManager ? NodeMode.CLUSTER_MANAGER : NodeMode.NODE;
 
-            if (!registered) {
-                log.error("Node could NOT register with CM after {} attempts!", attempts);
-            }
-        };
+        RegisterRequest req = new RegisterRequest(nodePublicAddress, nodeType);
+
+        String cmRegisterUrl = "http://" + cmPublicAddress + "/api/v1/cm/register";
+
+        log.info("Node starting with address: {}", nodePublicAddress);
+        log.info("CM register endpoint: {}", cmRegisterUrl);
+
+        try {
+            restTemplate.postForEntity(cmRegisterUrl, req, Void.class);
+            log.info("Successfully registered node with CM as {}.", nodeType);
+            registered = true; // stop future attempts
+        } catch (Exception e) {
+            log.warn("Register attempt failed: {}", e.getMessage());
+        }
     }
 }

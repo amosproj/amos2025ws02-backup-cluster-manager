@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.bcm.shared.model.api.NodeDTO;
+
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -15,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 public class HeartbeatService {
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatService.class);
     private final RestTemplate rest = new RestTemplate();
-
 
     @Autowired
     private RegistryService registry;
@@ -25,28 +26,29 @@ public class HeartbeatService {
 
     public void heartbeatAll() {
         logger.info("Heartbeat started at {}", Instant.now());
-        registry.getActiveNodes().forEach(node -> pingNodeAsync(node.getAddress()));
-        // optionally ping inactive nodes to try revive them (if they respond successfully, entry is set active or added)
-        registry.getInactiveNodes().forEach(node -> pingNodeAsync(node.getAddress()));
+        registry.getActiveNodes().forEach(node -> pingNodeAsync(node));
+        // optionally ping inactive nodes to try revive them (if they respond
+        // successfully, entry is set active or added)
+        registry.getInactiveNodes().forEach(node -> pingNodeAsync(node));
         // after heartbeats, push updated tables to all nodes
         syncService.pushTablesToAllNodes();
     }
 
     @Async
-    public CompletableFuture<Void> pingNodeAsync(String address) {
-        String url = "http://" + address + "/api/v1/ping";
+    public CompletableFuture<Void> pingNodeAsync(NodeDTO node) {
+        String url = "http://" + node.getAddress() + "/api/v1/ping";
         try {
             ResponseEntity<String> r = rest.getForEntity(url, String.class);
             if (r.getStatusCode().is2xxSuccessful()) {
-                logger.info("Node {} is alive", address);
-                registry.markActive(address);
+                logger.info("Node {} is alive", node.getAddress());
+                registry.markActive(node);
             } else {
-                logger.warn("Node {} returned non-2xx: {}", address, r.getStatusCodeValue());
-                registry.markInactive(address);
+                logger.warn("Node {} returned non-2xx: {}", node.getAddress(), r.getStatusCodeValue());
+                registry.markInactive(node);
             }
         } catch (Exception e) {
-            logger.warn("Node {} is unreachable: {}", address, e.toString());
-            registry.markInactive(address);
+            logger.warn("Node {} is unreachable: {}", node.getAddress(), e.toString());
+            registry.markInactive(node);
         }
         return CompletableFuture.completedFuture(null);
     }

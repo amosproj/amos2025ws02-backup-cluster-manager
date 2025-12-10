@@ -78,7 +78,7 @@ public class CMBackupService implements PaginationProvider<BackupDTO> {
     public List<BackupDTO> getAllBackups() {
 
         List<BackupDTO> backupDTOs = new ArrayList<>();
-        var seenIds = new java.util.HashSet<Long>();
+        //var seenIds = new java.util.HashSet<Long>();
 
         List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
 
@@ -98,7 +98,7 @@ public class CMBackupService implements PaginationProvider<BackupDTO> {
                 if (body != null) {
                     Arrays.stream(body)
                             .filter(Objects::nonNull)
-                            .filter(b -> b.getId() == null || seenIds.add(b.getId()))
+                            //.filter(b -> b.getId() == null || seenIds.add(b.getId()))
                             .forEach(backupDTOs::add);
                 }
             } catch (InterruptedException e) {

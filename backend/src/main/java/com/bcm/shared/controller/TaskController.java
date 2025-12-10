@@ -9,6 +9,8 @@ import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController()
 @RequestMapping("/api/v1/bn")
 public class TaskController {
@@ -17,8 +19,8 @@ public class TaskController {
     TaskService taskService;
 
     @GetMapping("/tasks")
-    public PaginationResponse<TaskDTO> getTasks(PaginationRequest pagination) {
-        return taskService.getPaginatedItems(pagination);
+    public List<TaskDTO> getTasks(PaginationRequest pagination) {
+        return taskService.getAllTasks();
     }
 
     @PostMapping("/task")

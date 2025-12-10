@@ -37,14 +37,14 @@ public class TaskService implements PaginationProvider<TaskDTO> {
     @Override
     public long getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
-        List<TaskDTO> base = (getAllBackups());
+        List<TaskDTO> base = (getAllTasks());
         return applySearch(applyFilters(base, filter), filter).size();
 
     }
 
     @Override
     public List<TaskDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
-        List<TaskDTO> allBackups = (getAllBackups());
+        List<TaskDTO> allBackups = (getAllTasks());
 
         List<TaskDTO> filtered = applyFilters(allBackups, filter);
         List<TaskDTO> searched = applySearch(filtered, filter);
@@ -62,7 +62,7 @@ public class TaskService implements PaginationProvider<TaskDTO> {
         return sorted.subList(fromIndex, toIndex);
     }
 
-    public List<TaskDTO> getAllBackups() {
+    public List<TaskDTO> getAllTasks() {
         List<Task> tasks = taskMapper.findAll();
         List<TaskDTO> taskDTOS = new ArrayList<>();
 

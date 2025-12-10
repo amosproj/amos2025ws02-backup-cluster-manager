@@ -10,11 +10,11 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   flyway:
-    enabled: true
-    locations: classpath:db/migration/base
-    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node0}
-    user: ${POSTGRES_USER:appuser}
-    password: ${POSTGRES_PASSWORD:apppassword}
+    enabled: false
+    #locations: classpath:db/migration/base
+    #url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node0}
+    #user: ${POSTGRES_USER:appuser}
+    #password: ${POSTGRES_PASSWORD:apppassword}
   datasource:
     bn:
       url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node0}
@@ -28,7 +28,7 @@ spring:
   logging:
     level:
       root: INFO
-      com.bcm: INFO
+      com.bcm: DEBUG
 server:
   port: ${APPLICATION_PORT:8080}
 application:
@@ -63,11 +63,11 @@ spring:
         maximum-pool-size: 10
         minimum-idle: 5
         connection-timeout: 30000
-  flyway:
-    locations: classpath:db/migration/cluster_manager
-    url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
-    user: ${POSTGRES_USER:appuser}
-    password: ${POSTGRES_PASSWORD:apppassword}
+  #flyway:
+  #  locations: classpath:db/migration/cluster_manager
+  #  url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
+  #  user: ${POSTGRES_USER:appuser}
+  #  password: ${POSTGRES_PASSWORD:apppassword}
 server:
   servlet:
     session:
@@ -89,11 +89,5 @@ spring:
   config:
     activate:
       on-profile: test
-  datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
+  flyway:
+    enabled: false

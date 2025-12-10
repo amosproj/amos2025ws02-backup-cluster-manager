@@ -1,4 +1,4 @@
-package com.bcm.backup_node.service;
+package com.bcm.shared.service;
 
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.ExecuteBackupRequest;

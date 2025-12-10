@@ -47,16 +47,16 @@ public class CMClientService {
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         List<ClientDTO> allClients = new ArrayList<>();
-        Set<Long> seenIds = new HashSet<>();
+        //Set<Long> seenIds = new HashSet<>();
 
         for (CompletableFuture<ClientDTO[]> future : futures) {
             try {
                 ClientDTO[] clients = future.get();
                 if (clients != null) {
                     for (ClientDTO client : clients) {
-                        if (client != null && seenIds.add(client.getId())) {
+                        //if (client != null && seenIds.add(client.getId())) {
                             allClients.add(client);
-                        }
+                       // }
                     }
                 }
             } catch (Exception ignored) {

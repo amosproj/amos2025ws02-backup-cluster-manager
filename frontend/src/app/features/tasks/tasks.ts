@@ -59,7 +59,7 @@ export class Tasks implements OnInit {
     private tasksService: TasksService,
     private clientsService: ClientsService,
     private fb: FormBuilder,
-    private apiService: ApiService
+    private apiService: ApiService,
   ) {
     this.loading$ = this.apiService.loading$;
 

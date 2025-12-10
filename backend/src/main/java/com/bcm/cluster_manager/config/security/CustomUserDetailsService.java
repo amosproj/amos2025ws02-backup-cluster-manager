@@ -1,9 +1,10 @@
 package com.bcm.cluster_manager.config.security;
 
-import com.bcm.cluster_manager.model.database.User;
-import com.bcm.cluster_manager.repository.UserMapper;
-import com.bcm.cluster_manager.repository.UserGroupRelationMapper;
-import com.bcm.cluster_manager.repository.GroupMapper;
+import com.bcm.shared.model.database.User;
+import com.bcm.shared.repository.UserMapper;
+import com.bcm.shared.repository.UserGroupRelationMapper;
+import com.bcm.shared.repository.GroupMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserGroupRelationMapper userGroupRelationMapper;
     private final GroupMapper groupMapper;
 
-    public CustomUserDetailsService(UserMapper userMapper,
-                                    UserGroupRelationMapper userGroupRelationMapper,
-                                    GroupMapper groupMapper) {
+    public CustomUserDetailsService(@Qualifier("userMapperCM") UserMapper userMapper,
+                                    @Qualifier("userGroupRelationMapperCM") UserGroupRelationMapper userGroupRelationMapper,
+                                    @Qualifier("groupMapperCM") GroupMapper groupMapper) {
         this.userMapper = userMapper;
         this.userGroupRelationMapper = userGroupRelationMapper;
         this.groupMapper = groupMapper;

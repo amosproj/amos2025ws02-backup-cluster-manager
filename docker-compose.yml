@@ -11,17 +11,19 @@ services:
 
   cluster-manager:
     image: backend
-    container_name: cluster_manager
+    container_name: cluster-manager
     environment:
-      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node0
+      - CM_DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
+      - NODE_ID=node0
       # Default values are taken
-      - ALLOWED_ORIGINS=http://localhost:4200,http://node1:8081,http://node2:8082
+      - ALLOWED_ORIGINS=http://localhost:4200
+      - CM_ADDRESS=cluster-manager:8080
       #- APPLICATION_PORT=8080
-      - SPRING_PROFILES_ACTIVE=cluster_manager
       - NODE_ADDRESS=cluster-manager:8080
-      - BM_ADDRESS=node2:8082
+      - SPRING_PROFILES_ACTIVE=cluster_manager
     ports:
       - "8080:8080"
     networks:
@@ -38,12 +40,10 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node1
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - SPRING_PROFILES_ACTIVE=backup_node
       - NODE_ID=node1
       - APPLICATION_PORT=8081
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node1:8081
-      - BM_ADDRESS=node2:8082
     ports:
       - "8081:8081"
     networks:
@@ -60,12 +60,10 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node2
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - SPRING_PROFILES_ACTIVE=backup_manager,backup_node
       - NODE_ID=node2
       - APPLICATION_PORT=8082
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node2:8082
-      - BM_ADDRESS=node2:8082
     ports:
       - "8082:8082"
     networks:
@@ -82,12 +80,10 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node3
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - SPRING_PROFILES_ACTIVE=backup_node
       - NODE_ID=node3
       - APPLICATION_PORT=8083
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node3:8083
-      - BM_ADDRESS=node2:8082
     ports:
       - "8083:8083"
     networks:
@@ -104,12 +100,10 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node4
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - SPRING_PROFILES_ACTIVE=backup_node
       - NODE_ID=node4
       - APPLICATION_PORT=8084
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node4:8084
-      - BM_ADDRESS=node2:8082
     ports:
       - "8084:8084"
     networks:
@@ -126,12 +120,10 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node5
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - SPRING_PROFILES_ACTIVE=backup_node
       - NODE_ID=node5
       - APPLICATION_PORT=8085
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node5:8085
-      - BM_ADDRESS=node2:8082
     ports:
       - "8085:8085"
     networks:
@@ -148,12 +140,10 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node6
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
-      - SPRING_PROFILES_ACTIVE=backup_node
       - NODE_ID=node6
       - APPLICATION_PORT=8086
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node6:8086
-      - BM_ADDRESS=node2:8082
     ports:
       - "8086:8086"
     networks:

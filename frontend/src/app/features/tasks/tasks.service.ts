@@ -35,6 +35,10 @@ export class TasksService {
     return this.apiService.get<PaginatedResponse>('tasks', {params});
   }
 
+  getTaskList(){
+    return this.apiService.get<any>('tasks/list');
+  }
+
   createTask(request: TaskDTO): Observable<any> {
     return this.apiService.post<any>('task', request);
   }

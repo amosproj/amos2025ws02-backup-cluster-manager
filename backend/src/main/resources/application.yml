@@ -10,16 +10,21 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   flyway:
-    enabled: true
+    enabled: false
+    #locations: classpath:db/migration/base
+    #url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node0}
+    #user: ${POSTGRES_USER:appuser}
+    #password: ${POSTGRES_PASSWORD:apppassword}
   datasource:
-    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
-    username: ${POSTGRES_USER:appuser}
-    password: ${POSTGRES_PASSWORD:apppassword}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
+    bn:
+      url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node0}
+      username: ${POSTGRES_USER:appuser}
+      password: ${POSTGRES_PASSWORD:apppassword}
+      driverClassName: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
   logging:
     level:
       root: INFO
@@ -30,11 +35,9 @@ application:
   cors:
     allowed-origin: ${ALLOWED_ORIGINS:http://localhost:4200}
   cm:
-    public-address: ${CM_ADDRESS:localhost:8080}
+    public-address: ${CM_ADDRESS}
   node:
-    public-address: ${NODE_ADDRESS:localhost:8081}
-  bm:
-    public-address: ${BM_ADDRESS:localhost:8082}
+    public-address: ${NODE_ADDRESS}
 
 mybatis:
   type-aliases-package: com.bcm.shared.model.database
@@ -50,33 +53,25 @@ spring:
   config:
     activate:
       on-profile: cluster_manager
-  flyway:
-    locations: classpath:db/migration/cluster_manager
+  datasource:
+    cm:
+      url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
+      username: ${POSTGRES_USER:appuser}
+      password: ${POSTGRES_PASSWORD:apppassword}
+      driverClassName: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
+  #flyway:
+  #  locations: classpath:db/migration/cluster_manager
+  #  url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
+  #  user: ${POSTGRES_USER:appuser}
+  #  password: ${POSTGRES_PASSWORD:apppassword}
 server:
   servlet:
     session:
       timeout: 30m
----
-spring:
-  config:
-    activate:
-      on-profile: backup_manager
-  flyway:
-    locations: classpath:db/migration/backup_manager
----
-spring:
-  config:
-    activate:
-      on-profile: backup_node
-  flyway:
-    locations: classpath:db/migration/backup_node
-
----
-# Prod profile
-spring:
-  config:
-    activate:
-      on-profile: prod
 ---
 # Development profile
 spring:
@@ -94,11 +89,5 @@ spring:
   config:
     activate:
       on-profile: test
-  datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
+  flyway:
+    enabled: false

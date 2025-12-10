@@ -5,13 +5,21 @@
       <img class="w-8" src="/brand-icon.svg"/>
       <p id="header-text" class="uppercase font-semibold">Cluster Manager</p>
     </a>
+  <div class="flex items-center gap-4 ml-auto">
     <button
-      (click)="logout()"
-      class="px-4 py-2 text-sm text-foreground hover:bg-primary-2 rounded-lg transition-colors">
-      Logout
+      (click)="toggleAutoRefresh()"
+      class="px-4 py-2 text-sm bg-primary-2 text-foreground hover:bg-primary-3 rounded-lg transition-colors flex items-center gap-2">
+      <span>{{ (autoRefreshService.isEnabled$ | async) ? '⏸' : '▶' }}</span>
+      Auto-Refresh
     </button>
-  </div>
+      <button
+        (click)="logout()"
+        class="px-4 py-2 text-sm text-foreground hover:bg-primary-2 rounded-lg transition-colors">
+        Logout
+      </button>
+    </div>
 
+  </div>
   <!--Mobile Navigation Trigger-->
   <button data-drawer-target="default-sidebar" data-drawer-toggle="default-sidebar" aria-controls="default-sidebar"
           type="button"

@@ -22,15 +22,17 @@ public enum Role {
             TASK_READ, TASK_CREATE, TASK_DELETE
     )),
     OPERATORS(1, Set.of(
-            NODE_READ, NODE_CREATE, NODE_DELETE,
-            BACKUP_READ, BACKUP_CREATE, BACKUP_DELETE,
-            TASK_READ, TASK_CREATE, TASK_DELETE
+            USER_READ,
+            NODE_READ,
+            BACKUP_READ,
+            TASK_READ
     )),
     RESTORE_USERS(1, Set.of(
             BACKUP_READ, BACKUP_CREATE
     )),
     BACKUP_USERS(1, Set.of(
-            BACKUP_READ, BACKUP_CREATE, BACKUP_DELETE
+            BACKUP_READ,
+            TASK_READ, TASK_CREATE
     ));
 
     private final int rank;

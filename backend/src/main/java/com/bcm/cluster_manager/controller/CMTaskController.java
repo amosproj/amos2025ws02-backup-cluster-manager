@@ -9,6 +9,8 @@ import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController()
 @RequestMapping("/api/v1/cm")
 public class CMTaskController {
@@ -19,6 +21,11 @@ public class CMTaskController {
     @GetMapping("/tasks")
     public PaginationResponse<TaskDTO> getTasks(PaginationRequest pagination) {
         return CMTaskService.getPaginatedItems(pagination);
+    }
+
+    @GetMapping("/tasks/list")
+    public List<TaskDTO> getTasksList() {
+        return CMTaskService.getAllTasks();
     }
 
     @PostMapping("/task")

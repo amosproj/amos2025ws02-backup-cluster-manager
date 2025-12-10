@@ -78,16 +78,16 @@ public class CMTaskService implements PaginationProvider<TaskDTO> {
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         List<TaskDTO> allTasks = new ArrayList<>();
-        Set<Long> seenIds = new HashSet<>();
+        //Set<Long> seenIds = new HashSet<>();
 
         for (CompletableFuture<TaskDTO[]> future : futures) {
             try {
                 TaskDTO[] tasks = future.get();
                 if (tasks != null) {
                     for (TaskDTO task : tasks) {
-                        if (task != null && seenIds.add(task.getId())) {
+                        //if (task != null && seenIds.add(task.getId())) {
                             allTasks.add(task);
-                        }
+                        //}
                     }
                 }
             } catch (Exception ignored) {

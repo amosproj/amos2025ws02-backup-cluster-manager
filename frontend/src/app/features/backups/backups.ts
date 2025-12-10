@@ -146,8 +146,8 @@ export class Backups {
       next: (data) => this.clients.set(data),
       error: (err) => console.error('Fehler beim Laden der Clients:', err)
     });
-    this.tasksService.getTasks().subscribe({
-      next: (response) => this.tasks.set(response.items),
+    this.tasksService.getTaskList().subscribe({
+      next: (data) => this.tasks.set(data),
       error: (err) => console.error('Fehler beim Laden der Tasks:', err)
     });
     this.refreshSub = this.autoRefreshService.refresh$.subscribe(() => {

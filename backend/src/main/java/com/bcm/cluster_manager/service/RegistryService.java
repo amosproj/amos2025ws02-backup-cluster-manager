@@ -2,6 +2,7 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.NodeStatus;
+import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.service.NodeIdGenerator;
 
 import org.springframework.stereotype.Service;
@@ -16,10 +17,10 @@ public class RegistryService {
     private final ConcurrentHashMap<String, NodeDTO> active = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, NodeDTO> inactive = new ConcurrentHashMap<>();
 
-    public void register(NodeDTO nodeDto) {
-        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), nodeDto.getAddress(), nodeDto.getAddress(), NodeStatus.ACTIVE, nodeDto.getMode(), LocalDateTime.now());
-        inactive.remove(nodeDto.getAddress());
-        active.put(nodeDto.getAddress(), info);
+    public void register(RegisterRequest req) {
+        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), LocalDateTime.now());
+        inactive.remove(info.getAddress());
+        active.put(info.getAddress(), info);
     }
 
     public void markActive(NodeDTO node) {

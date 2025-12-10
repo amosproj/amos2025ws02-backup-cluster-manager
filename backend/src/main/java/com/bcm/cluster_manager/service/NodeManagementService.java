@@ -97,7 +97,7 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
 
     public void registerNode(RegisterRequest req) {
-        registry.register(req.getAddress());
+        registry.register(req);
         // push updated tables to all nodes
         syncService.pushTablesToAllNodes();
 

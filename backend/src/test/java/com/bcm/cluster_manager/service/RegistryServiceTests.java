@@ -2,6 +2,7 @@ package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.NodeMode;
+import com.bcm.shared.model.api.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,9 +22,8 @@ class RegistryServiceTests {
     @Test
     void register_addsNodeToActiveAndRemovesFromInactive() {
         String addr = "10.0.0.1:9000";
-        NodeDTO nodeDto = new NodeDTO(null, addr, addr, com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, null);
-
-        registry.register(nodeDto);
+        RegisterRequest req = new RegisterRequest(addr, NodeMode.NODE);
+        registry.register(req);
 
         Collection<NodeDTO> active = registry.getActiveNodes();
         Collection<NodeDTO> inactive = registry.getInactiveNodes();
@@ -39,8 +39,8 @@ class RegistryServiceTests {
     @Test
     void markInactive_movesNodeToInactive() {
         String addr = "nodeA";
-        NodeDTO nodeDto = new NodeDTO(null, addr, addr, com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, null);
-        registry.register(nodeDto);
+        RegisterRequest req = new RegisterRequest(addr, NodeMode.NODE);
+        registry.register(req);
 
         registry.markInactive(new NodeDTO(null, addr, addr, com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, null));
 
@@ -80,8 +80,9 @@ class RegistryServiceTests {
 
     @Test
     void getAllNodes_returnsMergedActiveAndInactive() {
-        NodeDTO nodeA = new NodeDTO(null, "A", "A", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, null);
-        registry.register(nodeA);
+        RegisterRequest req = new RegisterRequest("A", NodeMode.NODE);
+
+        registry.register(req);
         registry.markInactive(new NodeDTO(null, "B", "B", com.bcm.shared.model.api.NodeStatus.PENDING, NodeMode.NODE, null));
 
         Collection<NodeDTO> all = registry.getAllNodes();
@@ -94,9 +95,9 @@ class RegistryServiceTests {
     @Test
     void register_overwritesInactiveEntry() {
         registry.markInactive(new NodeDTO(null, "nodeX", "nodeX", com.bcm.shared.model.api.NodeStatus.PENDING, NodeMode.NODE, null));
-        NodeDTO nodeDto = new NodeDTO(null, "nodeX", "nodeX", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, null);
+        RegisterRequest req = new RegisterRequest("nodeX", NodeMode.NODE);
 
-        registry.register(nodeDto);
+        registry.register(req);
 
         assertThat(registry.getActiveNodes()).hasSize(1);
         assertThat(registry.getInactiveNodes()).isEmpty();

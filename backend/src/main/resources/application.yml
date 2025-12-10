@@ -28,7 +28,7 @@ spring:
   logging:
     level:
       root: INFO
-      com.bcm: INFO
+      com.bcm: DEBUG
 server:
   port: ${APPLICATION_PORT:8080}
 application:

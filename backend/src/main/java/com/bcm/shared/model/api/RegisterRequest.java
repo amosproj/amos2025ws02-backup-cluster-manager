@@ -10,4 +10,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RegisterRequest {
     private String address;
+    private NodeMode mode;
 }

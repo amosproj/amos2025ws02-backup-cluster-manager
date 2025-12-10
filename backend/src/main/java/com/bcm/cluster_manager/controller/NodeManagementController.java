@@ -24,6 +24,7 @@ public class NodeManagementController {
 
     @PostMapping("/register")
     public void register(@RequestBody RegisterRequest req) {
-        nodeManagementService.registerNode(req);
+        NodeDTO nodeDto = new NodeDTO(null, req.getAddress(), req.getAddress(), null, req.getMode(), null);
+        nodeManagementService.registerNode(nodeDto);
     }
 }

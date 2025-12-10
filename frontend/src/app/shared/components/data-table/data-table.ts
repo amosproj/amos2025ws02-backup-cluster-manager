@@ -43,6 +43,7 @@ export class DataTable implements OnInit, OnChanges {
   @Input() addButtonText = 'Add';
 
   @Input() showAddButton = true;
+  @Input() showDeleteButton = true;
   @Input() addButtonTemplate: TemplateRef<unknown> | null = null;
   @Output() add = new EventEmitter<void>();
   @Output() addClicked = new EventEmitter<void>();

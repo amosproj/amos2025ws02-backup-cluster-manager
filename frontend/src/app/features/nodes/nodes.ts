@@ -7,6 +7,8 @@ import {SortOrder} from '../../shared/types/SortTypes';
 import {map} from 'rxjs';
 import {formatDateFields} from '../../shared/utils/date_utils';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
+import {AuthService} from '../../core/services/auth.service';
+import UserPermissionsEnum from '../../shared/types/Permissions';
 
 @Component({
   selector: 'app-nodes',
@@ -39,6 +41,7 @@ export class Nodes {
 
   constructor(
     private nodesService: NodesService,
+    public authService: AuthService
   ) {}
 
   fetchNodes = (page: number, itemsPerPage: number, filters: string, search:string, sortBy: string, sortOrder:SortOrder) => {
@@ -48,4 +51,5 @@ export class Nodes {
         formatDateFields(result, ['createdAt'])
       ));
   }
+  protected readonly UserPermissionsEnum = UserPermissionsEnum;
 }

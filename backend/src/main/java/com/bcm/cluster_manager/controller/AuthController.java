@@ -1,5 +1,9 @@
 package com.bcm.cluster_manager.controller;
 
+import com.bcm.cluster_manager.config.security.CustomUserDetails;
+import com.bcm.shared.config.permissions.Role;
+import com.bcm.shared.model.api.AuthMetadataDTO;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -8,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
+import java.util.Set;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
@@ -54,12 +60,41 @@ public class AuthController {
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<Void> validateSession() {
+    public ResponseEntity<AuthMetadataDTO> validateSession() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
-            return ResponseEntity.ok().build();
+
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.status(401).build();
+
+        // Cast to CustomUserDetails (not User entity!)
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+
+        // Get the first role (or handle multiple roles if needed)
+        var roles = userDetails.getRoles();
+        if (roles.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Get the highest ranked role
+        Role primaryRole = roles.stream()
+                .max((r1, r2) -> Integer.compare(r1.getRank(), r2.getRank()))
+                .orElseThrow();
+
+        // Collect all unique permissions from all roles
+        Set<String> permissions = roles.stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .map(com.bcm.shared.config.permissions.Permission::getPermission)
+                .collect(java.util.stream.Collectors.toSet());
+
+        AuthMetadataDTO metaData = new AuthMetadataDTO(
+                userDetails.getUsername(),
+                primaryRole,
+                primaryRole.getRank(),
+                permissions
+        );
+
+        return ResponseEntity.ok(metaData);
     }
 }
 

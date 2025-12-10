@@ -1,14 +1,17 @@
 package com.bcm.shared.service;
 
+import com.bcm.shared.config.permissions.Role;
 import com.bcm.shared.model.api.UserDTO;
 import com.bcm.shared.model.database.User;
 import com.bcm.shared.model.database.UserGroupRelation;
+import com.bcm.shared.repository.GroupMapper;
 import com.bcm.shared.repository.UserGroupRelationMapper;
 import com.bcm.shared.repository.UserMapper;
 import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing user operations.
@@ -31,9 +35,14 @@ public class UserService implements PaginationProvider<UserDTO> {
 
     private final UserGroupRelationMapper userGroupRelationMapper;
 
-    public UserService(@Qualifier("userGroupRelationMapperBN") UserGroupRelationMapper userGroupRelationMapper, @Qualifier("userMapperBN") UserMapper userMapper) {
+    private final GroupMapper groupMapper;
+
+    public UserService(@Qualifier("userGroupRelationMapperBN") UserGroupRelationMapper userGroupRelationMapper,
+                      @Qualifier("userMapperBN") UserMapper userMapper,
+                      @Qualifier("groupMapperBN") GroupMapper groupMapper) {
         this.userGroupRelationMapper = userGroupRelationMapper;
         this.userMapper = userMapper;
+        this.groupMapper = groupMapper;
     }
 
     /**
@@ -121,6 +130,132 @@ public class UserService implements PaginationProvider<UserDTO> {
     public boolean deleteUser(Long id) {
         // deleting a user should also delete all related user-group relations through cascading
         return userMapper.delete(id) == 1;
+    }
+
+    /**
+     * Gets the highest rank of a user based on their groups.
+     *
+     * @param userId the ID of the user
+     * @return the highest rank value, or 0 if the user has no groups/roles
+     */
+    @Transactional
+    public int getUserHighestRank(Long userId) {
+        var relations = userGroupRelationMapper.findByUser(userId);
+        return relations.stream()
+                .map(rel -> groupMapper.findById(rel.getGroupId()))
+                .filter(group -> group != null && group.isEnabled())
+                .map(group -> {
+                    try {
+                        return Role.valueOf(group.getName().toUpperCase().replace(' ', '_'));
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                })
+                .filter(role -> role != null)
+                .mapToInt(Role::getRank)
+                .max()
+                .orElse(0);
+    }
+
+    /**
+     * Filters users to only include those with a lower rank than the requester.
+     *
+     * @param users the list of users to filter
+     * @param requesterRank the rank of the requesting user
+     * @return filtered list of users with lower rank
+     */
+    private List<User> filterUsersByRank(List<User> users, int requesterRank) {
+        return users.stream()
+                .filter(user -> getUserHighestRank(user.getId()) < requesterRank)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Checks if the requester has permission to manage a target user based on rank.
+     *
+     * @param targetUserId the ID of the user to be managed
+     * @param requesterRank the rank of the requesting user
+     * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
+     */
+    private void validateRankPermission(Long targetUserId, int requesterRank) {
+        int targetRank = getUserHighestRank(targetUserId);
+        if (targetRank >= requesterRank) {
+            throw new AccessDeniedException("Insufficient rank to manage this user");
+        }
+    }
+
+    /**
+     * Retrieves users by name subtext, filtered by requester's rank.
+     * Only returns users with a lower rank than the requester.
+     *
+     * @param name the name subtext to search for
+     * @param requesterRank the rank of the requesting user
+     * @return list of users with lower rank matching the name subtext
+     */
+    @Transactional
+    public List<User> getUserBySubtextWithRankCheck(String name, int requesterRank) {
+        List<User> users = userMapper.findByNameSubtext(name);
+        return filterUsersByRank(users, requesterRank);
+    }
+
+    /**
+     * Updates a user with rank validation.
+     * Only allows updating users with a lower rank than the requester.
+     *
+     * @param user the user object containing updated data
+     * @param requesterRank the rank of the requesting user
+     * @return the updated user object
+     * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
+     */
+    @Transactional
+    public User editUserWithRankCheck(User user, int requesterRank) {
+        validateRankPermission(user.getId(), requesterRank);
+        userMapper.update(user);
+        return userMapper.findById(user.getId());
+    }
+
+    /**
+     * Deletes a user with rank validation.
+     * Only allows deleting users with a lower rank than the requester.
+     *
+     * @param id the unique identifier of the user to delete
+     * @param requesterRank the rank of the requesting user
+     * @return true if a user was successfully deleted, false otherwise
+     * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
+     */
+    @Transactional
+    public boolean deleteUserWithRankCheck(Long id, int requesterRank) {
+        validateRankPermission(id, requesterRank);
+        return userMapper.delete(id) == 1;
+    }
+
+    /**
+     * Adds a new user with rank validation on the target group.
+     * Only allows creating users in groups with a lower rank than the requester.
+     *
+     * @param user the user object to be added
+     * @param groupID the ID of the group to assign to the user
+     * @param requesterRank the rank of the requesting user
+     * @return the newly created user object
+     * @throws AccessDeniedException if the requester's rank is not higher than the target group's rank
+     */
+    @Transactional
+    public User addUserAndAssignGroupWithRankCheck(User user, Long groupID, int requesterRank) {
+        // Check if the requester has higher rank than the target group
+        var targetGroup = groupMapper.findById(groupID);
+        if (targetGroup != null && targetGroup.isEnabled()) {
+            try {
+                Role targetRole = Role.valueOf(targetGroup.getName().toUpperCase().replace(' ', '_'));
+                if (targetRole.getRank() >= requesterRank) {
+                    throw new AccessDeniedException("Insufficient rank to create user in this group");
+                }
+            } catch (IllegalArgumentException e) {
+                // Group doesn't map to a valid role, allow it
+            }
+        }
+
+        // Use the existing method to add user and assign group
+        return addUserAndAssignGroup(user, groupID);
     }
 
     // Generate example user for testing purposes

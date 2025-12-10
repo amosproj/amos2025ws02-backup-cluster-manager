@@ -1,14 +1,14 @@
-import { Routes } from '@angular/router';
+import {Routes} from '@angular/router';
 import {Dashboard} from './features/dashboard/dashboard';
 import {ExampleRoute} from './features/example-route/example-route';
-import { Users } from './features/users/users';
-import { Permissions } from './features/permissions/permissions';
-import { Clusters } from './features/clusters/clusters';
-import { Nodes } from './features/nodes/nodes';
-import { Backups } from './features/backups/backups';
+import {Users} from './features/users/users';
+import {Nodes} from './features/nodes/nodes';
+import {Backups} from './features/backups/backups';
 import {Tasks} from './features/tasks/tasks';
 import {Login} from './features/login/login';
-import { authGuard } from './core/guards/auth.guard';
+import {authGuard} from './core/guards/auth.guard';
+import {permissionGuard} from './core/guards/permission.guard';
+import UserPermissionsEnum from './shared/types/Permissions';
 
 export const routes: Routes = [
   {
@@ -33,37 +33,25 @@ export const routes: Routes = [
     path: 'users',
     component: Users,
     title: 'Users',
-    canActivate: [authGuard],
-  },
-  {
-    path: 'permissions',
-    component: Permissions,
-    title: 'Permissions',
-    canActivate: [authGuard],
-  },
-  {
-    path: 'clusters',
-    component: Clusters,
-    title: 'Clusters',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard(UserPermissionsEnum.UserRead)],
   },
   {
     path: 'nodes',
     component: Nodes,
     title: 'Nodes',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard(UserPermissionsEnum.NodeRead)],
   },
   {
     path: 'backups',
     component: Backups,
     title: 'Backups',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard(UserPermissionsEnum.BackupRead)],
   },
   {
     path: 'tasks',
     component: Tasks,
     title: 'Tasks',
-    canActivate: [authGuard],
+    canActivate: [authGuard, permissionGuard(UserPermissionsEnum.TaskRead)],
   },
   {
     path: '**',

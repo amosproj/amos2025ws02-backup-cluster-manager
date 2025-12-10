@@ -4,6 +4,7 @@ import {ActivatedRoute} from '@angular/router';
 import {of} from 'rxjs';
 import {provideHttpClient} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
+import {AuthService} from './core/services/auth.service';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -16,6 +17,13 @@ describe('App', () => {
             snapshot: {paramMap: {get: () => null}}, // Mock snapshot if used
             queryParams: of({}), // Mock queryParams observable
           },
+        },
+        {
+          provide: AuthService,
+          useValue:{
+            getPermissions: () => ["*"],
+            hasPermission: (permission:any) => true
+          }
         },
         provideHttpClient(),
         provideHttpClientTesting()

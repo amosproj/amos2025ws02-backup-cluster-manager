@@ -5,6 +5,8 @@
   [loading]="loading$ | async"
   [addButtonText]="'Add Task'"
   (add)="openAddModal()"
+  [showAddButton]="authService.hasPermission(UserPermissionsEnum.TaskCreate)"
+  [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.TaskDelete)"
 />
 
 @if (showAddModal()) {

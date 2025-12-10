@@ -21,6 +21,7 @@ describe('Backups', () => {
   const apiServiceMock = {
     loading$: of(false),
     post: jasmine.createSpy('post').and.returnValue(of({})),
+    get: jasmine.createSpy('get').and.returnValue(of({}))
   };
 
   const authServiceMock = {

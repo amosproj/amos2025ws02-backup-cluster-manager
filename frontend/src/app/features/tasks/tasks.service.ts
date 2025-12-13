@@ -3,6 +3,7 @@ import {ApiService} from '../../core/services/api.service';
 import {Observable} from 'rxjs';
 import {SortOrder} from '../../shared/types/SortTypes';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
+import {NodeDTO} from '../clients/clients.service';
 
 
 export interface TaskDTO {
@@ -12,6 +13,7 @@ export interface TaskDTO {
   source: string;
   enabled: boolean;
   interval: "DAILY" | "WEEKLY" | "MONTHLY";
+  node: NodeDTO;
 }
 
 @Injectable({

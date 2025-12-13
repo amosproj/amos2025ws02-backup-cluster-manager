@@ -23,11 +23,11 @@
 
         <div>
           <label class="block text-sm mb-1">Client</label>
-          <select formControlName="clientId"
+          <select formControlName="clientSelection"
                   class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none">
             <option value="" disabled selected>Bitte wählen</option>
-            @for (client of clients(); track client.id) {
-              <option [value]="client.id">{{client.nameOrIp}}</option>
+            @for (client of clients(); track trackClient) {
+              <option [ngValue]="{ clientId: client.id, nodeDTO: client.nodeDTO }">{{client.nodeDTO.address + " - " + client.nameOrIp}}</option>
             }
           </select>
         </div>

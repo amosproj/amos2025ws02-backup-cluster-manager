@@ -1,11 +1,13 @@
 import {Component, OnInit, signal, ViewChild} from '@angular/core';
 import {TasksService } from './tasks.service';
-import {ClientsService} from '../clients/clients.service';
+import {ClientDTO, ClientsService} from '../clients/clients.service';
 import {ApiService} from '../../core/services/api.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import {SortOrder} from '../../shared/types/SortTypes';
+import {map} from 'rxjs';
+import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 
 @Component({
   selector: 'app-tasks',
@@ -21,6 +23,7 @@ export class Tasks implements OnInit {
   @ViewChild(DataTable) dataTable!: DataTable;
   tableColumns = signal([
     {field: 'id', header: 'ID'},
+    {field: 'address', header: 'Node'},
     {field: 'name', header: 'Name'},
     {field: 'clientId', header: 'ClientID'},
     {field: 'source', header: 'Source'},
@@ -48,6 +51,9 @@ export class Tasks implements OnInit {
     { value: 'MONTHLY', label: 'Monthly' }
   ];
 
+  trackClient = (_: number, client: ClientDTO) =>
+    `${client.id}-${client.nodeDTO.id}`;
+
   ngOnInit() {
     this.clientsService.getClients().subscribe({
       next: (data) => this.clients.set(data),
@@ -64,16 +70,24 @@ export class Tasks implements OnInit {
     this.loading$ = this.apiService.loading$;
 
     this.addForm = this.fb.group({
-      clientId: ['', Validators.required],
       name: ['', Validators.required],
       source: ['', Validators.required],
       enabled: [true, Validators.required],
       interval: ['', Validators.required],
+      clientSelection: [null, Validators.required],
     });
   }
 
   fetchTasks = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder:SortOrder) => {
-    return this.tasksService.getTasks(page, itemsPerPage, filters, search, sortBy, sortOrder);
+    return this.tasksService.getTasks(page, itemsPerPage, filters, search, sortBy, sortOrder).pipe(
+      map((response: PaginatedResponse) => ({
+        ...response, // keep currentPage and totalPages
+        items: response.items.map((task: any) => ({
+          ...task,                       // keep all task fields
+          address: task.nodeDTO?.address // flatten node address
+        }))
+      }))
+    );
   }
 
   openAddModal() {
@@ -90,8 +104,9 @@ export class Tasks implements OnInit {
       this.addForm.markAllAsTouched();
       return;
     }
+    const { clientSelection, ...taskData } = this.addForm.value;
 
-    this.tasksService.createTask({id: null, ...this.addForm.value}).subscribe({
+    this.tasksService.createTask({id: null, ...clientSelection, ...taskData}).subscribe({
       next: (response) => {
         //console.log('Backup created:', response);
         this.closeAddModal();

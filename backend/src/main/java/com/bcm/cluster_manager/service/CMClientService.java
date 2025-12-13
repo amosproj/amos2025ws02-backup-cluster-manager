@@ -1,6 +1,8 @@
 package com.bcm.cluster_manager.service;
 
+import com.bcm.cluster_manager.model.api.BigClientDTO;
 import com.bcm.shared.model.api.ClientDTO;
+import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.TaskDTO;
 import com.bcm.shared.model.database.Client;
 import com.bcm.shared.repository.ClientMapper;
@@ -11,11 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.w3c.dom.Node;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -27,33 +27,40 @@ public class CMClientService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public List<ClientDTO> getAllClients() {
-        List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
+    public List<BigClientDTO> getAllClients() {
+        Collection<NodeDTO> nodeAddresses = registryService.getActiveNodes();
         if (nodeAddresses.isEmpty()) return List.of();
 
-        List<CompletableFuture<ClientDTO[]>> futures = nodeAddresses.stream().map(address -> CompletableFuture.supplyAsync(() -> {
+        List<CompletableFuture<BigClientDTO[]>> futures = nodeAddresses.stream().map(node -> CompletableFuture.supplyAsync(() -> {
             try {
-                String url = "http://" + address + "/api/v1/bn/clients";
+                String url = "http://" + node.getAddress() + "/api/v1/bn/clients";
                 ResponseEntity<ClientDTO[]> response = restTemplate.getForEntity(url, ClientDTO[].class);
                 if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                    return response.getBody();
+                    return Arrays.stream(response.getBody()).map(clientDto -> {;
+                        BigClientDTO bigClientDto = new BigClientDTO();
+                        bigClientDto.setId(clientDto.getId());
+                        bigClientDto.setNameOrIp(clientDto.getNameOrIp());
+                        bigClientDto.setEnabled(clientDto.isEnabled());
+                        bigClientDto.setNodeDTO(node);
+                        return bigClientDto;
+                    }).toArray(BigClientDTO[]::new);
                 }
             } catch (Exception e) {
-                System.out.println("Fehler beim Abruf von Tasks von Node " + address);
+                System.out.println("Fehler beim Abruf von Tasks von Node " + node.getAddress());
             }
             return null;
         })).toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        List<ClientDTO> allClients = new ArrayList<>();
+        List<BigClientDTO> allClients = new ArrayList<>();
         //Set<Long> seenIds = new HashSet<>();
 
-        for (CompletableFuture<ClientDTO[]> future : futures) {
+        for (CompletableFuture<BigClientDTO[]> future : futures) {
             try {
-                ClientDTO[] clients = future.get();
+                BigClientDTO[] clients = future.get();
                 if (clients != null) {
-                    for (ClientDTO client : clients) {
+                    for (BigClientDTO client : clients) {
                         //if (client != null && seenIds.add(client.getId())) {
                             allClients.add(client);
                        // }

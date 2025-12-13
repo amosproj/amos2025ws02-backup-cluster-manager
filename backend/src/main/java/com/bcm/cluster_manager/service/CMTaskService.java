@@ -70,7 +70,7 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
         Collection<NodeDTO> nodes = registryService.getActiveNodes();
         if (nodes.isEmpty()) return List.of();
 
-        List<CompletableFuture<BigTaskDTO[]>> futures = nodes.stream().map(node  -> CompletableFuture.supplyAsync(() -> {
+        List<CompletableFuture<BigTaskDTO[]>> futures = nodes.stream().map(node -> CompletableFuture.supplyAsync(() -> {
             try {
                 String url = "http://" + node.getAddress() + "/api/v1/bn/tasks";
                 ResponseEntity<TaskDTO[]> response = restTemplate.getForEntity(url, TaskDTO[].class);
@@ -81,15 +81,13 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
 
                                 bigTaskDto.setId(taskDto.getId());
                                 bigTaskDto.setName(taskDto.getName());
+                                bigTaskDto.setClientId(taskDto.getClientId());
                                 bigTaskDto.setEnabled(taskDto.isEnabled());
                                 bigTaskDto.setInterval(taskDto.getInterval());
                                 bigTaskDto.setSource(taskDto.getSource());
 
-                                BigClientDTO bigClientDto = new BigClientDTO();
-                                bigClientDto.setId(taskDto.getClientId());
                                 // Don't need to set NameOrIp and Enabled here, as they are not relevant for task pages
-                                bigClientDto.setNodeDTO(node);
-                                bigTaskDto.setBigClientDTO(bigClientDto);
+                                bigTaskDto.setNodeDTO(node);
 
                                 return bigTaskDto;
                             })
@@ -171,42 +169,49 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
 
     @Transactional
     public BigTaskDTO addTask(BigTaskDTO task) {
-        if (task == null ||
-                task.getBigClientDTO() == null ||
-                task.getBigClientDTO().getNodeDTO() == null ||
-                task.getBigClientDTO().getNodeDTO().getId() == null) {
+        if (task == null || task.getNodeDTO() == null || task.getNodeDTO().getId() == null) {
             return null;
         }
 
-        Long targetNodeId = task.getBigClientDTO().getNodeDTO().getId();
+        TaskDTO taskDTO = new TaskDTO();
+        taskDTO.setName(task.getName());
+        taskDTO.setClientId(task.getClientId());
+        taskDTO.setSource(task.getSource());
+        taskDTO.setEnabled(task.isEnabled());
 
-        Optional<TaskDTO> result = registryService.getActiveNodes().stream()
+
+        Long targetNodeId = task.getNodeDTO().getId();
+
+        Optional<BigTaskDTO> result = registryService.getActiveNodes().stream()
                 .filter(node -> node.getId().equals(targetNodeId))
                 .findFirst()
                 .map(node -> {
                     try {
                         String url = "http://" + node.getAddress() + "/api/v1/bn/task";
                         ResponseEntity<TaskDTO> response =
-                                restTemplate.postForEntity(url, task, TaskDTO.class);
+                                restTemplate.postForEntity(url, taskDTO, TaskDTO.class);
 
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            return response.getBody();
+                        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                            TaskDTO dto = response.getBody();
+
+                            BigTaskDTO createdTask = new BigTaskDTO();
+                            createdTask.setId(dto.getId());
+                            createdTask.setName(dto.getName());
+                            createdTask.setClientId(dto.getClientId());
+                            createdTask.setSource(dto.getSource());
+                            createdTask.setEnabled(dto.isEnabled());
+                            createdTask.setInterval(dto.getInterval());
+                            createdTask.setNodeDTO(node);
+                            return createdTask;
                         }
                     } catch (Exception e) {
                         logger.error("Fehler beim Hinzufügen von Task an Node " + node.getAddress());
+                        throw e;
                     }
                     return null;
                 });
         if (result.isPresent()) {
-            BigTaskDTO createdTask = new BigTaskDTO();
-            createdTask.setId(result.get().getId());
-            createdTask.setName(result.get().getName());
-            createdTask.setClientId(result.get().getClientId());
-            createdTask.setSource(result.get().getSource());
-            createdTask.setEnabled(result.get().isEnabled());
-            createdTask.setInterval(result.get().getInterval());
-            createdTask.setBigClientDTO(task.getBigClientDTO());
-            return createdTask;
+            return result.get();
         }
 
         logger.error("Target node for new Task not found or error occurred.");

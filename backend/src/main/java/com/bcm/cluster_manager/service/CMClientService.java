@@ -3,17 +3,10 @@ package com.bcm.cluster_manager.service;
 import com.bcm.cluster_manager.model.api.BigClientDTO;
 import com.bcm.shared.model.api.ClientDTO;
 import com.bcm.shared.model.api.NodeDTO;
-import com.bcm.shared.model.api.TaskDTO;
-import com.bcm.shared.model.database.Client;
-import com.bcm.shared.repository.ClientMapper;
-import com.bcm.shared.util.NodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.w3c.dom.Node;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;

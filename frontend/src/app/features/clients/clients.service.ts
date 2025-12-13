@@ -4,9 +4,19 @@ import {Observable} from 'rxjs';
 
 
 export interface ClientDTO {
+   nodeDTO: NodeDTO;
    id: number;
    nameOrIp: string;
    enabled: boolean;
+}
+
+export interface NodeDTO {
+  id: number ;
+  name : string;
+  address : string;
+  status : any;
+  nodeMode: any;
+  createdAt: string;
 }
 
 @Injectable({

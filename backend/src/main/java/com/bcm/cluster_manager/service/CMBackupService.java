@@ -1,12 +1,11 @@
 package com.bcm.cluster_manager.service;
 
-import com.bcm.shared.model.api.CreateBackupRequest;
-import com.bcm.shared.model.api.ExecuteBackupRequest;
+import com.bcm.cluster_manager.model.api.BigBackupDTO;
+import com.bcm.cluster_manager.service.pagination.shared.BigBackupComparators;
+import com.bcm.shared.model.api.*;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.service.NodeHttpClient;
-import com.bcm.shared.pagination.sort.BackupComparators;
 import com.bcm.shared.pagination.filter.Filter;
-import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.util.NodeUtils;
@@ -19,18 +18,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 
 import static com.bcm.shared.mapper.BackupConverter.toLdt;
 
 @Service
-public class CMBackupService implements PaginationProvider<BackupDTO> {
+public class CMBackupService implements PaginationProvider<BigBackupDTO> {
 
     @Autowired
     private  RegistryService registryService;
@@ -49,22 +44,22 @@ public class CMBackupService implements PaginationProvider<BackupDTO> {
     @Override
     public long getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
-        List<BackupDTO> base = (getAllBackups());
+        List<BigBackupDTO> base = (getAllBackups());
         return applySearch(applyFilters(base, filter), filter).size();
 
     }
 
     @Override
-    public List<BackupDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
-        List<BackupDTO> allBackups = (getAllBackups());
+    public List<BigBackupDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
+        List<BigBackupDTO> allBackups = (getAllBackups());
 
-        List<BackupDTO> filtered = applyFilters(allBackups, filter);
-        List<BackupDTO> searched = applySearch(filtered, filter);
-        List<BackupDTO> sorted = SortProvider.sort(
+        List<BigBackupDTO> filtered = applyFilters(allBackups, filter);
+        List<BigBackupDTO> searched = applySearch(filtered, filter);
+        List<BigBackupDTO> sorted = SortProvider.sort(
                 searched,
                 filter.getSortBy(),
                 filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
-                BackupComparators.COMPARATORS
+                BigBackupComparators.COMPARATORS
         );
         int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
         int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
@@ -74,45 +69,60 @@ public class CMBackupService implements PaginationProvider<BackupDTO> {
         return sorted.subList(fromIndex, toIndex);
     }
 
-    //TODO: functionality -> To be tested
-    public List<BackupDTO> getAllBackups() {
+    public List<BigBackupDTO> getAllBackups() {
+        Collection<NodeDTO> nodes = registryService.getActiveNodes();
+        if (nodes.isEmpty()) return List.of();
 
-        List<BackupDTO> backupDTOs = new ArrayList<>();
-        //var seenIds = new java.util.HashSet<Long>();
+        List<CompletableFuture<BigBackupDTO[]>> futures = nodes.stream().map(node -> CompletableFuture.supplyAsync(() -> {
+            try {
+                String url = "http://" + node.getAddress() + BACKUPS_ENDPOINT;
+                ResponseEntity<BackupDTO[]> response = restTemplate.getForEntity(url, BackupDTO[].class);
+                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                    return Arrays.stream(response.getBody())
+                            .map(taskDto -> {
+                                BigBackupDTO bigBackupDTO = new BigBackupDTO();
+                                bigBackupDTO.setId(taskDto.getId());
+                                bigBackupDTO.setClientId(taskDto.getClientId());
+                                bigBackupDTO.setTaskId(taskDto.getTaskId());
+                                bigBackupDTO.setName(taskDto.getName());
+                                bigBackupDTO.setState(taskDto.getState());
+                                bigBackupDTO.setSizeBytes(taskDto.getSizeBytes());
+                                bigBackupDTO.setStartTime(taskDto.getStartTime());
+                                bigBackupDTO.setStopTime(taskDto.getStopTime());
+                                bigBackupDTO.setCreatedAt(taskDto.getCreatedAt());
 
-        List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
+                                bigBackupDTO.setNodeDTO(node);
 
-        List<CompletableFuture<BackupDTO[]>> futures = nodeAddresses.stream()
-                .map(nodeAddress -> nodeHttpClient.callNodeAsync(
-                        nodeAddress,
-                        BACKUPS_ENDPOINT,
-                        BackupDTO[].class
-                ))
-                .toList();
+                                return bigBackupDTO;
+                            })
+                            .toArray(BigBackupDTO[]::new);
+                }
+            } catch (Exception e) {
+                logger.info("Fehler beim Abruf von Backups von Node " + node.getAddress() + ". Error: " + (e.getMessage()));
+            }
+            return null;
+        })).toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        for (CompletableFuture<BackupDTO[]> future : futures) {
+        List<BigBackupDTO> allBackups = new ArrayList<>();
+        //Set<Long> seenIds = new HashSet<>();
+
+        for (CompletableFuture<BigBackupDTO[]> future : futures) {
             try {
-                BackupDTO[] body = future.get();
-                if (body != null) {
-                    Arrays.stream(body)
-                            .filter(Objects::nonNull)
-                            //.filter(b -> b.getId() == null || seenIds.add(b.getId()))
-                            .forEach(backupDTOs::add);
+                BigBackupDTO[] backups = future.get();
+                if (backups != null) {
+                    allBackups.addAll(Arrays.asList(backups));
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.warn("Thread interrupted while fetching backups", e);
-            } catch (ExecutionException e) {
-                logger.warn("Error fetching backups: {}", e.getMessage());
+            } catch (Exception ignored) {
             }
         }
-        return backupDTOs;
+
+        return allBackups;
     }
 
     // Filters by BackupState parsed from filter.getFilters()
-    private List<BackupDTO> applyFilters(List<BackupDTO> backups, Filter filter) {
+    private List<BigBackupDTO> applyFilters(List<BigBackupDTO> backups, Filter filter) {
         if (filter == null || filter.getFilters() == null || filter.getFilters().isEmpty()) {
             return backups;
         }
@@ -141,7 +151,7 @@ public class CMBackupService implements PaginationProvider<BackupDTO> {
     }
 
     // Searches in name, clientId, taskId, state name, and id (if present)
-    private List<BackupDTO> applySearch(List<BackupDTO> backups, Filter filter) {
+    private List<BigBackupDTO> applySearch(List<BigBackupDTO> backups, Filter filter) {
         if (filter != null && StringUtils.hasText(filter.getSearch())) {
             String searchTerm = filter.getSearch().toLowerCase();
             return backups.stream()
@@ -157,42 +167,68 @@ public class CMBackupService implements PaginationProvider<BackupDTO> {
         return backups;
     }
 
-    //TODO: functionality to be tested, this is just a draft
-    public BackupDTO createBackup(CreateBackupRequest request) {
+    public BigBackupDTO createBackup(BigBackupDTO request) {
 
-        BackupDTO backupDTO = new BackupDTO(
-                null,
-                request.getClientId(),
-                request.getTaskId(),
-                "Backup creation initiated",
-                BackupState.QUEUED,
-                request.getSizeBytes(),
-                null,
-                null,
-                toLdt(Instant.now())
+        BackupDTO backupDTO = new BackupDTO();
+        backupDTO.setClientId(request.getClientId());
+        backupDTO.setTaskId(request.getTaskId());
+        backupDTO.setName("Backup for task " + request.getTaskId());
+        backupDTO.setState(BackupState.QUEUED);
+        backupDTO.setSizeBytes(request.getSizeBytes());
+        backupDTO.setCreatedAt(toLdt(Instant.now()));
+
+        String targetAddress = request.getNodeDTO().getAddress();
+
+        registryService.getActiveNodes().forEach(n ->
+                logger.info("Active node: id={}, address={}", n.getId(), n.getAddress())
         );
 
-        //get active nodes from registry
-        List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
+        Optional<BigBackupDTO> result = registryService.getActiveNodes().stream()
+                .filter(node -> node.getAddress().equals(targetAddress))
+                .findFirst()
+                .map(node -> {
+                    try {
+                        String url = "http://" + node.getAddress() + "/api/v1/bn/backups/sync";
+                        ResponseEntity<BackupDTO> response =
+                                restTemplate.postForEntity(url, backupDTO, BackupDTO.class);
 
-        // send a request to backup nodes to create the backup
-        for (String nodeAddress : nodeAddresses) {
-            try {
-                String url = "http://" + nodeAddress + "/api/v1/bn/backups/sync";
-                ResponseEntity<BackupDTO> response = restTemplate.postForEntity(url, request, BackupDTO.class);
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    logger.info("Backup creation request sent to node {}", nodeAddress);
-                    return backupDTO;
-                } else {
-                    logger.info("Backup creation request failed to node {}", nodeAddress);
+                        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                            BigBackupDTO dto = getBigBackupDTO(response);
+                            dto.setNodeDTO(node);   // important for the frontend
+                            return dto;
+                        } else {
+                            logger.error("Node {} responded with status {} and body {} when creating backup",
+                                    node.getAddress(), response.getStatusCode(), response.getBody());
+                        }
+                    } catch (Exception e) {
+                        logger.error("Fehler beim Hinzufügen von Backup an Node {}", node.getAddress(), e);
+                        throw e;
+                    }
                     return null;
-                }
-            } catch (Exception e) {
-                logger.error("Error sending backup creation request to node {}: {}", nodeAddress, e.getMessage());
-                throw new RuntimeException("Error sending backup creation request to node " + nodeAddress, e);
-            }
+                });
+
+        if (result.isPresent()) {
+            return result.get();
         }
-        return backupDTO;
+
+        logger.error("Target node for new Backup not found or error occurred. targetAddress={}", targetAddress);
+        return null;
+    }
+
+    private static BigBackupDTO getBigBackupDTO(ResponseEntity<BackupDTO> response) {
+        BackupDTO dto = response.getBody();
+
+        BigBackupDTO createdBackup = new BigBackupDTO();
+        createdBackup.setId(dto.getId());
+        createdBackup.setClientId(dto.getClientId());
+        createdBackup.setTaskId(dto.getTaskId());
+        createdBackup.setName(dto.getName());
+        createdBackup.setState(dto.getState());
+        createdBackup.setSizeBytes(dto.getSizeBytes());
+        createdBackup.setStartTime(dto.getStartTime());
+        createdBackup.setStopTime(dto.getStopTime());
+        createdBackup.setCreatedAt(dto.getCreatedAt());
+        return createdBackup;
     }
 
     //TODO: functionality to be tested, this is just a draft

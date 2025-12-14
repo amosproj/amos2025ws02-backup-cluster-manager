@@ -1,9 +1,8 @@
 package com.bcm.cluster_manager.controller;
 
-import com.bcm.shared.model.api.CreateBackupRequest;
+import com.bcm.cluster_manager.model.api.BigBackupDTO;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.cluster_manager.service.CMBackupService;
-import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,15 +42,15 @@ public class CMBackupController {
     }
 
     @GetMapping("/backups")
-    public PaginationResponse<BackupDTO> getBackups(PaginationRequest pagination) {
+    public PaginationResponse<BigBackupDTO> getBackups(PaginationRequest pagination) {
         return CMBackupService.getPaginatedItems(pagination);
     }
 
     @PostMapping("/backups")
-    public ResponseEntity<BackupDTO> createBackup(@RequestBody CreateBackupRequest request) {
+    public ResponseEntity<BigBackupDTO> createBackup(@RequestBody BigBackupDTO request) {
         try {
 
-            BackupDTO result = CMBackupService.createBackup(request);
+            BigBackupDTO result = CMBackupService.createBackup(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception e) {
             e.printStackTrace();

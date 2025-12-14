@@ -13,6 +13,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.bcm.shared.mapper.BackupConverter.toDTO;
+
 @Service
 public class BackupService {
 
@@ -24,7 +26,7 @@ public class BackupService {
 
 
     public BackupDTO findBackupById(Long id) {
-        return BackupConverter.toDTO(backupMapper.findById(id));
+        return toDTO(backupMapper.findById(id));
     }
     public List<BackupDTO> getAllBackups() {
         try {
@@ -71,7 +73,7 @@ public class BackupService {
 
     }
 
-    public void store(Long clientId, Long taskId, Long sizeBytes) {
+    public BackupDTO store(Long clientId, Long taskId, Long sizeBytes) {
         Backup backup = new Backup();
         backup.setClientId(clientId);
         backup.setTaskId(taskId);
@@ -82,6 +84,8 @@ public class BackupService {
         backup.setCreatedAt(Instant.now());
 
         backupMapper.insert(backup);
+
+        return toDTO(backup);
 
     }
 

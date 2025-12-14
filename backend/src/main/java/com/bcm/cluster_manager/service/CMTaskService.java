@@ -178,7 +178,7 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
         taskDTO.setClientId(task.getClientId());
         taskDTO.setSource(task.getSource());
         taskDTO.setEnabled(task.isEnabled());
-
+        taskDTO.setInterval(task.getInterval());
 
         Long targetNodeId = task.getNodeDTO().getId();
 

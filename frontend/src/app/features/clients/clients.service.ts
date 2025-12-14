@@ -11,7 +11,7 @@ export interface ClientDTO {
 }
 
 export interface NodeDTO {
-  id: number ;
+  id: string ;
   name : string;
   address : string;
   status : any;

@@ -25,7 +25,15 @@ public class TaskController {
 
     @PostMapping("/task")
     public TaskDTO createTask(@RequestBody TaskDTO taskDTO) {
-        return taskService.createTask(toEntity(taskDTO));
+        //System.out.println("Received task create request: {}" + taskDTO);
+
+        Task task = toEntity(taskDTO);
+        if (task.getClientId() == null) {
+            throw new IllegalArgumentException("clientId must not be null");
+        }
+
+        return taskService.createTask(task);
+
     }
 
     private Task toEntity(TaskDTO taskDTO) {

@@ -54,9 +54,14 @@ public class BackupService {
         long now = System.currentTimeMillis();
 
          try {
+            Backup backup = backupMapper.findById(id);
+
+            backup.setState(BackupState.QUEUED);
+
+            backupMapper.update(backup);
+
             Thread.sleep(request.getDuration());
 
-            Backup backup = backupMapper.findById(id);
             if (request.getShouldSucceed()){
                 backup.setState(BackupState.COMPLETED);
                 backup.setMessage("Backup completed successfully.");
@@ -65,7 +70,7 @@ public class BackupService {
                 backup.setMessage("Backup failed due to an error.");
             }
             backup.setStopTime(Instant.ofEpochMilli(now + request.getDuration()));
-             backupMapper.update(backup);
+            backupMapper.update(backup);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

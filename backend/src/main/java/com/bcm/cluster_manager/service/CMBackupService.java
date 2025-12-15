@@ -255,6 +255,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         }
     }
 
+    /*
     //TODO: functionality to be tested, this is just a draft
     public void executeBackup(Long id, Long duration, Boolean shouldSucceed) {
         try {
@@ -278,7 +279,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
                 return;
             }
 
-            ExecuteBackupRequest request = new ExecuteBackupRequest(duration, shouldSucceed, nodes);
+            ExecuteBackupRequest request = new ExecuteBackupRequest();
 
             // Notify backup nodes
             List<CompletableFuture<Boolean>> futures = nodes.stream().map(nodeAddress -> CompletableFuture.supplyAsync(() -> {
@@ -304,7 +305,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
             logger.error("Error executing backup {} from node {}", id, e.getMessage());
         }
     }
-
+    */
 
 
 }

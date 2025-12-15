@@ -1,7 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
 import com.bcm.cluster_manager.model.api.BigBackupDTO;
-import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.cluster_manager.service.CMBackupService;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
@@ -30,6 +29,7 @@ public class CMBackupController {
         }
     }
 
+    /*
     @PostMapping("/backups/{id}/execute")
     public ResponseEntity<Void> executeBackup(@PathVariable Long id, @RequestBody ExecuteBackupRequest req) {
         try {
@@ -40,6 +40,7 @@ public class CMBackupController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    */
 
     @GetMapping("/backups")
     public PaginationResponse<BigBackupDTO> getBackups(PaginationRequest pagination) {

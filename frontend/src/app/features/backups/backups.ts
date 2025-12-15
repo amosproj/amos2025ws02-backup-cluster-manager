@@ -145,7 +145,7 @@ export class Backups {
   }
 
   ngOnInit(): void {
-    this.clientsService.getClients().subscribe({
+    this.clientsService.getClientList().subscribe({
       next: (data) => this.clients.set(data),
       error: (err) => console.error('Fehler beim Laden der Clients:', err)
     });

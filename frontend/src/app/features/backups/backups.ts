@@ -47,19 +47,15 @@ export class Backups {
   onDeleteSelection(rows: any[]): void {
     if (!rows.length) return;
 
-    const ids = rows.map(r => r.id);
     let completed = 0;
 
-    ids.forEach(id => {
-      this.backupsService.deleteBackup(id).subscribe({
+    rows.forEach(row => {
+      this.backupsService.deleteBackup(row.id, row.nodeDTO.address).subscribe({
         next: () => {
           completed++;
 
-          // Refresh only once, after last item is deleted
-          if (completed === ids.length) {
-            if (this.dataTable) {
-              this.dataTable.loadData();
-            }
+          if (completed === rows.length && this.dataTable) {
+            this.dataTable.loadData();
           }
         },
         error: (error) => {

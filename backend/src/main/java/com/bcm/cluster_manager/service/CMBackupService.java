@@ -231,24 +231,26 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         return createdBackup;
     }
 
-    //TODO: functionality to be tested, this is just a draft
-    public void deleteBackup(Long id) {
+    public void deleteBackup(Long id, String nodeAddress) {
         try {
 
-            // Notify all active backup nodes to delete the backup
-            List<String> nodeAddresses = NodeUtils.addresses(registryService.getActiveNodes());
-            for (String nodeAddress : nodeAddresses) {
-                try {
-                    String url = "http://" + nodeAddress + "/api/v1/bn/backups/" + id;
-                    restTemplate.delete(url);
-                    logger.info("Delete backup {} from node {}", id, nodeAddress);
-                } catch (Exception e) {
-                    logger.error("Error deleting backup {} from node {}", id, nodeAddress, e);
-                }
+            var nodeOpt = registryService.getActiveNodes().stream()
+                    .filter(node -> node.getAddress().equals(nodeAddress))
+                    .findFirst();
+
+            if (nodeOpt.isEmpty()) {
+                logger.warn("Cannot delete backup {}: node {} is not active or not found", id, nodeAddress);
+                return;
             }
 
+            String url = "http://" + nodeAddress + "/api/v1/bn/backups/" + id;
+
+            restTemplate.delete(url);
+
+            logger.info("Deleted backup {} from node {}", id, nodeAddress);
+
         } catch (Exception e) {
-            logger.error("Error deleting backup {} from node {}", id, e.getMessage());
+            logger.error("Error deleting backup {} from node {}: {}", id, nodeAddress, e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

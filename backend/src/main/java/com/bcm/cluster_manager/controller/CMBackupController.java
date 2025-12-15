@@ -20,9 +20,9 @@ public class CMBackupController {
 
 
     @DeleteMapping("/backups/{id}")
-    public ResponseEntity<Void> deleteBackup(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBackup(@PathVariable Long id, @RequestParam("nodeAddress") String nodeAddress) {
         try {
-            CMBackupService.deleteBackup(id);
+            CMBackupService.deleteBackup(id, nodeAddress);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             e.printStackTrace();

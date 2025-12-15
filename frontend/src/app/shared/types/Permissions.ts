@@ -10,6 +10,12 @@ enum UserPermissionsEnum {
   NodeCreate="node:create",
   NodeDelete="node:delete",
 
+  // Clients Page Permissions
+  ClientRead ="client:read",
+  ClientCreate="client:create",
+  ClientDelete="client:delete",
+  ClientUpdate="client:update",
+
   // Backups Page Permissions
   BackupRead ="backup:read",
   BackupCreate ="backup:create",

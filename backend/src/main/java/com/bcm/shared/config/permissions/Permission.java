@@ -12,6 +12,12 @@ public enum Permission {
     NODE_CREATE("node:create"),
     NODE_DELETE("node:delete"),
 
+    // Clients
+    CLIENT_READ("client:read"),
+    CLIENT_CREATE("client:create"),
+    CLIENT_UPDATE("client:update"),
+    CLIENT_DELETE("client:delete"), 
+
     // Backups
     BACKUP_READ("backup:read"),
     BACKUP_CREATE("backup:create"),
@@ -44,6 +50,12 @@ public enum Permission {
         public static final String NODE_READ = "hasAuthority('node:read')";
         public static final String NODE_CREATE = "hasAuthority('node:create')";
         public static final String NODE_DELETE = "hasAuthority('node:delete')";
+
+        // Clients
+        public static final String CLIENT_READ = "hasAuthority('client:read')";
+        public static final String CLIENT_CREATE = "hasAuthority('client:create')";
+        public static final String CLIENT_UPDATE = "hasAuthority('client:update')";
+        public static final String CLIENT_DELETE = "hasAuthority('client:delete')";
 
         // Backups
         public static final String BACKUP_READ = "hasAuthority('backup:read')";

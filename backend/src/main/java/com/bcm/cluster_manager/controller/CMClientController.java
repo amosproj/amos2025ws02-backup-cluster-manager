@@ -1,9 +1,14 @@
 package com.bcm.cluster_manager.controller;
 
 import com.bcm.cluster_manager.service.CMClientService;
+import com.bcm.shared.config.permissions.Permission;
 import com.bcm.shared.model.api.ClientDTO;
 import com.bcm.shared.model.database.Client;
+import com.bcm.shared.pagination.PaginationRequest;
+import com.bcm.shared.pagination.PaginationResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,12 +20,12 @@ import java.util.List;
 public class CMClientController {
 
     @Autowired
-    CMClientService clientService;
+    CMClientService CMclientService;
 
+    @PreAuthorize(Permission.Require.CLIENT_READ)
     @GetMapping("/clients")
-    public List<ClientDTO> getClients() {
-        return clientService.getAllClients().stream()
-                .toList();
+    public PaginationResponse<ClientDTO> getClients(PaginationRequest pagination) {
+        return CMclientService.getPaginatedItems(pagination);
     }
 
     private ClientDTO toDto(Client client) {

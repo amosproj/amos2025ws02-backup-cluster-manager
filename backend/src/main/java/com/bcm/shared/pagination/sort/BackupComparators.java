@@ -18,6 +18,8 @@ public class BackupComparators {
             "clientid", SortProvider.comparing(BackupDTO::getClientId),
             "taskid", SortProvider.comparing(BackupDTO::getTaskId),
             "sizebytes", SortProvider.comparing(BackupDTO::getSizeBytes),
-            "createdat", SortProvider.comparing(BackupDTO::getCreatedAt)
+            "createdat", SortProvider.comparing(BackupDTO::getCreatedAt),
+            "starttime", SortProvider.comparing(BackupDTO::getStartTime),
+            "stoptime", SortProvider.comparing(BackupDTO::getStopTime)
     );
 }

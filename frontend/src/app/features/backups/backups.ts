@@ -71,8 +71,23 @@ export class Backups {
   //  filter
   tableFilters = signal([
     {
-      filterFn: (item: any) => item.state?.toLowerCase() === "completed",
       label: 'Completed',
+      active: false,
+    },
+    {
+      label: 'Canceled',
+      active: false,
+    },
+    {
+      label: 'Failed',
+      active: false,
+    },
+    {
+      label: "Queued",
+      active: false,
+    },
+    {
+      label: "Running",
       active: false,
     }
   ]);

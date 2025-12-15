@@ -44,7 +44,7 @@
           <a [routerLink]="navigationItem.route"
             routerLinkActive="bg-primary-2"
             class="sidebar-navigation-item flex rounded-lg items-center p-2 text-base font-normal text-foreground hover:bg-primary-2 group">
-            <img [src]="navigationItem.icon">
+            <img [src]="navigationItem.icon" alt="{{ navigationItem.label }}">
             <span class="ml-3">{{ navigationItem.label }}</span>
           </a>
         </li>

@@ -51,6 +51,12 @@ export class App implements OnInit{
       route: "nodes",
       requiredPermission: UserPermissionsEnum.NodeRead
     },
+      {
+      label: "Clients",
+      icon: "/clients.svg",
+      route: "clients",
+      requiredPermission: UserPermissionsEnum.ClientRead
+    },
     {
       label:"Backups",
       icon: "/database.svg",

@@ -9,6 +9,7 @@ import {Login} from './features/login/login';
 import {authGuard} from './core/guards/auth.guard';
 import {permissionGuard} from './core/guards/permission.guard';
 import UserPermissionsEnum from './shared/types/Permissions';
+import { Clients } from './features/clients/clients';
 
 export const routes: Routes = [
   {
@@ -40,6 +41,12 @@ export const routes: Routes = [
     component: Nodes,
     title: 'Nodes',
     canActivate: [authGuard, permissionGuard(UserPermissionsEnum.NodeRead)],
+  },
+  {
+    path: 'clients',
+    component: Clients,
+    title: 'Clients',
+    canActivate: [authGuard, permissionGuard(UserPermissionsEnum.ClientRead)],
   },
   {
     path: 'backups',

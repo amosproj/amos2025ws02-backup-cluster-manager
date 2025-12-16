@@ -1,6 +1,6 @@
 import {Component, signal, ViewChild, OnInit} from '@angular/core';
 import {ApiService} from '../../core/services/api.service';
-import {BackupsService} from './backups.service';
+import {BackupDTO, BackupsService} from './backups.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
@@ -10,6 +10,7 @@ import {formatDateFields} from '../../shared/utils/date_utils';
 import {ClientsService} from '../clients/clients.service';
 import {TasksService} from '../tasks/tasks.service';
 import {AutoRefreshService} from '../../services/dynamic-page';
+import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 
 @Component({
   selector: 'app-backups',
@@ -27,6 +28,7 @@ export class Backups {
 
   tableColumns = signal([
     { field: 'id', header: 'ID' },
+    { field: 'address', header: 'Node'},
     { field: 'clientId', header: 'Client ID' },
     { field: 'taskId', header: 'Task ID' },
     { field: 'sizeBytes', header: 'Size (Bytes)' },
@@ -45,19 +47,15 @@ export class Backups {
   onDeleteSelection(rows: any[]): void {
     if (!rows.length) return;
 
-    const ids = rows.map(r => r.id);
     let completed = 0;
 
-    ids.forEach(id => {
-      this.backupsService.deleteBackup(id).subscribe({
+    rows.forEach(row => {
+      this.backupsService.deleteBackup(row.id, row.nodeDTO.address).subscribe({
         next: () => {
           completed++;
 
-          // Refresh only once, after last item is deleted
-          if (completed === ids.length) {
-            if (this.dataTable) {
-              this.dataTable.loadData();
-            }
+          if (completed === rows.length && this.dataTable) {
+            this.dataTable.loadData();
           }
         },
         error: (error) => {
@@ -69,8 +67,23 @@ export class Backups {
   //  filter
   tableFilters = signal([
     {
-      filterFn: (item: any) => item.state?.toLowerCase() === "completed",
       label: 'Completed',
+      active: false,
+    },
+    {
+      label: 'Canceled',
+      active: false,
+    },
+    {
+      label: 'Failed',
+      active: false,
+    },
+    {
+      label: "Queued",
+      active: false,
+    },
+    {
+      label: "Running",
       active: false,
     }
   ]);
@@ -101,8 +114,20 @@ export class Backups {
 
   fetchBackups = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder: SortOrder) => {
     return this.backupsService.getBackups(page, itemsPerPage, filters, search, sortBy, sortOrder).
-    pipe(map((result: any) => formatDateFields(result, ['startTime', 'stopTime'])));
+    pipe(map((response: PaginatedResponse) => {
+        const mappedResponse = {
+          ...response, // keep currentPage and totalPages
+          items: response.items.map((backup: any) => ({
+            ...backup,
+            address: backup.nodeDTO?.address
+          }))
+        };
+
+        return formatDateFields(mappedResponse, ['startTime', 'stopTime']);
+      })
+    );
   };
+
 
   openAddModal() {
     this.addForm.reset();
@@ -118,6 +143,15 @@ export class Backups {
       this.addForm.markAllAsTouched();
       return;
     }
+    const { clientId, taskId, sizeBytes } = this.addForm.value;
+
+    const payload: BackupDTO = {
+      clientId: clientId.id,
+      taskId: taskId.id,
+      sizeBytes: Number(sizeBytes),
+      nodeDTO: clientId.nodeDTO
+    };
+
 
     this.apiService.post('backup', this.addForm.value).subscribe({
       next: () => {
@@ -126,7 +160,7 @@ export class Backups {
       },
     });
 
-    this.backupsService.createBackup(this.addForm.value).subscribe({
+    this.backupsService.createBackup(payload).subscribe({
       next: (response) => {
         //console.log('Backup created:', response);
         this.closeAddModal();

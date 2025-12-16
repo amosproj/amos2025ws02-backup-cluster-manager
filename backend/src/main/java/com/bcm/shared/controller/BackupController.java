@@ -1,7 +1,7 @@
 package com.bcm.shared.controller;
 
 
-import com.bcm.shared.model.api.CreateBackupRequest;
+import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.service.BackupService;
 import com.bcm.shared.service.ClientService;
@@ -48,15 +48,14 @@ public class BackupController {
     }
 
     @PostMapping("/backups/sync")
-    public void receiveBackup(@RequestBody CreateBackupRequest dto) {
+    public ResponseEntity<BackupDTO> receiveBackup(@RequestBody BackupDTO dto) {
 
-        // get all clients and check if dto client id is in the list
-        if ( clientService.getClientById(dto.getClientId()) != null) {
-
-            backupNodeService.store(dto.getClientId(), dto.getTaskId(), dto.getSizeBytes());
-
+        if (clientService.getClientById(dto.getClientId()) != null) {
+            BackupDTO stored = backupNodeService.store(dto.getClientId(), dto.getTaskId(), dto.getSizeBytes());
+            return ResponseEntity.ok(stored);
         } else {
             System.out.println("Received backup for unknown client id: " + dto.getClientId());
+            return ResponseEntity.badRequest().build();  // 400, no body
         }
     }
 

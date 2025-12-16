@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.controller;
 
 
+import com.bcm.cluster_manager.model.api.BigTaskDTO;
 import com.bcm.shared.model.api.TaskDTO;
 import com.bcm.shared.model.database.Task;
 import com.bcm.cluster_manager.service.CMTaskService;
@@ -19,17 +20,17 @@ public class CMTaskController {
     CMTaskService CMTaskService;
 
     @GetMapping("/tasks")
-    public PaginationResponse<TaskDTO> getTasks(PaginationRequest pagination) {
+    public PaginationResponse<BigTaskDTO> getTasks(PaginationRequest pagination) {
         return CMTaskService.getPaginatedItems(pagination);
     }
 
     @GetMapping("/tasks/list")
-    public List<TaskDTO> getTasksList() {
+    public List<BigTaskDTO> getTasksList() {
         return CMTaskService.getAllTasks();
     }
 
     @PostMapping("/task")
-    public TaskDTO createTask(@RequestBody TaskDTO taskDTO) {
+    public BigTaskDTO createTask(@RequestBody BigTaskDTO taskDTO) {
         return CMTaskService.addTask(taskDTO);
     }
 

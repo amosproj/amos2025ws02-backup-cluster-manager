@@ -1,5 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
+import com.bcm.cluster_manager.model.api.BigClientDTO;
 import com.bcm.cluster_manager.service.CMClientService;
 import com.bcm.shared.model.api.ClientDTO;
 import com.bcm.shared.model.database.Client;
@@ -18,7 +19,7 @@ public class CMClientController {
     CMClientService clientService;
 
     @GetMapping("/clients")
-    public List<ClientDTO> getClients() {
+    public List<BigClientDTO> getClients() {
         return clientService.getAllClients().stream()
                 .toList();
     }

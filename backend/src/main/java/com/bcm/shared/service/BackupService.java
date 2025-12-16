@@ -13,6 +13,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.bcm.shared.mapper.BackupConverter.toDTO;
+
 @Service
 public class BackupService {
 
@@ -24,7 +26,7 @@ public class BackupService {
 
 
     public BackupDTO findBackupById(Long id) {
-        return BackupConverter.toDTO(backupMapper.findById(id));
+        return toDTO(backupMapper.findById(id));
     }
     public List<BackupDTO> getAllBackups() {
         try {
@@ -52,9 +54,14 @@ public class BackupService {
         long now = System.currentTimeMillis();
 
          try {
+            Backup backup = backupMapper.findById(id);
+
+            backup.setState(BackupState.QUEUED);
+
+            backupMapper.update(backup);
+
             Thread.sleep(request.getDuration());
 
-            Backup backup = backupMapper.findById(id);
             if (request.getShouldSucceed()){
                 backup.setState(BackupState.COMPLETED);
                 backup.setMessage("Backup completed successfully.");
@@ -63,7 +70,7 @@ public class BackupService {
                 backup.setMessage("Backup failed due to an error.");
             }
             backup.setStopTime(Instant.ofEpochMilli(now + request.getDuration()));
-             backupMapper.update(backup);
+            backupMapper.update(backup);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -71,7 +78,7 @@ public class BackupService {
 
     }
 
-    public void store(Long clientId, Long taskId, Long sizeBytes) {
+    public BackupDTO store(Long clientId, Long taskId, Long sizeBytes) {
         Backup backup = new Backup();
         backup.setClientId(clientId);
         backup.setTaskId(taskId);
@@ -82,6 +89,8 @@ public class BackupService {
         backup.setCreatedAt(Instant.now());
 
         backupMapper.insert(backup);
+
+        return toDTO(backup);
 
     }
 

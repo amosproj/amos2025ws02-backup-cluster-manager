@@ -3,12 +3,15 @@ import {ApiService} from '../../core/services/api.service';
 import {Observable} from 'rxjs';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 import {SortOrder} from '../../shared/types/SortTypes';
+import {NodeDTO} from '../clients/clients.service';
 
 
 
-export interface BackupRequest {
+export interface BackupDTO {
   clientId: number;
-  taskId?: number;
+  taskId: number;
+  sizeBytes: number;
+  nodeDTO: NodeDTO;
 }
 
 @Injectable({
@@ -30,12 +33,14 @@ export class BackupsService {
     return this.apiService.get<PaginatedResponse>('backups', {params});
   }
 
-  createBackup(request: BackupRequest): Observable<any> {
+  createBackup(request: BackupDTO): Observable<any> {
     return this.apiService.post<any>('backups', request);
   }
 
-  deleteBackup(backupId: number): Observable<any> {
-    return this.apiService.delete<any>(`backups/${backupId}`);
+  deleteBackup(backupId: number, nodeAddress: string): Observable<any> {
+    return this.apiService.delete<any>(`backups/${backupId}`, {
+      params: { nodeAddress }
+    });
   }
 
 }

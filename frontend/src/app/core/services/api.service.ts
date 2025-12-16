@@ -1,7 +1,8 @@
-import {BehaviorSubject, catchError, finalize, Observable, throwError} from 'rxjs';
+import {BehaviorSubject, catchError, finalize, map, Observable, throwError} from 'rxjs';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {environment} from '../../../environments/environment';
+import JSONBig from 'json-bigint';
 
 @Injectable({
   providedIn: 'root',
@@ -15,10 +16,19 @@ export class ApiService {
 
   get<T>(endpoint: string, options?: { params?: any; headers?: any }): Observable<T> {
     this.loadingSubject.next(true);
-    return this.http.get<T>(`${this.baseUrl}/${endpoint}`, options).pipe(
-      catchError(this.handleError),
-      finalize(() => this.loadingSubject.next(false))
-    );
+
+    return this.http
+      .get(`${this.baseUrl}/${endpoint}`, {
+        ...options,
+        responseType: 'text' as 'json'
+      })
+      .pipe(
+        map((raw: any) => {
+          return JSONBig({ storeAsString: true }).parse(raw as string) as T;
+        }),
+        catchError(this.handleError),
+        finalize(() => this.loadingSubject.next(false))
+      );
   }
 
   post<T>(endpoint: string, data: any, options?: { params?: any; headers?: any }): Observable<T> {

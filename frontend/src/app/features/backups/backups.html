@@ -20,11 +20,14 @@
           <label class="block text-sm mb-1">Client</label>
           <select formControlName="clientId"
                   class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none">
-            <option value="" disabled selected>Bitte wählen</option>
+            <option [ngValue]="null" disabled>Bitte wählen</option>
             @for (client of clients(); track client.id) {
-              <option [value]="client.id">{{client.nameOrIp}}</option>
+              <option [ngValue]="client">
+                {{ client.nodeDTO.address + " - " + client.nameOrIp }}
+              </option>
             }
           </select>
+
 
         </div>
 
@@ -32,11 +35,14 @@
           <label class="block text-sm mb-1">Task ID</label>
           <select formControlName="taskId"
                   class="w-full h-10 px-3 rounded bg-primary-1 border border-primary-4 outline-none">
-            <option value="" disabled selected>Bitte wählen</option>
+            <option [ngValue]="null" disabled>Bitte wählen</option>
             @for (task of tasks(); track task.id) {
-              <option [value]="task.id">{{task.id}}</option>
+              <option [ngValue]="task">
+                {{ task.nodeDTO.address + " - " + task.id }}
+              </option>
             }
           </select>
+
         </div>
 
         <div>

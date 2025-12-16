@@ -1,9 +1,9 @@
 package com.bcm.shared.model.database;
 
 public enum BackupState {
-    QUEUED,
-    RUNNING,
+    CANCELED,
     COMPLETED,
     FAILED,
-    CANCELED
+    QUEUED,
+    RUNNING
 }

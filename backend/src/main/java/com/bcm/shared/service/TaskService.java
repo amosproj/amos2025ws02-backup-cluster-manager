@@ -125,10 +125,15 @@ public class TaskService implements PaginationProvider<TaskDTO> {
 
     @Transactional
     public TaskDTO createTask(Task task) {
-        if(clientService.getClientById(task.getClientId()) != null) {
+        //System.out.println("Creating task for clientId={}" + task.getClientId());
+
+        if (clientService.getClientById(task.getClientId()) != null) {
             taskMapper.insert(task);
-            return toDto(taskMapper.findById(task.getId()));
+            Task loaded = taskMapper.findById(task.getId());
+            return toDto(loaded);
         }
+
+        //System.out.println("Client {} not found; not creating task" + task.getClientId());
         return null;
     }
 

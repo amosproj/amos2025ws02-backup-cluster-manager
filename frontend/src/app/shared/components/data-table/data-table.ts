@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, signal, SimpleChanges, TemplateRef} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, signal, SimpleChanges, TemplateRef, AfterViewInit} from '@angular/core';
+import { initFlowbite } from 'flowbite';
 import {Observable} from 'rxjs';
 import { NgClass, NgTemplateOutlet, CommonModule } from '@angular/common';
 import {SortOrder} from '../../types/SortTypes';
@@ -22,7 +23,7 @@ interface PaginatedResponse {
   templateUrl: './data-table.html',
   styleUrl: './data-table.css',
 })
-export class DataTable implements OnInit, OnChanges {
+export class DataTable implements OnInit, OnChanges, AfterViewInit {
   // @Input() data: any[] = [];
   @Input() columns: { field: string, header: string }[] = [];
   @Input() searchColumns: string[] = [];
@@ -60,10 +61,16 @@ export class DataTable implements OnInit, OnChanges {
   currentSortBy = signal<string>("");
   currentSortOrder = signal<SortOrder>(SortOrder.ASC);
 
+  uniqueId = 'table-' + Math.random().toString(36).substr(2, 9);
+
   private currentSearchQuery: string = '';
 
   ngOnInit() {
     this.loadData();
+  }
+
+  ngAfterViewInit() {
+    initFlowbite();
   }
 
   isRowSelected(row: any): boolean {

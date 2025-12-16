@@ -20,17 +20,4 @@ public class BackupDTO {
     private LocalDateTime stopTime;
     private LocalDateTime createdAt;
 
-
-    public BackupDTO(Long id, Long clientId, Long taskId, String name, BackupState state,
-                     Long sizeBytes, LocalDateTime startTime, LocalDateTime stopTime, LocalDateTime createdAt) {
-        this.id = id;
-        this.clientId = clientId;
-        this.taskId = taskId;
-        this.name = name;
-        this.state = state;
-        this.sizeBytes = sizeBytes;
-        this.startTime = startTime;
-        this.stopTime = stopTime;
-        this.createdAt = createdAt;
-    }
 }

@@ -1,5 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
+import com.bcm.cluster_manager.model.api.BigClientDTO;
 import com.bcm.cluster_manager.service.CMClientService;
 import com.bcm.shared.config.permissions.Permission;
 import com.bcm.shared.model.api.ClientDTO;
@@ -26,6 +27,13 @@ public class CMClientController {
     @GetMapping("/clients")
     public PaginationResponse<ClientDTO> getClients(PaginationRequest pagination) {
         return CMclientService.getPaginatedItems(pagination);
+    }
+  
+    @PreAuthorize(Permission.Require.CLIENT_READ)
+    @GetMapping("/clientsList")
+    public List<BigClientDTO> getClients() {
+        return clientService.getAllClients().stream()
+                .toList();
     }
 
     private ClientDTO toDto(Client client) {

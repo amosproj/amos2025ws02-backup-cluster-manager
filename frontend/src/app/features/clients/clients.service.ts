@@ -6,10 +6,20 @@ import { SortOrder } from '../../shared/types/SortTypes';
 
 
 export interface ClientDTO {
+   nodeDTO: NodeDTO;
    id: number;
    nameOrIp: string;
   //  nodeId: number;
    enabled: boolean;
+}
+
+export interface NodeDTO {
+  id: string ;
+  name : string;
+  address : string;
+  status : any;
+  nodeMode: any;
+  createdAt: string;
 }
 
 @Injectable({

@@ -12,18 +12,17 @@ public final class BackupConverter {
 
     public static BackupDTO toDTO(Backup backup) {
         if (backup == null) return null;
-        return new BackupDTO(
-                backup.getId(),
-                backup.getClientId(),
-                backup.getTaskId(),
-                backup.getMessage(),
-                backup.getState(),
-                backup.getSizeBytes(),
-                toLdt(backup.getStartTime()),
-                toLdt(backup.getStopTime()),
-                toLdt(backup.getCreatedAt())
-
-        );
+        BackupDTO dto = new BackupDTO();
+        dto.setId(backup.getId());
+        dto.setClientId(backup.getClientId());
+        dto.setTaskId(backup.getTaskId());
+        dto.setName(backup.getMessage());
+        dto.setState(backup.getState());
+        dto.setSizeBytes(backup.getSizeBytes());
+        dto.setStartTime(toLdt(backup.getStartTime()));
+        dto.setStopTime(toLdt(backup.getStopTime()));
+        dto.setCreatedAt(toLdt(backup.getCreatedAt()));
+        return dto;
     }
 
     public static LocalDateTime toLdt(Instant instant) {

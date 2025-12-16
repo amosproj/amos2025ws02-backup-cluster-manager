@@ -141,6 +141,7 @@ docker compose --profile test up --build
 - duration in ms
 - shouldSucceed: true/false
 - id: backup task id
+- port of the backup node where the task is executed
 
 ```bash
 curl -X POST   http://localhost:8080/api/v1/cm/backups/{id}/execute

@@ -9,12 +9,12 @@ node "Docker Host" {
         component "backend.jar" as JarFile <<Artifact>>
 
         node "Container: cluster-manager" as CM_Container {
-            component "Instance: CM Mode" as CM_App
+            component "Instance: CM part" as CM_App
             card "Env: SPRING_PROFILES_ACTIVE\n cluster_manager" as CM_Env
         }
 
         node "Container: node1" as Node_Container {
-            component "Instance: Node Mode" as Node_App
+            component "Instance: Node part" as Node_App
             card "Env: SPRING_PROFILES_ACTIVE\n (default/backup_node)" as Node_Env
         }
     }

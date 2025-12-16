@@ -9,7 +9,7 @@ start
 if (SPRING_PROFILES_ACTIVE?) then (cluster_manager)
   :Activate 'cluster_manager' Profile;
 else (default/null)
-  :Activate 'backup_node' Profile (Default);
+  :Activate 'backup_node' Profile (Default)??;
 endif
 
 partition "Spring Component Scan" {

@@ -19,19 +19,23 @@ public enum Role {
     ADMINISTRATORS(50, Set.of(
             USER_READ, USER_CREATE, USER_UPDATE, USER_DELETE,
             NODE_READ, NODE_CREATE, NODE_DELETE,
+            CLIENT_READ,
             BACKUP_READ, BACKUP_CREATE, BACKUP_DELETE,
             TASK_READ, TASK_CREATE, TASK_DELETE
     )),
     OPERATORS(1, Set.of(
             USER_READ,
             NODE_READ,
+            CLIENT_READ,
             BACKUP_READ,
             TASK_READ
     )),
     RESTORE_USERS(1, Set.of(
+            CLIENT_READ,
             BACKUP_READ, BACKUP_CREATE
     )),
     BACKUP_USERS(1, Set.of(
+            CLIENT_READ,
             BACKUP_READ,
             TASK_READ, TASK_CREATE
     ));

@@ -26,6 +26,7 @@ export class Clients {
     { field: 'id', header: 'Client ID' },
     { field: 'nameOrIp', header: 'Name or IP' },
     { field: 'enabled', header: 'Enabled' },
+    { field: 'nodeDTO.name', header: 'Node'},
   ]);
 
   //  filter

@@ -9,8 +9,9 @@ export interface ClientDTO {
    nodeDTO: NodeDTO;
    id: number;
    nameOrIp: string;
-  //  nodeId: number;
+   nodeId: NodeDTO;
    enabled: boolean;
+
 }
 
 export interface NodeDTO {
@@ -40,6 +41,6 @@ export class ClientsService {
     return this.apiService.get<PaginatedResponse>('clients', {params});
   }
   getClientList(): Observable<any[]> {
-    return this.apiService.get<any[]>('clients');
+    return this.apiService.get<any[]>('clientsList');
   }
 }

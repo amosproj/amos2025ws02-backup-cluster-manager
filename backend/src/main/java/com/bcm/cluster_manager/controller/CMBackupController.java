@@ -1,7 +1,6 @@
 package com.bcm.cluster_manager.controller;
 
 import com.bcm.shared.config.permissions.Permission;
-import com.bcm.shared.model.api.CreateBackupRequest;
 import com.bcm.cluster_manager.model.api.BigBackupDTO;
 import com.bcm.cluster_manager.service.CMBackupService;
 import com.bcm.shared.pagination.PaginationRequest;

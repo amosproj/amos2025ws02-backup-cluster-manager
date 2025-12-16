@@ -8,6 +8,8 @@ import {ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular
 import {SortOrder} from '../../shared/types/SortTypes';
 import {map} from 'rxjs';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
+import { AuthService } from '../../core/services/auth.service';
+import UserPermissionsEnum from '../../shared/types/Permissions';
 
 @Component({
   selector: 'app-tasks',
@@ -55,8 +57,8 @@ export class Tasks implements OnInit {
     `${client.id}-${client.nodeDTO.id}`;
 
   ngOnInit() {
-    this.clientsService.getClients().subscribe({
-      next: (data) => this.clients.set(data.items),
+    this.clientsService.getClientList().subscribe({
+      next: (data) => this.clients.set(data),
       error: (err) => console.error('Fehler beim Laden der Clients:', err)
     });
   }

@@ -213,7 +213,8 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
   }
 
   getColumnValue(item: any, field: string): any {
-    return item[field];
+    // return item[field];
+    return field.split('.').reduce((obj, key) => obj?.[key], item);
   }
 
   // Handle Sort logic triggered by clicking on column headers

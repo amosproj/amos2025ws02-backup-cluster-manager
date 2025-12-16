@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam componentStyle uml2
+
+node "Docker Host" {
+
+    package "Docker Network" {
+
+        component "backend.jar" as JarFile <<Artifact>>
+
+        node "Container: cluster-manager" as CM_Container {
+            component "Instance: CM Mode" as CM_App
+            card "Env: SPRING_PROFILES_ACTIVE\n cluster_manager" as CM_Env
+        }
+
+        node "Container: node1" as Node_Container {
+            component "Instance: Node Mode" as Node_App
+            card "Env: SPRING_PROFILES_ACTIVE\n (default/backup_node)" as Node_Env
+        }
+    }
+
+    database "Postgres CM" as DB_CM
+    database "Postgres Node1" as DB_Node1
+}
+
+JarFile ..> CM_App : "Instantiates"
+JarFile ..> Node_App : "Instantiates"
+
+CM_Env --> CM_App : "Injects Identity"
+Node_Env --> Node_App : "Injects Identity"
+
+CM_App --> DB_CM : "Connects (via cm profile)"
+CM_App --> DB_Node1 : "Connects (via node0 config)"
+Node_App --> DB_Node1 : "Connects (via default config)"
+
+@enduml

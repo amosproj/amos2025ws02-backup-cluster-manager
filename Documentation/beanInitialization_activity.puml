@@ -1,0 +1,44 @@
+@startuml
+skinparam conditionStyle diamond
+
+start
+
+:Docker Container Starts;
+:Load application.yml;
+
+if (SPRING_PROFILES_ACTIVE?) then (cluster_manager)
+  :Activate 'cluster_manager' Profile;
+else (default/null)
+  :Activate 'backup_node' Profile (Default);
+endif
+
+partition "Spring Component Scan" {
+    :Scan 'com.bcm.shared';
+
+    :Found 'ClusterManagerConfig' in Shared;
+
+    if (Profile == cluster_manager?) then (yes)
+        #lightgreen:Load ClusterManagerConfig;
+
+        partition "Manager Context" {
+            :Scan 'com.bcm.cluster_manager';
+            :Load 'ServiceBeanConfig';
+            :Wire 'UserService' with **CM Mappers**;
+        }
+    else (no)
+        #pink:Ignore ClusterManagerConfig;
+    endif
+
+    :Found 'BackupNodeConfig' in Shared;
+    if (Profile == backup_node?) then (yes)
+        #lightblue:Load BackupNodeConfig;
+        :Wire 'UserService' with **Node Mappers**;
+    else (no)
+        :Ignore;
+    endif
+}
+
+:Application Ready;
+
+stop
+@enduml

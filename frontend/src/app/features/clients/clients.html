@@ -1,0 +1,9 @@
+<app-data-table
+  [fetchData]="fetchClients"
+  [columns]="tableColumns()"
+  [filters]="tableFilters()"
+  [loading]="loading$ | async"
+  [addButtonText]="'Add Client'"
+  [showAddButton]="authService.hasPermission(UserPermissionsEnum.ClientCreate)"
+  [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.ClientDelete)"
+/>

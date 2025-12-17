@@ -4,18 +4,31 @@ import {Observable, of, catchError, map} from 'rxjs';
 
 import {environment} from '../../../environments/environment';
 import {Router} from '@angular/router';
+import UserPermissionsEnum from '../../shared/types/Permissions';
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private baseUrl = environment.apiEndpoint + '/auth';
   private isAuthenticatedSignal = signal<boolean>(false);
+  private permissionsSignal = signal<string[]>([]);
+  private rankSignal = signal<number>(0);
+  private roleSignal = signal<string>("");
+  private userNameSignal = signal<string>("");
 
   constructor(
     private router: Router,
     private http: HttpClient
   ) {
     // Auth status will be checked by APP_INITIALIZER before app starts
+  }
+
+  getPermissions(): string[]{
+    return this.permissionsSignal();
+  }
+
+  hasPermission(permission:UserPermissionsEnum): boolean {
+    return this.permissionsSignal().includes(permission.toString());
   }
 
   // Public method to get authentication status
@@ -30,6 +43,22 @@ export class AuthService {
       map(response => {
         if (response.status === 200) {
           this.isAuthenticatedSignal.set(true);
+          // Should get the permission from the response body
+          // const responseBody = response.body && (response.body as any);
+          // For now, set dummy permissions
+          console.log("Response body:", response.body);
+          // const metaData = {
+          //   username:"user123",
+          //   role:"ADMIN",
+          //   rank:50,
+          //   permissions:["user:read", "user:create","user:update","user:delete", "node:read", "backup:read", "task:read"] // etc
+          // }
+          const metaData = response.body as AuthMetaData;
+          this.permissionsSignal.set(metaData.permissions);
+          this.rankSignal.set(metaData.rank);
+          this.roleSignal.set(metaData.role);
+          this.userNameSignal.set(metaData.username);
+          console.log("Session valid - Status 200");
           return true;
         } else {
           this.isAuthenticatedSignal.set(false);

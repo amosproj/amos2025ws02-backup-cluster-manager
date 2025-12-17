@@ -7,6 +7,8 @@ import {SortOrder} from '../../shared/types/SortTypes';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {map, Subscription} from 'rxjs';
 import {formatDateFields} from '../../shared/utils/date_utils';
+import {AuthService} from '../../core/services/auth.service';
+import UserPermissionsEnum from '../../shared/types/Permissions';
 import {ClientsService} from '../clients/clients.service';
 import {TasksService} from '../tasks/tasks.service';
 import {AutoRefreshService} from '../../services/dynamic-page';
@@ -100,6 +102,7 @@ export class Backups {
     private tasksService: TasksService,
     private apiService: ApiService,
     private fb: FormBuilder,
+    public authService: AuthService,
     private autoRefreshService: AutoRefreshService
   ) {
     this.loading$ = this.apiService.loading$;
@@ -176,7 +179,7 @@ export class Backups {
   }
 
   ngOnInit(): void {
-    this.clientsService.getClients().subscribe({
+    this.clientsService.getClientList().subscribe({
       next: (data) => this.clients.set(data),
       error: (err) => console.error('Fehler beim Laden der Clients:', err)
     });
@@ -198,4 +201,5 @@ export class Backups {
     }
   }
 
+  protected readonly UserPermissionsEnum = UserPermissionsEnum;
 }

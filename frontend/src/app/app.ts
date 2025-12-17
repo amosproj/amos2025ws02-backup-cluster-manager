@@ -1,4 +1,4 @@
-import {Component, signal, OnInit, inject} from '@angular/core';
+import {Component, signal, OnInit, computed, inject} from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { initFlowbite } from 'flowbite';
 import {AsyncPipe, CommonModule} from '@angular/common';
@@ -7,6 +7,7 @@ import { AuthService } from './core/services/auth.service';
 import {Toast} from './shared/components/toast/toast';
 import {ToastMessage, ToastTypeEnum} from './shared/types/toast';
 import {ToastService} from './core/services/toast.service';
+import UserPermissionsEnum from './shared/types/Permissions';
 import { AutoRefreshService } from './services/dynamic-page';
 
 @Component({
@@ -16,44 +17,6 @@ import { AutoRefreshService } from './services/dynamic-page';
   styleUrl: './app.css'
 })
 export class App implements OnInit{
-  protected readonly showLayout = signal(true);
-
-  protected readonly navigationItems = signal([
-    {
-      label: "Users",
-      icon:"/users.svg",
-      route: "users"
-    },
-    {
-      label: "Permissions",
-      icon: "/key.svg",
-      route: "permissions"
-    },
-    {
-      label: "Clusters",
-      icon: "/server.svg",
-      route: "clusters"
-    },
-    {
-      label: "Nodes",
-      icon: "/hard-drive.svg",
-      route: "nodes"
-    },
-    {
-      label:"Backups",
-      icon: "/database.svg",
-      route: "backups"
-    },
-    {
-      label: "Tasks",
-      icon: "/tasks.svg",
-      route: "tasks"
-    },
-  ]);
-
-  isAutoRefreshEnabled$;
-  public autoRefreshService = inject(AutoRefreshService)
-
   constructor(
     private router: Router,
     protected authService: AuthService,
@@ -69,6 +32,55 @@ export class App implements OnInit{
         this.showLayout.set(!navigationEndEvent.url.includes('/login'));
       });
   }
+  isAutoRefreshEnabled$;
+  public autoRefreshService = inject(AutoRefreshService)
+
+
+  protected readonly showLayout = signal(true);
+
+  protected readonly allNavigationItems = signal([
+    {
+      label: "Users",
+      icon:"/users.svg",
+      route: "users",
+      requiredPermission: UserPermissionsEnum.UserRead
+    },
+    {
+      label: "Nodes",
+      icon: "/hard-drive.svg",
+      route: "nodes",
+      requiredPermission: UserPermissionsEnum.NodeRead
+    },
+      {
+      label: "Clients",
+      icon: "/clients.svg",
+      route: "clients",
+      requiredPermission: UserPermissionsEnum.ClientRead
+    },
+    {
+      label:"Backups",
+      icon: "/database.svg",
+      route: "backups",
+      requiredPermission: UserPermissionsEnum.BackupRead
+    },
+    {
+      label: "Tasks",
+      icon: "/tasks.svg",
+      route: "tasks",
+      requiredPermission: UserPermissionsEnum.TaskRead
+    },
+  ]);
+
+  protected readonly navigationItems = computed(()=>{
+    const permissions = this.authService.getPermissions();
+    return this.allNavigationItems().filter(item=>
+      !item.requiredPermission || this.authService.hasPermission(item.requiredPermission)
+    )
+  })
+
+
+
+
 
   ngOnInit(): void {
     initFlowbite();

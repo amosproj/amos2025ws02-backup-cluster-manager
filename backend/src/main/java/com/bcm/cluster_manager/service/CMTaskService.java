@@ -1,17 +1,14 @@
 package com.bcm.cluster_manager.service;
 
-import com.bcm.cluster_manager.model.api.BigClientDTO;
 import com.bcm.cluster_manager.model.api.BigTaskDTO;
 import com.bcm.cluster_manager.service.pagination.shared.BigTaskComparators;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.TaskDTO;
 import com.bcm.shared.model.database.Task;
 import com.bcm.shared.model.database.TaskFrequency;
-import com.bcm.shared.pagination.sort.TaskComparators;
 import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
-import com.bcm.shared.util.NodeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

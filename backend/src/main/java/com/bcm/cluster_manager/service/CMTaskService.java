@@ -64,7 +64,7 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
     }
 
     public List<BigTaskDTO> getAllTasks() {
-        Collection<NodeDTO> nodes = registryService.getActiveNodes();
+        Collection<NodeDTO> nodes = registryService.getActiveAndManagedNodes();
         if (nodes.isEmpty()) return List.of();
 
         List<CompletableFuture<BigTaskDTO[]>> futures = nodes.stream().map(node -> CompletableFuture.supplyAsync(() -> {
@@ -179,7 +179,7 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
 
         Long targetNodeId = task.getNodeDTO().getId();
 
-        Optional<BigTaskDTO> result = registryService.getActiveNodes().stream()
+        Optional<BigTaskDTO> result = registryService.getActiveAndManagedNodes().stream()
                 .filter(node -> node.getId().equals(targetNodeId))
                 .findFirst()
                 .map(node -> {

@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.model.api.NodeMode;
 import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.service.NodeIdGenerator;
@@ -18,7 +19,8 @@ public class RegistryService {
     private final ConcurrentHashMap<String, NodeDTO> inactive = new ConcurrentHashMap<>();
 
     public void register(RegisterRequest req) {
-        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), false , LocalDateTime.now());
+        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), req.getMode().equals(NodeMode.CLUSTER_MANAGER) /* sets isManaged flag to true for CM, false per default for all new nodes*/,
+                LocalDateTime.now());
         inactive.remove(info.getAddress());
         active.put(info.getAddress(), info);
     }

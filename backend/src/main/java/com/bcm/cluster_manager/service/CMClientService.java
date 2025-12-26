@@ -25,7 +25,7 @@ public class CMClientService implements PaginationProvider<BigClientDTO> {
     private RestTemplate restTemplate;
 
     public List<BigClientDTO> getAllClients() {
-        Collection<NodeDTO> nodeAddresses = registryService.getActiveNodes();
+        Collection<NodeDTO> nodeAddresses = registryService.getActiveAndManagedNodes();
         if (nodeAddresses.isEmpty()) return List.of();
 
         List<CompletableFuture<BigClientDTO[]>> futures = nodeAddresses.stream().map(node -> CompletableFuture.supplyAsync(() -> {

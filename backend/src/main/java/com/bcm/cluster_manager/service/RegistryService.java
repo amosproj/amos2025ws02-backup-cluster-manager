@@ -18,7 +18,7 @@ public class RegistryService {
     private final ConcurrentHashMap<String, NodeDTO> inactive = new ConcurrentHashMap<>();
 
     public void register(RegisterRequest req) {
-        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), LocalDateTime.now());
+        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), false , LocalDateTime.now());
         inactive.remove(info.getAddress());
         active.put(info.getAddress(), info);
     }
@@ -40,12 +40,20 @@ public class RegistryService {
     private NodeDTO getOrCreate(NodeDTO node) {
         NodeDTO info = active.get(node.getAddress());
         if (info == null) info = inactive.get(node.getAddress());
-        if (info == null) info = new NodeDTO(NodeIdGenerator.nextId(), node.getAddress(), node.getAddress(), NodeStatus.PENDING, node.getMode(), LocalDateTime.now());
+        if (info == null) info = new NodeDTO(NodeIdGenerator.nextId(), node.getAddress(), node.getAddress(), NodeStatus.PENDING, node.getMode(), node.getIsManaged(), LocalDateTime.now());
         return info;
     }
 
-    public Collection<NodeDTO> getActiveNodes() { return active.values(); }
-    public Collection<NodeDTO> getInactiveNodes() { return inactive.values(); }
+    public Collection<NodeDTO> getActiveAndManagedNodes() {
+        return active.values().stream().filter(NodeDTO::getIsManaged).toList();
+    }
+
+    public Collection<NodeDTO> getActiveNodes() {
+        return active.values();
+    }
+    public Collection<NodeDTO> getInactiveNodes() {
+        return inactive.values();
+    }
 
     public Collection<NodeDTO> getAllNodes() {
         ConcurrentHashMap<String, NodeDTO> merged = new ConcurrentHashMap<>(active);

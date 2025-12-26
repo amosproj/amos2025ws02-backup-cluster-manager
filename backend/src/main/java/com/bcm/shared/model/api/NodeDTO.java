@@ -21,5 +21,6 @@ public class NodeDTO {
     private String address;
     private NodeStatus status;
     private NodeMode mode;
+    private Boolean isManaged;
     private LocalDateTime createdAt;
 }

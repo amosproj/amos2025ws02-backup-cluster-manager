@@ -6,6 +6,7 @@ import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.service.NodeIdGenerator;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,30 +20,30 @@ public class RegistryService {
     private final ConcurrentHashMap<String, NodeDTO> inactive = new ConcurrentHashMap<>();
 
     public void register(RegisterRequest req) {
-        NodeDTO info = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), req.getMode().equals(NodeMode.CLUSTER_MANAGER) /* sets isManaged flag to true for CM, false per default for all new nodes*/,
+        NodeDTO newNode = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), req.getMode().equals(NodeMode.CLUSTER_MANAGER) /* sets isManaged flag to true for CM self-registration, false per default for all new nodes*/,
                 LocalDateTime.now());
-        inactive.remove(info.getAddress());
-        active.put(info.getAddress(), info);
+        markActive(newNode);
     }
 
     public void markActive(NodeDTO node) {
-        NodeDTO info = getOrCreate(node);
+        NodeDTO info = getOrUseInput(node);
         info.setStatus(NodeStatus.ACTIVE);
         inactive.remove(node.getAddress());
         active.put(node.getAddress(), info);
     }
 
     public void markInactive(NodeDTO node) {
-        NodeDTO info = getOrCreate(node);
+        NodeDTO info = getOrUseInput(node);
         info.setStatus(NodeStatus.INACTIVE);
         active.remove(node.getAddress());
         inactive.put(node.getAddress(), info);
     }
 
-    private NodeDTO getOrCreate(NodeDTO node) {
+    private NodeDTO getOrUseInput(@NotNull NodeDTO node) {
         NodeDTO info = active.get(node.getAddress());
         if (info == null) info = inactive.get(node.getAddress());
-        if (info == null) info = new NodeDTO(NodeIdGenerator.nextId(), node.getAddress(), node.getAddress(), NodeStatus.PENDING, node.getMode(), node.getIsManaged(), LocalDateTime.now());
+        if (info == null) return node;
+
         return info;
     }
 

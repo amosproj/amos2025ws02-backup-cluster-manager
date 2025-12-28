@@ -1,5 +1,6 @@
 package com.bcm.shared.model.api;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class NodeDTO {
 
+    @NotNull
     private Long id;
+
     private String name;
     private String address;
     private NodeStatus status;

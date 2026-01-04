@@ -25,8 +25,23 @@ public class NodeManagementController {
         return nodeManagementService.getPaginatedItems(pagination);
     }
 
+    @PreAuthorize(Permission.Require.NODE_UPDATE)
+    @PutMapping("/nodes")
+    public void updateManageMode(@RequestBody NodeDTO nodeDTO) {
+        nodeManagementService.updateNodeManagedMode(nodeDTO);
+    }
+
+    @PreAuthorize(Permission.Require.NODE_DELETE)
+    @DeleteMapping("/nodes/{id}")
+    public void deleteNode(@PathVariable Long id) {
+        nodeManagementService.deleteNode(id);
+    }
+
     @PostMapping("/register")
     public void register(@RequestBody RegisterRequest req) {
         nodeManagementService.registerNode(req);
     }
+
+
+
 }

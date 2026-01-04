@@ -26,13 +26,13 @@ public class NodeManagementController {
     }
 
     @PreAuthorize(Permission.Require.NODE_UPDATE)
-    @PutMapping("/nodes")
+    @PutMapping("/node")
     public void updateManageMode(@RequestBody NodeDTO nodeDTO) {
         nodeManagementService.updateNodeManagedMode(nodeDTO);
     }
 
     @PreAuthorize(Permission.Require.NODE_DELETE)
-    @DeleteMapping("/nodes/{id}")
+    @DeleteMapping("/node/{id}")
     public void deleteNode(@PathVariable Long id) {
         nodeManagementService.deleteNode(id);
     }

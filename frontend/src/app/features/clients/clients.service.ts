@@ -21,6 +21,7 @@ export interface NodeDTO {
   status : any;
   nodeMode: any;
   createdAt: string;
+  isManaged: boolean;
 }
 
 @Injectable({

@@ -51,6 +51,16 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
   currentAddButtonText = this.addButtonText;
   @Output() deleteSelection = new EventEmitter<any[]>();
 
+  @Input() showToggleButton = false;
+
+  @Output() toggleChanged = new EventEmitter<any>();
+
+  toggleManaged(item: any) {
+    item.isManaged = !item?.isManaged;
+    this.toggleChanged.emit(item);
+  }
+
+
   tableColumns = signal(this.columns);
   tableData = signal(this.data);
   tableSearchColumns = signal(this.searchColumns);

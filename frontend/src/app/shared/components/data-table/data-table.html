@@ -98,6 +98,13 @@
               </div>
             </th>
           }
+          @if (showToggleButton) {
+          <th scope="col" class="px-6 py-3 cursor-pointer hover:bg-primary-3 select-none">
+            <div class="flex items-center gap-2">
+              Managed
+            </div>
+          </th>
+          }
         </tr>
         </thead>
         <tbody class="overflow-scroll">
@@ -108,7 +115,8 @@
                   type="checkbox"
                   (change)="toggleRowSelection(dataItem, $event)"
                   [checked]="isRowSelected(dataItem)"
-                  style="accent-color: grey;"
+                  [disabled]="dataItem?.mode === 'cluster_manager'"
+                  class="w-5 h-5 rounded border-gray-300 accent-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </td>
 
@@ -125,6 +133,34 @@
 
                 </td>
               }
+              @if (showToggleButton) {
+                <td class="px-6 py-4">
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      class="sr-only peer"
+                      [checked]="dataItem?.isManaged"
+                      [disabled]="dataItem?.mode === 'cluster_manager'"
+                      (change)="toggleManaged(dataItem)"
+                    >
+                    <div
+                      class="relative w-11 h-6 rounded-full
+                           bg-gray-400
+                           peer-checked:bg-green-500
+                           peer-disabled:bg-gray-300
+                           peer-disabled:cursor-not-allowed
+                           transition-colors
+                           after:content-['']
+                           after:absolute after:top-[2px] after:left-[2px]
+                           after:h-5 after:w-5 after:rounded-full after:bg-white
+                           after:transition-all
+                           peer-checked:after:translate-x-full
+                           peer-disabled:after:bg-gray-100"
+                    ></div>
+                  </label>
+                </td>
+              }
+
             </tr>
           }
 

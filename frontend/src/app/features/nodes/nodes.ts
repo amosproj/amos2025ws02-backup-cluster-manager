@@ -1,7 +1,6 @@
-import {Component, OnInit, signal} from '@angular/core';
+import {Component, signal, ViewChild} from '@angular/core';
 import {NodesService} from './nodes.service';
-import {ApiService} from '../../core/services/api.service';
-import {AsyncPipe} from '@angular/common';
+
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
 import {map} from 'rxjs';
@@ -9,6 +8,7 @@ import {formatDateFields} from '../../shared/utils/date_utils';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 import {AuthService} from '../../core/services/auth.service';
 import UserPermissionsEnum from '../../shared/types/Permissions';
+import {NodeDTO} from '../clients/clients.service';
 
 @Component({
   selector: 'app-nodes',
@@ -19,6 +19,8 @@ import UserPermissionsEnum from '../../shared/types/Permissions';
   styleUrl: './nodes.css',
 })
 export class Nodes {
+  @ViewChild(DataTable) dataTable!: DataTable;
+
   tableColumns = signal([
     {field: 'id', header: 'ID'},
     {field: 'name', header: 'Name'},
@@ -52,4 +54,41 @@ export class Nodes {
       ));
   }
   protected readonly UserPermissionsEnum = UserPermissionsEnum;
+
+  onUpdate(item: NodeDTO): void {
+    if (!item) return;
+
+    item.createdAt = "";
+
+      this.nodesService.updateNode(item).subscribe({
+        next: () => {
+          this.dataTable.loadData();
+        },
+        error: (error) => {
+          console.error('Error updating node:', error);
+        }
+      });
+  }
+
+  onDeleteSelection(rows: any[]): void {
+    if (!rows.length) return;
+
+    let completed = 0;
+
+    rows.forEach(row => {
+      this.nodesService.deleteNode(row.id).subscribe({
+        next: () => {
+          completed++;
+
+          if (completed === rows.length && this.dataTable) {
+            this.dataTable.loadData();
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting node:', error);
+        }
+      });
+    });
+  }
+
 }

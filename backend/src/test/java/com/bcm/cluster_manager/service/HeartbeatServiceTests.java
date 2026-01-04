@@ -44,8 +44,8 @@ class HeartbeatServiceTests {
 
     @Test
     void heartbeatAll_callsPingForActiveAndInactive_andPushesTables() {
-    NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now());
-    NodeDTO i1 = new NodeDTO(2L, "B","10.1.1.2:9000", com.bcm.shared.model.api.NodeStatus.INACTIVE, NodeMode.NODE, LocalDateTime.now());
+    NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, false, LocalDateTime.now());
+    NodeDTO i1 = new NodeDTO(2L, "B","10.1.1.2:9000", com.bcm.shared.model.api.NodeStatus.INACTIVE, NodeMode.NODE, false, LocalDateTime.now());
 
         when(registry.getActiveNodes()).thenReturn(List.of(a1));
         when(registry.getInactiveNodes()).thenReturn(List.of(i1));
@@ -64,7 +64,7 @@ class HeartbeatServiceTests {
 
     @Test
     void pingNodeAsync_marksActiveOnSuccess() {
-        NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now());
+        NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, false, LocalDateTime.now());
         
         when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>("pong", HttpStatus.OK));
@@ -78,7 +78,7 @@ class HeartbeatServiceTests {
 
     @Test
     void pingNodeAsync_marksInactiveOnHttpError() {
-        NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now());
+        NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, false, LocalDateTime.now());
 
         when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>("fail", HttpStatus.BAD_REQUEST));
@@ -91,7 +91,7 @@ class HeartbeatServiceTests {
 
     @Test
     void pingNodeAsync_marksInactiveOnException() {
-        NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now());
+        NodeDTO a1 = new NodeDTO(1L, "A","10.1.1.1:9000", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, false, LocalDateTime.now());
 
         when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenThrow(new RuntimeException("Connection refused"));

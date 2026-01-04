@@ -40,12 +40,24 @@ public class RegistryService {
     }
 
     public void removeNode(Long id) {
+        if (id == null) {
+            return;
+        }
+        NodeDTO node = active.get(id);
+        if (node == null) node = inactive.get(id);
+        if( node != null && node.getMode().equals(NodeMode.CLUSTER_MANAGER)){
+            throw new IllegalArgumentException("Cannot remove cluster manager.");
+        }
+
         active.remove(id);
         inactive.remove(id);
     }
 
     public void updateIsManaged(NodeDTO inputNode) {
         NodeDTO node = getOrUseInput(inputNode);
+        if(node.getMode().equals(NodeMode.CLUSTER_MANAGER)){
+            throw new IllegalArgumentException("Cannot change isManaged flag of Cluster Manager node.");
+        }
         node.setIsManaged(inputNode.getIsManaged());
         if (node.getStatus() == NodeStatus.ACTIVE) {
             active.put(node.getId(), node);

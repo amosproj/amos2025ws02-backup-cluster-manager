@@ -26,10 +26,10 @@ public class HeartbeatService {
 
     public void heartbeatAll() {
         logger.info("Heartbeat started at {}", Instant.now());
-        registry.getActiveNodes().forEach(node -> pingNodeAsync(node));
+        registry.getActiveNodes().forEach(this::pingNodeAsync);
         // optionally ping inactive nodes to try revive them (if they respond
         // successfully, entry is set active or added)
-        registry.getInactiveNodes().forEach(node -> pingNodeAsync(node));
+        registry.getInactiveNodes().forEach(this::pingNodeAsync);
         // after heartbeats, push updated tables to all nodes
         syncService.pushTablesToAllNodes();
     }

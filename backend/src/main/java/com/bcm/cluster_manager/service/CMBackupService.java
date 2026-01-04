@@ -68,7 +68,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
     }
 
     public List<BigBackupDTO> getAllBackups() {
-        Collection<NodeDTO> nodes = registryService.getActiveNodes();
+        Collection<NodeDTO> nodes = registryService.getActiveAndManagedNodes();
         if (nodes.isEmpty()) return List.of();
 
         List<CompletableFuture<BigBackupDTO[]>> futures = nodes.stream().map(node -> CompletableFuture.supplyAsync(() -> {
@@ -177,11 +177,11 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
 
         String targetAddress = request.getNodeDTO().getAddress();
 
-        registryService.getActiveNodes().forEach(n ->
+        registryService.getActiveAndManagedNodes().forEach(n ->
                 logger.info("Active node: id={}, address={}", n.getId(), n.getAddress())
         );
 
-        Optional<BigBackupDTO> result = registryService.getActiveNodes().stream()
+        Optional<BigBackupDTO> result = registryService.getActiveAndManagedNodes().stream()
                 .filter(node -> node.getAddress().equals(targetAddress))
                 .findFirst()
                 .map(node -> {
@@ -232,7 +232,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
     public void deleteBackup(Long id, String nodeAddress) {
         try {
 
-            var nodeOpt = registryService.getActiveNodes().stream()
+            var nodeOpt = registryService.getActiveAndManagedNodes().stream()
                     .filter(node -> node.getAddress().equals(nodeAddress))
                     .findFirst();
 

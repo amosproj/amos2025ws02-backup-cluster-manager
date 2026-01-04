@@ -95,6 +95,13 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         return nodes;
     }
 
+    public void updateNodeManagedMode(NodeDTO nodeDTO) {
+        registry.updateIsManaged(nodeDTO);
+    }
+
+    public void deleteNode(Long id) {
+        registry.removeNode(id);
+    }
 
     public void registerNode(RegisterRequest req) {
         registry.register(req);

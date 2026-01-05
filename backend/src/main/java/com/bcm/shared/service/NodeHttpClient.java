@@ -54,4 +54,39 @@ public class NodeHttpClient {
             return null;
         }
     }
+
+    public <T> CompletableFuture<T> postNodeAsync(String nodeAddress, String endpoint, Object body, Class<T> responseType) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String url = buildNodeUrl(nodeAddress, endpoint);
+                ResponseEntity<T> response = restTemplate.postForEntity(url, body, responseType);
+                return response.getBody();
+            } catch (Exception e) {
+                logger.warn("Error posting to {} on node {}: {}", endpoint, nodeAddress, e.getMessage());
+                return null;
+            }
+        });
+    }
+
+    public <T> T postNodeSync(String nodeAddress, String endpoint, Object body, Class<T> responseType) {
+        try {
+            String url = buildNodeUrl(nodeAddress, endpoint);
+            ResponseEntity<T> response = restTemplate.postForEntity(url, body, responseType);
+            return response.getBody();
+        } catch (Exception e) {
+            logger.warn("Error posting to {} on node {}: {}", endpoint, nodeAddress, e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean postNodeSyncNoResponse(String nodeAddress, String endpoint) {
+        try {
+            String url = buildNodeUrl(nodeAddress, endpoint);
+            restTemplate.postForEntity(url, null, Void.class);
+            return true;
+        } catch (Exception e) {
+            logger.warn("Error posting to {} on node {}: {}", endpoint, nodeAddress, e.getMessage());
+            return false;
+        }
+    }
 }

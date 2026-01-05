@@ -59,7 +59,7 @@ class HeartbeatServiceTests {
 
     verify(registry, times(2)).markActive(any(NodeDTO.class));
 
-        verify(syncService, times(1)).pushTablesToAllNodes();
+        verify(syncService, times(1)).syncNodes();
     }
 
     @Test

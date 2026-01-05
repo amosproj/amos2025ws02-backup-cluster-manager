@@ -31,7 +31,7 @@ public class HeartbeatService {
         // successfully, entry is set active or added)
         registry.getInactiveNodes().forEach(this::pingNodeAsync);
         // after heartbeats, push updated tables to all nodes
-        syncService.pushTablesToAllNodes();
+        syncService.syncNodes();
     }
 
     @Async

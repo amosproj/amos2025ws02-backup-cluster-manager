@@ -29,6 +29,11 @@ public interface UserMapper {
             """)
     List<User> findAll();
 
+    @Delete("""
+            DELETE FROM users
+            """)
+    int deleteAll();
+
     @Select("""
             <script>
             SELECT COUNT(*) FROM users

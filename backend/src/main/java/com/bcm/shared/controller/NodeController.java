@@ -1,8 +1,8 @@
 package com.bcm.shared.controller;
 
 
-import com.bcm.shared.model.api.ClusterTablesDTO;
-import com.bcm.shared.service.LocalTablesService;
+import com.bcm.shared.model.api.SyncDTO;
+import com.bcm.shared.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public class NodeController {
 
     @Autowired
-    private LocalTablesService tables;
+    private UserService userService;
 
     @GetMapping("/example")
     public String test(){
@@ -24,7 +24,7 @@ public class NodeController {
     }
 
     @PostMapping("/sync")
-    public void sync(@RequestBody ClusterTablesDTO dto) {
-        tables.replaceAll(dto.getActive(), dto.getInactive());
+    public void sync(@RequestBody SyncDTO dto) {
+        userService.replaceUsersWithCMUsers(dto.getCmUsers());
     }
 }

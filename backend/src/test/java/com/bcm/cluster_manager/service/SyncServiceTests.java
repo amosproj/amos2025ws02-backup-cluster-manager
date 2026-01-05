@@ -23,9 +23,7 @@ class SyncServiceTests {
     private SyncService syncService;
     private RegistryService registryMock;
     private RestTemplate restTemplateMock;
-
-    @Mock
-    private UserService userService;
+    private final UserService userService = mock(UserService.class);
 
     @BeforeEach
     void setup() throws Exception {
@@ -47,11 +45,15 @@ class SyncServiceTests {
 
     @Test
     void pushTablesToAllNodes_sendsSyncToAllActiveNodes() {
-        NodeDTO n1 = new NodeDTO(1L, "Node A", "node1:8080", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, false, LocalDateTime.now().minusDays(1));
-        NodeDTO n2 = new NodeDTO(2L, "Node B", "node2:8080" , com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, false, LocalDateTime.now().minusDays(2));
+        NodeDTO n1 = new NodeDTO(1L, "Node A", "node1:8080", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, true, LocalDateTime.now().minusDays(1));
+        NodeDTO n2 = new NodeDTO(2L, "Node B", "node2:8080" , com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, true, LocalDateTime.now().minusDays(2));
 
+        when(userService.getAllUsers()).thenReturn(List.of());
+
+        when(registryMock.getActiveAndManagedNodes()).thenReturn(List.of(n1,n2));
         when(registryMock.getActiveNodes()).thenReturn(List.of(n1, n2));
         when(registryMock.getInactiveNodes()).thenReturn(List.of());
+
 
         syncService.syncNodes();
 

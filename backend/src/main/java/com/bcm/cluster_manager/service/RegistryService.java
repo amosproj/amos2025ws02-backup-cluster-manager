@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class RegistryService {
 
-    private final ConcurrentHashMap<Long, NodeDTO> active = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Long, NodeDTO> inactive = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NodeDTO> active = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NodeDTO> inactive = new ConcurrentHashMap<>();
 
     public void register(RegisterRequest req) {
         NodeDTO newNode = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), req.getMode().equals(NodeMode.CLUSTER_MANAGER) /* sets isManaged flag to true for CM self-registration, false per default for all new nodes*/,
@@ -28,29 +28,33 @@ public class RegistryService {
     public void markActive(NodeDTO inputNode) {
         NodeDTO node = getOrUseInput(inputNode);
         node.setStatus(NodeStatus.ACTIVE);
-        inactive.remove(node.getId());
-        active.put(node.getId(), node);
+        inactive.remove(node.getAddress());
+        active.put(node.getAddress(), node);
     }
 
     public void markInactive(NodeDTO inputNode) {
         NodeDTO node = getOrUseInput(inputNode);
         node.setStatus(NodeStatus.INACTIVE);
-        active.remove(node.getId());
-        inactive.put(node.getId(), node);
+        active.remove(node.getAddress());
+        inactive.put(node.getAddress(), node);
     }
 
     public void removeNode(Long id) {
         if (id == null) {
             return;
         }
-        NodeDTO node = active.get(id);
-        if (node == null) node = inactive.get(id);
+        NodeDTO node = active.values().stream().filter(n -> n.getId().equals(id)).findFirst().orElse(null);
+
+        if (node == null) node = inactive.values().stream().filter(n -> n.getId().equals(id)).findFirst().orElse(null);
+
         if( node != null && node.getMode().equals(NodeMode.CLUSTER_MANAGER)){
             throw new IllegalArgumentException("Cannot remove cluster manager.");
         }
-
-        active.remove(id);
-        inactive.remove(id);
+        if(node != null) {
+            String address = node.getAddress();
+            active.remove(address);
+            inactive.remove(address);
+        }
     }
 
     public void updateIsManaged(NodeDTO inputNode) {
@@ -60,15 +64,15 @@ public class RegistryService {
         }
         node.setIsManaged(inputNode.getIsManaged());
         if (node.getStatus() == NodeStatus.ACTIVE) {
-            active.put(node.getId(), node);
+            active.put(node.getAddress(), node);
         } else {
-            inactive.put(node.getId(), node);
+            inactive.put(node.getAddress(), node);
         }
     }
 
     private NodeDTO getOrUseInput(@NotNull NodeDTO inputNode) {
-        NodeDTO node = active.get(inputNode.getId());
-        if (node == null) node = inactive.get(inputNode.getId());
+        NodeDTO node = active.get(inputNode.getAddress());
+        if (node == null) node = inactive.get(inputNode.getAddress());
         if (node == null) return inputNode;
 
         return node;
@@ -86,7 +90,7 @@ public class RegistryService {
     }
 
     public Collection<NodeDTO> getAllNodes() {
-        ConcurrentHashMap<Long, NodeDTO> merged = new ConcurrentHashMap<>(active);
+        ConcurrentHashMap<String, NodeDTO> merged = new ConcurrentHashMap<>(active);
         inactive.forEach(merged::putIfAbsent);
         return merged.values();
     }

@@ -11,6 +11,7 @@ import com.bcm.shared.pagination.sort.SortProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,8 +105,13 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
     }
 
     public void registerNode(RegisterRequest req) {
-        registry.register(req);
-        syncService.syncNodes();
-
+        final RestTemplate restTemplate = new RestTemplate();
+        try {
+            restTemplate.postForEntity(req.getAddress() + "/api/v1/bn/join", req, String.class);
+            registry.register(req);
+            syncService.syncNodes();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to register node at " + req.getAddress());
+        }
     }
 }

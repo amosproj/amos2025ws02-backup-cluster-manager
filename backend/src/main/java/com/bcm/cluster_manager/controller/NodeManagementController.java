@@ -8,6 +8,7 @@ import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,9 +38,15 @@ public class NodeManagementController {
         nodeManagementService.deleteNode(id);
     }
 
+    @PreAuthorize(Permission.Require.NODE_CREATE)
     @PostMapping("/register")
-    public void register(@RequestBody RegisterRequest req) {
-        nodeManagementService.registerNode(req);
+    public ResponseEntity<String> register(@RequestBody RegisterRequest req) {
+        try {
+            nodeManagementService.registerNode(req);
+            return ResponseEntity.ok("OK");
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Invalid request");
+        }
     }
 
 

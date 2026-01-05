@@ -5,4 +5,47 @@
   [addButtonText]="'Add Node'"
   [showAddButton]="authService.hasPermission(UserPermissionsEnum.NodeCreate)"
   [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.NodeDelete)"
+  [showActionsColumn]="canControlNodes() || canDeleteNodes()"
+  [rowActions]="nodeActions"
 />
+
+<ng-template #nodeActions let-row>
+  @if (row.mode !== 'cluster_manager') {
+    <div class="flex gap-2">
+      @if (canControlNodes()) {
+        @if (row.status !== 'shutting_down' && row.status !== 'restarting') {
+          <button
+            (click)="onNodeAction(row, 'shutdown')"
+            [disabled]="actionLoading()"
+            class="px-2 py-1 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded disabled:opacity-50"
+            title="Shutdown Node">
+            Shutdown
+          </button>
+          <button
+            (click)="onNodeAction(row, 'restart')"
+            [disabled]="actionLoading()"
+            class="px-2 py-1 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50"
+            title="Restart Node">
+            Restart
+          </button>
+        } @else {
+          <span class="px-2 py-1 text-xs font-medium text-yellow-400">
+            {{ row.status === 'shutting_down' ? 'Shutting down...' : 'Restarting...' }}
+          </span>
+        }
+      }
+      @if (canDeleteNodes()) {
+        <button
+          (click)="onNodeAction(row, 'remove')"
+          [disabled]="actionLoading()"
+          class="px-2 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded disabled:opacity-50"
+          title="Remove from Cluster">
+          Remove
+        </button>
+      }
+    </div>
+  } @else {
+    <span class="text-xs text-foreground-muted">Cluster Manager</span>
+  }
+</ng-template>
+

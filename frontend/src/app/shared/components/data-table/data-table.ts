@@ -45,6 +45,8 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
 
   @Input() showAddButton = true;
   @Input() showDeleteButton = true;
+  @Input() showActionsColumn = false;
+  @Input() rowActions: TemplateRef<any> | null = null;
   @Input() addButtonTemplate: TemplateRef<unknown> | null = null;
   @Output() add = new EventEmitter<void>();
   @Output() addClicked = new EventEmitter<void>();

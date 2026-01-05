@@ -4,6 +4,10 @@ import {Observable} from 'rxjs';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 import {SortOrder} from '../../shared/types/SortTypes';
 
+export interface NodeControlResponse {
+  success: boolean;
+  message: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -22,5 +26,17 @@ export class NodesService {
       filters: filters.toString(),
     }
     return this.apiService.get<PaginatedResponse>('nodes', {params});
+  }
+
+  shutdownNode(nodeId: string): Observable<NodeControlResponse> {
+    return this.apiService.post<NodeControlResponse>(`nodes/${nodeId}/shutdown`, {});
+  }
+
+  restartNode(nodeId: string): Observable<NodeControlResponse> {
+    return this.apiService.post<NodeControlResponse>(`nodes/${nodeId}/restart`, {});
+  }
+
+  removeNode(nodeId: string): Observable<NodeControlResponse> {
+    return this.apiService.delete<NodeControlResponse>(`nodes/${nodeId}`);
   }
 }

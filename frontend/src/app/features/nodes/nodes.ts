@@ -1,4 +1,4 @@
-import {Component, signal} from '@angular/core';
+import {Component, signal, ViewChild} from '@angular/core';
 import {NodesService} from './nodes.service';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
@@ -28,6 +28,7 @@ export interface NodeItem {
   styleUrl: './nodes.css',
 })
 export class Nodes {
+  @ViewChild('nodeTable') dataTable?: DataTable;
   tableColumns = signal([
     {field: 'id', header: 'ID'},
     {field: 'name', header: 'Name'},
@@ -59,8 +60,6 @@ export class Nodes {
   selectedNode: NodeItem | null = null;
   showActionModal = signal(false);
   actionLoading = signal(false);
-
-  private dataTableRef: DataTable | null = null;
 
   constructor(
     private nodesService: NodesService,
@@ -156,14 +155,8 @@ export class Nodes {
     });
   }
 
-  setDataTableRef(ref: DataTable) {
-    this.dataTableRef = ref;
-  }
-
   refreshData() {
-    if (this.dataTableRef) {
-      this.dataTableRef.loadData();
-    }
+    this.dataTable?.loadData();
   }
 
   protected readonly UserPermissionsEnum = UserPermissionsEnum;

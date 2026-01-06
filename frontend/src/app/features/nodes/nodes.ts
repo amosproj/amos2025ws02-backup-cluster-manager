@@ -7,6 +7,7 @@ import {formatDateFields} from '../../shared/utils/date_utils';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 import {AuthService} from '../../core/services/auth.service';
 import UserPermissionsEnum from '../../shared/types/Permissions';
+import {NodeDTO} from '../clients/clients.service';
 import {ToastService} from '../../core/services/toast.service';
 import {ToastTypeEnum} from '../../shared/types/toast';
 
@@ -37,7 +38,7 @@ export class Nodes {
     {field: 'createdAt', header: 'Created At'},
   ]);
 
-  // Filter for all node statuses
+  // Example filter: filter backups by 'active' status
   tableFilters = signal([
     {
       label: 'Active',
@@ -65,14 +66,52 @@ export class Nodes {
     private nodesService: NodesService,
     public authService: AuthService,
     public toast: ToastService
-  ) {}
+  ) {
+  }
 
-  fetchNodes = (page: number, itemsPerPage: number, filters: string, search:string, sortBy: string, sortOrder:SortOrder) => {
+  fetchNodes = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder: SortOrder) => {
     return this.nodesService
       .getNodes(page, itemsPerPage, filters, search, sortBy, sortOrder)
       .pipe(map((result: PaginatedResponse) =>
         formatDateFields(result, ['createdAt'])
       ));
+  }
+  protected readonly UserPermissionsEnum = UserPermissionsEnum;
+
+  onUpdate(item: NodeDTO): void {
+    if (!item) return;
+
+    item.createdAt = "";
+
+    this.nodesService.updateNode(item).subscribe({
+      next: () => {
+        this.dataTable?.loadData();
+      },
+      error: (error) => {
+        console.error('Error updating node:', error);
+      }
+    });
+  }
+
+  onDeleteSelection(rows: any[]): void {
+    if (!rows.length) return;
+
+    let completed = 0;
+
+    rows.forEach(row => {
+      this.nodesService.deleteNode(row.id).subscribe({
+        next: () => {
+          completed++;
+
+          if (completed === rows.length && this.dataTable) {
+            this.dataTable.loadData();
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting node:', error);
+        }
+      });
+    });
   }
 
   canControlNodes(): boolean {
@@ -124,7 +163,7 @@ export class Nodes {
     this.actionLoading.set(true);
     this.nodesService.restartNode(node.id).subscribe({
       next: (response) => {
-        this.toast.show(response.message|| `Restart command sent to ${node.name}`, ToastTypeEnum.SUCCESS);
+        this.toast.show(response.message || `Restart command sent to ${node.name}`, ToastTypeEnum.SUCCESS);
         this.actionLoading.set(false);
         this.refreshData();
       },
@@ -158,6 +197,4 @@ export class Nodes {
   refreshData() {
     this.dataTable?.loadData();
   }
-
-  protected readonly UserPermissionsEnum = UserPermissionsEnum;
 }

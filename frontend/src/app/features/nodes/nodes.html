@@ -6,6 +6,9 @@
   [addButtonText]="'Add Node'"
   [showAddButton]="authService.hasPermission(UserPermissionsEnum.NodeCreate)"
   [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.NodeDelete)"
+  [showToggleButton]="authService.hasPermission(UserPermissionsEnum.NodeUpdate)"
+  (deleteSelection)="onDeleteSelection($event)"
+  (toggleChanged)="onUpdate($event)"
   [showActionsColumn]="canControlNodes() || canDeleteNodes()"
   [rowActions]="nodeActions"
 />

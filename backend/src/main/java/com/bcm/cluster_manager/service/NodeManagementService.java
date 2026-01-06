@@ -105,11 +105,17 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         return nodes;
     }
 
+    public void updateNodeManagedMode(NodeDTO nodeDTO) {
+        registry.updateIsManaged(nodeDTO);
+    }
+
+    public void deleteNode(Long id) {
+        registry.removeNode(id);
+    }
 
     public void registerNode(RegisterRequest req) {
         registry.register(req);
-        // push updated tables to all nodes
-        syncService.pushTablesToAllNodes();
+        syncService.syncNodes();
 
     }
 
@@ -144,7 +150,7 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
             // Remove node from cluster since it won't come back
             registry.removeNodeById(nodeId);
             logger.info("Node {} removed from cluster after shutdown", node.getAddress());
-            syncService.pushTablesToAllNodes();
+            syncService.syncNodes();
             return true;
         } else {
             logger.error("Failed to send shutdown command to node {}", node.getAddress());
@@ -203,7 +209,7 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         boolean removed = registry.removeNodeById(nodeId);
         if (removed) {
             logger.info("Node {} removed from cluster", node.getAddress());
-            syncService.pushTablesToAllNodes();
+            syncService.syncNodes();
         }
         return removed;
     }

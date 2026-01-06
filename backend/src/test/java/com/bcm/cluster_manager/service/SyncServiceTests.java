@@ -1,12 +1,14 @@
 package com.bcm.cluster_manager.service;
 
-import com.bcm.shared.model.api.ClusterTablesDTO;
 import com.bcm.shared.model.api.NodeDTO;
 import com.bcm.shared.model.api.NodeMode;
 
+import com.bcm.shared.model.api.SyncDTO;
+import com.bcm.shared.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -21,10 +23,11 @@ class SyncServiceTests {
     private SyncService syncService;
     private RegistryService registryMock;
     private RestTemplate restTemplateMock;
+    private final UserService userService = mock(UserService.class);
 
     @BeforeEach
     void setup() throws Exception {
-        syncService = new SyncService();
+        syncService = new SyncService(userService);
 
         registryMock = mock(RegistryService.class);
         restTemplateMock = mock(RestTemplate.class);
@@ -42,20 +45,24 @@ class SyncServiceTests {
 
     @Test
     void pushTablesToAllNodes_sendsSyncToAllActiveNodes() {
-        NodeDTO n1 = new NodeDTO(1L, "Node A", "node1:8080", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(1));
-        NodeDTO n2 = new NodeDTO(2L, "Node B", "node2:8080" , com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(2));
+        NodeDTO n1 = new NodeDTO(1L, "Node A", "node1:8080", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, true, LocalDateTime.now().minusDays(1));
+        NodeDTO n2 = new NodeDTO(2L, "Node B", "node2:8080" , com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, true, LocalDateTime.now().minusDays(2));
 
+        when(userService.getAllUsers()).thenReturn(List.of());
+
+        when(registryMock.getActiveAndManagedNodes()).thenReturn(List.of(n1,n2));
         when(registryMock.getActiveNodes()).thenReturn(List.of(n1, n2));
         when(registryMock.getInactiveNodes()).thenReturn(List.of());
 
-        syncService.pushTablesToAllNodes();
+
+        syncService.syncNodes();
 
         verify(restTemplateMock, times(2))
-                .postForEntity(anyString(), any(ClusterTablesDTO.class), eq(Void.class));
+                .postForEntity(anyString(), any(SyncDTO.class), eq(Void.class));
 
         ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
         verify(restTemplateMock, times(2))
-                .postForEntity(urlCaptor.capture(), any(ClusterTablesDTO.class), eq(Void.class));
+                .postForEntity(urlCaptor.capture(), any(SyncDTO.class), eq(Void.class));
 
         List<String> urls = urlCaptor.getAllValues();
         assertThat(urls).containsExactlyInAnyOrder(
@@ -69,7 +76,7 @@ class SyncServiceTests {
         when(restTemplateMock.postForEntity(anyString(), any(), eq(Void.class)))
                 .thenThrow(new RuntimeException("Connection error"));
 
-        ClusterTablesDTO dto = new ClusterTablesDTO(List.of(), List.of());
+        SyncDTO dto = new SyncDTO(List.of());
 
         CompletableFuture<Void> result =
                 syncService.asyncPush("badnode:8080", dto);

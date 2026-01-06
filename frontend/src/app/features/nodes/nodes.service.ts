@@ -3,6 +3,8 @@ import {ApiService} from '../../core/services/api.service';
 import {Observable} from 'rxjs';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 import {SortOrder} from '../../shared/types/SortTypes';
+import {BackupDTO} from '../backups/backups.service';
+import {NodeDTO} from '../clients/clients.service';
 
 export interface NodeControlResponse {
   success: boolean;
@@ -26,6 +28,14 @@ export class NodesService {
       filters: filters.toString(),
     }
     return this.apiService.get<PaginatedResponse>('nodes', {params});
+  }
+
+  updateNode(node: NodeDTO): Observable<any> {
+    return this.apiService.put<any>('node', node);
+  }
+
+  deleteNode(nodeId: number): Observable<any> {
+    return this.apiService.delete<any>(`node/${nodeId}`);
   }
 
   shutdownNode(nodeId: string): Observable<NodeControlResponse> {

@@ -21,27 +21,9 @@ public class RegistryService {
     private final ConcurrentHashMap<String, NodeDTO> inactive = new ConcurrentHashMap<>();
 
     public void register(RegisterRequest req) {
-        // Check if node already exists (re-registration after restart)
-        NodeDTO existing = active.get(req.getAddress());
-        if (existing == null) {
-            existing = inactive.get(req.getAddress());
-        }
-
-        if (existing != null) {
-            // Node is re-registering - update status to ACTIVE
-            existing.setStatus(NodeStatus.ACTIVE);
-            existing.setMode(req.getMode());
-            inactive.remove(req.getAddress());
-            active.put(req.getAddress(), existing);
-            
-        } else {
-            // New node registration - same logic as before
-            // Node not managed by default
-            NodeDTO newNode = new NodeDTO(NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), false, LocalDateTime.now());
-//            inactive.remove(info.getAddress());
-//            active.put(info.getAddress(), info);
-            markActive(newNode);
-        }
+        NodeDTO newNode = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), req.getMode().equals(NodeMode.CLUSTER_MANAGER) /* sets isManaged flag to true for CM self-registration, false per default for all new nodes*/,
+                LocalDateTime.now());
+        markActive(newNode);
     }
 
     public void markActive(NodeDTO node) {
@@ -76,12 +58,12 @@ public class RegistryService {
         inactive.put(node.getAddress(), info);
     }
 
-    private NodeDTO getOrUseInput(NodeDTO node) {
-        NodeDTO info = active.get(node.getAddress());
-        if (info == null) info = inactive.get(node.getAddress());
-        // Create new node - initialized as not managed
-        if (info == null) info = new NodeDTO(NodeIdGenerator.nextId(), node.getAddress(), node.getAddress(), NodeStatus.PENDING, node.getMode(), false, LocalDateTime.now());
-        return info;
+    private NodeDTO getOrUseInput(@NotNull NodeDTO inputNode) {
+        NodeDTO node = active.get(inputNode.getAddress());
+        if (node == null) node = inactive.get(inputNode.getAddress());
+        if (node == null) return inputNode;
+
+        return node;
     }
 
     public Collection<NodeDTO> getActiveAndManagedNodes() {
@@ -114,22 +96,6 @@ public class RegistryService {
             return getAllNodes().stream()
                     .filter(node -> node.getId().equals(id))
                     .findFirst();
-        }
-
-        public boolean removeNode(String address) {
-            NodeDTO removed = active.remove(address);
-            if (removed == null) {
-                removed = inactive.remove(address);
-            }
-            return removed != null;
-        }
-
-        public boolean removeNodeById(Long id) {
-            Optional<NodeDTO> node = findById(id);
-            if (node.isPresent()) {
-                return removeNode(node.get().getAddress());
-            }
-            return false;
         }
 
         public void updateNodeMode(String address, NodeMode mode) {

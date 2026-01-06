@@ -148,7 +148,7 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         if (success) {
             logger.info("Shutdown command sent to node {}", node.getAddress());
             // Remove node from cluster since it won't come back
-            registry.removeNodeById(nodeId);
+            registry.removeNode(nodeId);
             logger.info("Node {} removed from cluster after shutdown", node.getAddress());
             syncService.syncNodes();
             return true;

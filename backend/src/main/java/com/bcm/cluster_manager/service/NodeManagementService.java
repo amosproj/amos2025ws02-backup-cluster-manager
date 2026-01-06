@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 
+import com.bcm.shared.model.api.JoinDTO;
 import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.pagination.sort.NodeComparators;
 import com.bcm.shared.pagination.filter.Filter;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,9 +116,18 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
     }
 
     public void registerNode(RegisterRequest req) {
-        registry.register(req);
-        syncService.syncNodes();
-
+        final RestTemplate restTemplate = new RestTemplate();
+        JoinDTO dto = new JoinDTO();
+        dto.setCmURL("http://cluster-manager:8080");
+        try {
+            restTemplate.postForEntity("http://" + req.getAddress() + "/api/v1/bn/join", dto, String.class);
+            registry.register(req);
+            syncService.syncNodes();
+        } catch (Exception e) {
+            System.err.println("Error registering node: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to register node at " + req.getAddress());
+        }
     }
 
     public Optional<NodeDTO> getNodeById(Long id) {

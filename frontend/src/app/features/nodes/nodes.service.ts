@@ -38,6 +38,11 @@ export class NodesService {
     return this.apiService.delete<any>(`node/${nodeId}`);
   }
 
+  addNode(address: string): Observable<any> {
+    const payload = {address: address, mode: 'NODE'};
+    return this.apiService.post<any>('register', payload);
+  }
+
   shutdownNode(nodeId: string): Observable<NodeControlResponse> {
     return this.apiService.post<NodeControlResponse>(`nodes/${nodeId}/shutdown`, {});
   }

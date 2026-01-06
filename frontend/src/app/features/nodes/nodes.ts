@@ -122,15 +122,13 @@ export class Nodes {
     return this.authService.hasPermission(UserPermissionsEnum.NodeDelete);
   }
 
-  onNodeAction(node: NodeItem, action: 'shutdown' | 'restart' | 'remove') {
+  onNodeAction(node: NodeItem, action: 'shutdown' | 'restart') {
     this.selectedNode = node;
 
     if (action === 'shutdown') {
       this.shutdownNode(node);
     } else if (action === 'restart') {
       this.restartNode(node);
-    } else if (action === 'remove') {
-      this.removeNode(node);
     }
   }
 
@@ -169,26 +167,6 @@ export class Nodes {
       },
       error: (err) => {
         this.toast.show(`Failed to restart node: ${err.message}`, ToastTypeEnum.ERROR);
-        this.actionLoading.set(false);
-      }
-    });
-  }
-
-  removeNode(node: NodeItem) {
-    if (node.mode === 'cluster_manager') {
-      this.toast.show("Cannot remove cluster manager", ToastTypeEnum.ERROR);
-      return;
-    }
-
-    this.actionLoading.set(true);
-    this.nodesService.removeNode(node.id).subscribe({
-      next: (response) => {
-        this.toast.show(response.message || `Node ${node.name} removed from cluster`, ToastTypeEnum.SUCCESS);
-        this.actionLoading.set(false);
-        this.refreshData();
-      },
-      error: (err) => {
-        this.toast.show(`Failed to remove node: ${err.message}`, ToastTypeEnum.ERROR);
         this.actionLoading.set(false);
       }
     });

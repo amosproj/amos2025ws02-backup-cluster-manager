@@ -45,8 +45,4 @@ export class NodesService {
   restartNode(nodeId: string): Observable<NodeControlResponse> {
     return this.apiService.post<NodeControlResponse>(`nodes/${nodeId}/restart`, {});
   }
-
-  removeNode(nodeId: string): Observable<NodeControlResponse> {
-    return this.apiService.delete<NodeControlResponse>(`nodes/${nodeId}`);
-  }
 }

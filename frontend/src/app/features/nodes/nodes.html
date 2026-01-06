@@ -38,15 +38,6 @@
           </span>
         }
       }
-      @if (canDeleteNodes()) {
-        <button
-          (click)="onNodeAction(row, 'remove')"
-          [disabled]="actionLoading()"
-          class="px-2 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded disabled:opacity-50"
-          title="Remove from Cluster">
-          Remove
-        </button>
-      }
     </div>
   } @else {
     <span class="text-xs text-foreground-muted">Cluster Manager</span>

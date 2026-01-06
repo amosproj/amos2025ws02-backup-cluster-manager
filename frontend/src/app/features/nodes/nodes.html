@@ -1,4 +1,5 @@
 <app-data-table
+  #nodeTable
   [fetchData]="fetchNodes"
   [columns]="tableColumns()"
   [filters]="tableFilters()"
@@ -9,4 +10,38 @@
   (deleteSelection)="onDeleteSelection($event)"
   (toggleChanged)="onUpdate($event)"
   (add)="onAddNode()"
+  [showActionsColumn]="canControlNodes() || canDeleteNodes()"
+  [rowActions]="nodeActions"
 />
+
+<ng-template #nodeActions let-row>
+  @if (row.mode !== 'cluster_manager') {
+    <div class="flex gap-2">
+      @if (canControlNodes()) {
+        @if (row.status !== 'shutting_down' && row.status !== 'restarting') {
+          <button
+            (click)="onNodeAction(row, 'shutdown')"
+            [disabled]="actionLoading()"
+            class="px-2 py-1 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded disabled:opacity-50"
+            title="Shutdown Node">
+            Shutdown
+          </button>
+          <button
+            (click)="onNodeAction(row, 'restart')"
+            [disabled]="actionLoading()"
+            class="px-2 py-1 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50"
+            title="Restart Node">
+            Restart
+          </button>
+        } @else {
+          <span class="px-2 py-1 text-xs font-medium text-yellow-400">
+            {{ row.status === 'shutting_down' ? 'Shutting down...' : 'Restarting...' }}
+          </span>
+        }
+      }
+    </div>
+  } @else {
+    <span class="text-xs text-foreground-muted">Cluster Manager</span>
+  }
+</ng-template>
+

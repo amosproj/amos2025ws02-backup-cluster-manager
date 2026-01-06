@@ -6,6 +6,10 @@ import {SortOrder} from '../../shared/types/SortTypes';
 import {BackupDTO} from '../backups/backups.service';
 import {NodeDTO} from '../clients/clients.service';
 
+export interface NodeControlResponse {
+  success: boolean;
+  message: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -37,5 +41,13 @@ export class NodesService {
   addNode(address: string): Observable<any> {
     const payload = {address: address, mode: 'NODE'};
     return this.apiService.post<any>('register', payload);
+  }
+
+  shutdownNode(nodeId: string): Observable<NodeControlResponse> {
+    return this.apiService.post<NodeControlResponse>(`nodes/${nodeId}/shutdown`, {});
+  }
+
+  restartNode(nodeId: string): Observable<NodeControlResponse> {
+    return this.apiService.post<NodeControlResponse>(`nodes/${nodeId}/restart`, {});
   }
 }

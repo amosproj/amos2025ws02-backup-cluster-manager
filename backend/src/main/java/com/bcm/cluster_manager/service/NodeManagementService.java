@@ -6,9 +6,13 @@ import com.bcm.shared.model.api.RegisterRequest;
 import com.bcm.shared.pagination.sort.NodeComparators;
 import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.model.api.NodeMode;
 import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
+import com.bcm.shared.service.NodeHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -16,9 +20,15 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NodeManagementService implements PaginationProvider<NodeDTO> {
+
+    private static final Logger logger = LoggerFactory.getLogger(NodeManagementService.class);
+
+    @Autowired
+    private NodeHttpClient nodeHttpClient;
 
     @Autowired
     private RegistryService registry;
@@ -117,6 +127,74 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
             System.err.println("Error registering node: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Failed to register node at " + req.getAddress());
+        }
+    }
+
+    public Optional<NodeDTO> getNodeById(Long id) {
+        return registry.findById(id);
+    }
+
+    public Optional<NodeDTO> getNodeByAddress(String address) {
+        return registry.findByAddress(address);
+    }
+
+    public boolean shutdownNode(Long nodeId) {
+        Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
+        if (nodeOpt.isEmpty()) {
+            logger.warn("Node with id {} not found for shutdown", nodeId);
+            return false;
+        }
+
+        NodeDTO node = nodeOpt.get();
+
+        // Don't allow shutdown of cluster manager
+        if (node.getMode() == NodeMode.CLUSTER_MANAGER) {
+            logger.warn("Cannot shutdown cluster manager node {}", node.getAddress());
+            return false;
+        }
+
+        registry.markShuttingDown(node.getAddress());
+
+        boolean success = nodeHttpClient.postNodeSyncNoResponse(node.getAddress(), "/api/v1/shutdown");
+        if (success) {
+            logger.info("Shutdown command sent to node {}", node.getAddress());
+            // Remove node from cluster since it won't come back
+            registry.removeNode(nodeId);
+            logger.info("Node {} removed from cluster after shutdown", node.getAddress());
+            syncService.syncNodes();
+            return true;
+        } else {
+            logger.error("Failed to send shutdown command to node {}", node.getAddress());
+            registry.markInactive(node);
+            return false;
+        }
+    }
+
+    public boolean restartNode(Long nodeId) {
+        Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
+        if (nodeOpt.isEmpty()) {
+            logger.warn("Node with id {} not found for restart", nodeId);
+            return false;
+        }
+
+        NodeDTO node = nodeOpt.get();
+
+        // Don't allow restart of cluster manager
+        if (node.getMode() == NodeMode.CLUSTER_MANAGER) {
+            logger.warn("Cannot restart cluster manager node {}", node.getAddress());
+            return false;
+        }
+
+        registry.markRestarting(node.getAddress());
+
+        boolean success = nodeHttpClient.postNodeSyncNoResponse(node.getAddress(), "/api/v1/restart");
+        if (success) {
+            logger.info("Restart command sent to node {}", node.getAddress());
+            return true;
+        } else {
+            logger.error("Failed to send restart command to node {}", node.getAddress());
+            registry.markInactive(node);
+            return false;
         }
     }
 }

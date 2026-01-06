@@ -12,6 +12,7 @@ public enum Permission {
     NODE_CREATE("node:create"),
     NODE_UPDATE("node:update"),
     NODE_DELETE("node:delete"),
+    NODE_CONTROL("node:control"),
 
     // Clients
     CLIENT_READ("client:read"),
@@ -52,6 +53,7 @@ public enum Permission {
         public static final String NODE_CREATE = "hasAuthority('node:create')";
         public static final String NODE_UPDATE = "hasAuthority('node:update')";
         public static final String NODE_DELETE = "hasAuthority('node:delete')";
+        public static final String NODE_CONTROL = "hasAuthority('node:control')";
 
         // Clients
         public static final String CLIENT_READ = "hasAuthority('client:read')";

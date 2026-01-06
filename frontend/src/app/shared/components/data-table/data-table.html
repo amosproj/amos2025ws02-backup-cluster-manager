@@ -98,6 +98,11 @@
               </div>
             </th>
           }
+          @if (showActionsColumn) {
+            <th scope="col" class="px-6 py-3">
+              Actions
+            </th>
+          }
           @if (showToggleButton) {
           <th scope="col" class="px-6 py-3 cursor-pointer hover:bg-primary-3 select-none">
             <div class="flex items-center gap-2">
@@ -127,10 +132,25 @@
                     @if (dataItem?.mode === 'cluster_manager') {
                       <span class="bg-danger-soft border border-danger-subtle text-fg-danger-strong text-xs font-medium px-1.5 py-0.5 rounded">cm</span>
                      }
+                  } @else if (column.field === 'status') {
+                    <span [ngClass]="{
+                      'text-green-400': getColumnValue(dataItem, column.field) === 'active',
+                      'text-red-400': getColumnValue(dataItem, column.field) === 'inactive',
+                      'text-orange-400': getColumnValue(dataItem, column.field) === 'shutting_down',
+                      'text-blue-400': getColumnValue(dataItem, column.field) === 'restarting',
+                      'text-yellow-400': getColumnValue(dataItem, column.field) === 'pending'
+                    }">
+                      {{ getColumnValue(dataItem, column.field) }}
+                    </span>
                   } @else {
                     {{ getColumnValue(dataItem, column.field) }}
                   }
 
+                </td>
+              }
+              @if (showActionsColumn && rowActions) {
+                <td class="px-6 py-4">
+                  <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: dataItem }"></ng-container>
                 </td>
               }
               @if (showToggleButton) {

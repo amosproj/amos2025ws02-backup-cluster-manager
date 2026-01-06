@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -25,19 +26,85 @@ public class RegistryService {
         markActive(newNode);
     }
 
-    public void markActive(NodeDTO inputNode) {
-        NodeDTO node = getOrUseInput(inputNode);
-        node.setStatus(NodeStatus.ACTIVE);
+    public void markActive(NodeDTO node) {
+        NodeDTO info = getOrUseInput(node);
+        // Only update status if not in a transitional state, or if re-registering after restart
+        if (info.getStatus() == NodeStatus.RESTARTING) {
+            // Node is back after restart - update to ACTIVE
+            info.setStatus(NodeStatus.ACTIVE);
+        } else if (info.getStatus() != NodeStatus.SHUTTING_DOWN) {
+            // Normal case - mark as active
+            info.setStatus(NodeStatus.ACTIVE);
+        }
+        // If SHUTTING_DOWN, keep that status until removed or re-registered
         inactive.remove(node.getAddress());
-        active.put(node.getAddress(), node);
+        active.put(node.getAddress(), info);
     }
 
-    public void markInactive(NodeDTO inputNode) {
-        NodeDTO node = getOrUseInput(inputNode);
-        node.setStatus(NodeStatus.INACTIVE);
+
+    public void markInactive(NodeDTO node) {
+        NodeDTO info = getOrUseInput(node);
+        // Don't override RESTARTING status during heartbeat failures (node will come back)
+        // But DO override SHUTTING_DOWN - if heartbeat fails, node is now fully down (INACTIVE)
+        if (info.getStatus() == NodeStatus.RESTARTING) {
+            // Keep RESTARTING status - node will register when it comes back
+        } else if (info.getStatus() == NodeStatus.SHUTTING_DOWN) {
+            // Node was shutting down
+            info.setStatus(NodeStatus.INACTIVE);
+        } else {
+            info.setStatus(NodeStatus.INACTIVE);
+        }
         active.remove(node.getAddress());
-        inactive.put(node.getAddress(), node);
+        inactive.put(node.getAddress(), info);
     }
+
+    private NodeDTO getOrUseInput(@NotNull NodeDTO inputNode) {
+        NodeDTO node = active.get(inputNode.getAddress());
+        if (node == null) node = inactive.get(inputNode.getAddress());
+        if (node == null) return inputNode;
+
+        return node;
+    }
+
+    public Collection<NodeDTO> getActiveAndManagedNodes() {
+        return active.values().stream().filter(NodeDTO::getIsManaged).toList();
+    }
+
+        public void markShuttingDown(String address) {
+            NodeDTO info = findByAddress(address).orElse(null);
+            if (info != null) {
+                info.setStatus(NodeStatus.SHUTTING_DOWN);
+            }
+        }
+
+        public void markRestarting(String address) {
+            NodeDTO info = findByAddress(address).orElse(null);
+            if (info != null) {
+                info.setStatus(NodeStatus.RESTARTING);
+            }
+        }
+
+        public Optional<NodeDTO> findByAddress(String address) {
+            NodeDTO node = active.get(address);
+            if (node == null) {
+                node = inactive.get(address);
+            }
+            return Optional.ofNullable(node);
+        }
+
+        public Optional<NodeDTO> findById(Long id) {
+            return getAllNodes().stream()
+                    .filter(node -> node.getId().equals(id))
+                    .findFirst();
+        }
+
+        public void updateNodeMode(String address, NodeMode mode) {
+            NodeDTO info = findByAddress(address).orElse(null);
+            if (info != null) {
+                info.setMode(mode);
+            }
+        }
+
 
     public void removeNode(Long id) {
         if (id == null) {
@@ -70,24 +137,10 @@ public class RegistryService {
         }
     }
 
-    private NodeDTO getOrUseInput(@NotNull NodeDTO inputNode) {
-        NodeDTO node = active.get(inputNode.getAddress());
-        if (node == null) node = inactive.get(inputNode.getAddress());
-        if (node == null) return inputNode;
+    
 
-        return node;
-    }
-
-    public Collection<NodeDTO> getActiveAndManagedNodes() {
-        return active.values().stream().filter(NodeDTO::getIsManaged).toList();
-    }
-
-    public Collection<NodeDTO> getActiveNodes() {
-        return active.values();
-    }
-    public Collection<NodeDTO> getInactiveNodes() {
-        return inactive.values();
-    }
+    public Collection<NodeDTO> getActiveNodes() { return active.values(); }
+    public Collection<NodeDTO> getInactiveNodes() { return inactive.values(); }
 
     public Collection<NodeDTO> getAllNodes() {
         ConcurrentHashMap<String, NodeDTO> merged = new ConcurrentHashMap<>(active);

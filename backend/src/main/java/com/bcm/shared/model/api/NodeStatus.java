@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum NodeStatus {
     ACTIVE,
     INACTIVE,
-    PENDING;
+    PENDING,
+    SHUTTING_DOWN,
+    RESTARTING;
 
     @JsonCreator
     public static NodeStatus from(String value) {

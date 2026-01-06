@@ -1,9 +1,13 @@
 package com.bcm.shared.controller;
 
 
-import com.bcm.shared.model.api.ClusterTablesDTO;
-import com.bcm.shared.service.LocalTablesService;
+//import com.bcm.shared.model.api.ClusterTablesDTO;
+//import com.bcm.shared.service.LocalTablesService;
+import com.bcm.shared.service.NodeControlService;
+import com.bcm.shared.model.api.SyncDTO;
+import com.bcm.shared.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -11,7 +15,10 @@ import org.springframework.web.bind.annotation.*;
 public class NodeController {
 
     @Autowired
-    private LocalTablesService tables;
+    private UserService userService;
+
+    @Autowired
+    private NodeControlService nodeControlService;
 
     @GetMapping("/example")
     public String test(){
@@ -24,7 +31,41 @@ public class NodeController {
     }
 
     @PostMapping("/sync")
-    public void sync(@RequestBody ClusterTablesDTO dto) {
-        tables.replaceAll(dto.getActive(), dto.getInactive());
+    public void sync(@RequestBody SyncDTO dto) {
+        userService.replaceUsersWithCMUsers(dto.getCmUsers());
+    }
+
+
+    @PostMapping("/shutdown")
+    public ResponseEntity<String> shutdown() {
+        nodeControlService.shutdown();
+        return ResponseEntity.ok("Shutdown initiated");
+    }
+
+    @PostMapping("/restart")
+    public ResponseEntity<String> restart() {
+        nodeControlService.restart();
+        return ResponseEntity.ok("Restart initiated");
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<NodeControlStatus> getStatus() {
+        return ResponseEntity.ok(new NodeControlStatus(nodeControlService.isManagedMode()));
+    }
+
+    public static class NodeControlStatus {
+        private boolean managedMode;
+
+        public NodeControlStatus(boolean managedMode) {
+            this.managedMode = managedMode;
+        }
+
+        public boolean isManagedMode() {
+            return managedMode;
+        }
+
+        public void setManagedMode(boolean managedMode) {
+            this.managedMode = managedMode;
+        }
     }
 }

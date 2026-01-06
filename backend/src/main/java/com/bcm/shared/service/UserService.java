@@ -9,6 +9,8 @@ import com.bcm.shared.repository.UserGroupRelationMapper;
 import com.bcm.shared.repository.UserMapper;
 import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,6 +30,10 @@ import java.util.stream.Collectors;
 @Service
 public class UserService implements PaginationProvider<UserDTO> {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+    private final Object userReplaceLock = new Object();
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -38,8 +44,8 @@ public class UserService implements PaginationProvider<UserDTO> {
     private final GroupMapper groupMapper;
 
     public UserService(@Qualifier("userGroupRelationMapperBN") UserGroupRelationMapper userGroupRelationMapper,
-                      @Qualifier("userMapperBN") UserMapper userMapper,
-                      @Qualifier("groupMapperBN") GroupMapper groupMapper) {
+                       @Qualifier("userMapperBN") UserMapper userMapper,
+                       @Qualifier("groupMapperBN") GroupMapper groupMapper) {
         this.userGroupRelationMapper = userGroupRelationMapper;
         this.userMapper = userMapper;
         this.groupMapper = groupMapper;
@@ -120,6 +126,32 @@ public class UserService implements PaginationProvider<UserDTO> {
         return userMapper.findById(user.getId());
     }
 
+    @Transactional
+    public void replaceUsersWithCMUsers(List<User> cmUsers) {
+
+        // lock to prevent concurrent replacements
+        synchronized (userReplaceLock) {
+            // as of now, we simply delete all users and re-insert from shared CM user table
+            // in the future, we might want to do a more intelligent merge, but currently no way to identify node-wise unique users to only update changes
+            deleteAllUsers();
+            insertUsers(cmUsers);
+
+        }
+
+    }
+
+    private void insertUsers(List<User> users) {
+        users.forEach(user -> {
+            userMapper.insert(user);
+            logger.info("Inserted user {}", user.getName());
+
+        });
+    }
+
+    private int deleteAllUsers() {
+        return userMapper.deleteAll();
+    }
+
     /**
      * Deletes a user by their unique identifier.
      *
@@ -160,7 +192,7 @@ public class UserService implements PaginationProvider<UserDTO> {
     /**
      * Filters users to only include those with a lower rank than the requester.
      *
-     * @param users the list of users to filter
+     * @param users         the list of users to filter
      * @param requesterRank the rank of the requesting user
      * @return filtered list of users with lower rank
      */
@@ -173,7 +205,7 @@ public class UserService implements PaginationProvider<UserDTO> {
     /**
      * Checks if the requester has permission to manage a target user based on rank.
      *
-     * @param targetUserId the ID of the user to be managed
+     * @param targetUserId  the ID of the user to be managed
      * @param requesterRank the rank of the requesting user
      * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
      */
@@ -188,7 +220,7 @@ public class UserService implements PaginationProvider<UserDTO> {
      * Retrieves users by name subtext, filtered by requester's rank.
      * Only returns users with a lower rank than the requester.
      *
-     * @param name the name subtext to search for
+     * @param name          the name subtext to search for
      * @param requesterRank the rank of the requesting user
      * @return list of users with lower rank matching the name subtext
      */
@@ -202,7 +234,7 @@ public class UserService implements PaginationProvider<UserDTO> {
      * Updates a user with rank validation.
      * Only allows updating users with a lower rank than the requester.
      *
-     * @param user the user object containing updated data
+     * @param user          the user object containing updated data
      * @param requesterRank the rank of the requesting user
      * @return the updated user object
      * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
@@ -218,7 +250,7 @@ public class UserService implements PaginationProvider<UserDTO> {
      * Deletes a user with rank validation.
      * Only allows deleting users with a lower rank than the requester.
      *
-     * @param id the unique identifier of the user to delete
+     * @param id            the unique identifier of the user to delete
      * @param requesterRank the rank of the requesting user
      * @return true if a user was successfully deleted, false otherwise
      * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
@@ -233,8 +265,8 @@ public class UserService implements PaginationProvider<UserDTO> {
      * Adds a new user with rank validation on the target group.
      * Only allows creating users in groups with a lower rank than the requester.
      *
-     * @param user the user object to be added
-     * @param groupID the ID of the group to assign to the user
+     * @param user          the user object to be added
+     * @param groupID       the ID of the group to assign to the user
      * @param requesterRank the rank of the requesting user
      * @return the newly created user object
      * @throws AccessDeniedException if the requester's rank is not higher than the target group's rank

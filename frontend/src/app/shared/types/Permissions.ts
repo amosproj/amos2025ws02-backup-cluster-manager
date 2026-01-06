@@ -8,7 +8,9 @@ enum UserPermissionsEnum {
   // Nodes Page Permissions
   NodeRead ="node:read",
   NodeCreate="node:create",
+  NodeUpdate="node:update",
   NodeDelete="node:delete",
+  NodeControl="node:control",
 
   // Clients Page Permissions
   ClientRead ="client:read",

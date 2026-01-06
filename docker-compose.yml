@@ -36,6 +36,7 @@ services:
     profiles: ['test']
     image: backend
     container_name: node1
+    restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node1
       - POSTGRES_USER=appuser
@@ -56,6 +57,7 @@ services:
     profiles: ['test']
     image: backend
     container_name: node2
+    restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node2
       - POSTGRES_USER=appuser
@@ -76,6 +78,7 @@ services:
     profiles: [ 'test' ]
     image: backend
     container_name: node3
+    restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node3
       - POSTGRES_USER=appuser
@@ -96,6 +99,7 @@ services:
     profiles: [ 'test' ]
     image: backend
     container_name: node4
+    restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node4
       - POSTGRES_USER=appuser
@@ -116,6 +120,7 @@ services:
     profiles: [ 'test' ]
     image: backend
     container_name: node5
+    restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node5
       - POSTGRES_USER=appuser

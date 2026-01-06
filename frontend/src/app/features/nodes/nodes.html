@@ -8,4 +8,5 @@
   [showToggleButton]="authService.hasPermission(UserPermissionsEnum.NodeUpdate)"
   (deleteSelection)="onDeleteSelection($event)"
   (toggleChanged)="onUpdate($event)"
+  (add)="onAddNode()"
 />

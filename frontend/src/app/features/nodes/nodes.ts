@@ -91,4 +91,22 @@ export class Nodes {
     });
   }
 
+  onAddNode(): void {
+    const address = prompt("Enter the address of the node to add:");
+    if (!address) return;
+
+    this.nodesService.addNode(address).subscribe({
+      next: () => {
+        alert("Node added successfully!");
+        if (this.dataTable) {
+          this.dataTable.loadData();
+        }
+      },
+      error: (error) => {
+        console.error(error);
+        alert("Error adding node!");
+      }
+    })
+  }
+
 }

@@ -33,4 +33,9 @@ export class NodesService {
   deleteNode(nodeId: number): Observable<any> {
     return this.apiService.delete<any>(`node/${nodeId}`);
   }
+
+  addNode(address: string): Observable<any> {
+    const payload = {address: address, mode: 'NODE'};
+    return this.apiService.post<any>('register', {address});
+  }
 }

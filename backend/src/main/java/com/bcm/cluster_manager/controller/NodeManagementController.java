@@ -45,7 +45,7 @@ public class NodeManagementController {
             nodeManagementService.registerNode(req);
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
-            return ResponseEntity.status(400).body("Invalid request");
+            return ResponseEntity.badRequest().body("Invalid request");
         }
     }
 

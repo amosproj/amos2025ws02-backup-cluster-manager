@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.Map;
+
 
 @RestController()
 @RequestMapping("/api/v1/cm")
@@ -40,12 +43,12 @@ public class NodeManagementController {
 
     @PreAuthorize(Permission.Require.NODE_CREATE)
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest req) {
         try {
             nodeManagementService.registerNode(req);
-            return ResponseEntity.ok("OK");
+            return ResponseEntity.ok(Collections.singletonMap("status", "OK"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Invalid request");
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid request"));
         }
     }
 

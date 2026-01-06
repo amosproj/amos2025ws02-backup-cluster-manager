@@ -36,6 +36,6 @@ export class NodesService {
 
   addNode(address: string): Observable<any> {
     const payload = {address: address, mode: 'NODE'};
-    return this.apiService.post<any>('register', {address});
+    return this.apiService.post<any>('register', payload);
   }
 }

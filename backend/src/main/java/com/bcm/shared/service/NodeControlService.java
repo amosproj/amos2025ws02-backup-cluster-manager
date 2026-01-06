@@ -42,16 +42,6 @@ public class NodeControlService {
         }, 2, TimeUnit.SECONDS);
     }
 
-    public void disableManagedMode() {
-        logger.info("Received disable managed mode command. Node will no longer be managed by cluster manager.");
-        this.managedMode = false;
-    }
-
-    public void enableManagedMode() {
-        logger.info("Enabling managed mode. Node will be managed by cluster manager.");
-        this.managedMode = true;
-    }
-
     public boolean isManagedMode() {
         return managedMode;
     }

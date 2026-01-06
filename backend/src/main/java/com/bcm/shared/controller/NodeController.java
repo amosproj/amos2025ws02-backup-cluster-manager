@@ -48,18 +48,6 @@ public class NodeController {
         return ResponseEntity.ok("Restart initiated");
     }
 
-    @PostMapping("/disable-managed")
-    public ResponseEntity<String> disableManagedMode() {
-        nodeControlService.disableManagedMode();
-        return ResponseEntity.ok("Managed mode disabled");
-    }
-
-    @PostMapping("/enable-managed")
-    public ResponseEntity<String> enableManagedMode() {
-        nodeControlService.enableManagedMode();
-        return ResponseEntity.ok("Managed mode enabled");
-    }
-
     @GetMapping("/status")
     public ResponseEntity<NodeControlStatus> getStatus() {
         return ResponseEntity.ok(new NodeControlStatus(nodeControlService.isManagedMode()));

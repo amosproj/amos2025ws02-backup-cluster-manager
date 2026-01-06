@@ -186,31 +186,4 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
             return false;
         }
     }
-
-    public boolean removeNode(Long nodeId) {
-        Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
-        if (nodeOpt.isEmpty()) {
-            logger.warn("Node with id {} not found for removal", nodeId);
-            return false;
-        }
-
-        NodeDTO node = nodeOpt.get();
-
-        // Don't allow removal of cluster manager
-        if (node.getMode() == NodeMode.CLUSTER_MANAGER) {
-            logger.warn("Cannot remove cluster manager node {}", node.getAddress());
-            return false;
-        }
-
-        // Send disable managed mode command to node (ignore result as node might be offline)
-        nodeHttpClient.postNodeSyncNoResponse(node.getAddress(), "/api/v1/disable-managed");
-        logger.info("Disable managed mode command sent to node {}", node.getAddress());
-
-        boolean removed = registry.removeNodeById(nodeId);
-        if (removed) {
-            logger.info("Node {} removed from cluster", node.getAddress());
-            syncService.syncNodes();
-        }
-        return removed;
-    }
 }

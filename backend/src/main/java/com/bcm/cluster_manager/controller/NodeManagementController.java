@@ -73,14 +73,4 @@ public class NodeManagementController {
         }
         return ResponseEntity.badRequest().body(NodeControlResponse.error("Failed to send restart command"));
     }
-
-    @PreAuthorize(Permission.Require.NODE_DELETE)
-    @DeleteMapping("/nodes/{id}")
-    public ResponseEntity<NodeControlResponse> removeNode(@PathVariable Long id) {
-        boolean success = nodeManagementService.removeNode(id);
-        if (success) {
-            return ResponseEntity.ok(NodeControlResponse.success("Node removed from cluster successfully"));
-        }
-        return ResponseEntity.badRequest().body(NodeControlResponse.error("Failed to remove node from cluster"));
-    }
 }

@@ -33,9 +33,11 @@
         <netty.version>4.2.8.Final</netty.version> <!-- Fix for CVE-2025-67735, Score: 6.5-->
     </properties>
     <dependencies>
+        <!-- Migration to Webflux -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>4.0.1</version>
         </dependency>
 
 

@@ -7,11 +7,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+//import jakarta.servlet.http.HttpServletRequest;
+//import jakarta.servlet.http.HttpSession;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 import java.util.Set;
 
@@ -21,10 +27,15 @@ import static org.springframework.security.web.context.HttpSessionSecurityContex
 @RequestMapping("/api/v1/cm/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
+//    private final AuthenticationManager authenticationManager;
 
-    public AuthController(AuthenticationManager authenticationManager) {
+
+    private final ReactiveAuthenticationManager authenticationManager;
+    private final WebSessionServerSecurityContextRepository securityContextRepository;
+
+    public AuthController(ReactiveAuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
+        this.securityContextRepository = new WebSessionServerSecurityContextRepository();
     }
 
     public static class LoginRequest {
@@ -33,68 +44,63 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequest req, HttpServletRequest request) {
+    public Mono<ResponseEntity<Void>> login(@RequestBody LoginRequest req, ServerWebExchange exchange) {
         UsernamePasswordAuthenticationToken token =
                 new UsernamePasswordAuthenticationToken(req.username, req.password);
 
-        Authentication auth = authenticationManager.authenticate(token);
-
-        // You have to explicitly pass auth to context and context to session. As of this version, I guess.
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        var context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(auth);
-        SecurityContextHolder.setContext(context);
-
-        HttpSession session = request.getSession(true);
-        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, context);
-
-        return ResponseEntity.ok().build();
+        return authenticationManager.authenticate(token)
+                .flatMap(auth -> {
+                    SecurityContext context = new SecurityContextImpl(auth);
+                    return securityContextRepository.save(exchange, context)
+                            .thenReturn(ResponseEntity.ok().<Void>build());
+                })
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) session.invalidate();
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok().build();
+    public Mono<ResponseEntity<Void>> logout(ServerWebExchange exchange) {
+        return exchange.getSession()
+                .flatMap(session -> {
+                    session.invalidate();
+                    return Mono.just(ResponseEntity.ok().<Void>build());
+                });
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<AuthMetadataDTO> validateSession() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    public Mono<ResponseEntity<AuthMetadataDTO>> validateSession() {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .filter(auth -> auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken))
+                .map(auth -> {
+                    CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
 
-        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+                    // Get the first role (or handle multiple roles if needed)
+                    var roles = userDetails.getRoles();
+                    if (roles.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).<AuthMetadataDTO>build();
+                    }
 
-        // Cast to CustomUserDetails (not User entity!)
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+                    // Get the highest ranked role
+                    Role primaryRole = roles.stream()
+                            .max((r1, r2) -> Integer.compare(r1.getRank(), r2.getRank()))
+                            .orElseThrow();
 
-        // Get the first role (or handle multiple roles if needed)
-        var roles = userDetails.getRoles();
-        if (roles.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+                    // Collect all unique permissions from all roles
+                    Set<String> permissions = roles.stream()
+                            .flatMap(role -> role.getPermissions().stream())
+                            .map(com.bcm.shared.config.permissions.Permission::getPermission)
+                            .collect(java.util.stream.Collectors.toSet());
 
-        // Get the highest ranked role
-        Role primaryRole = roles.stream()
-                .max((r1, r2) -> Integer.compare(r1.getRank(), r2.getRank()))
-                .orElseThrow();
+                    AuthMetadataDTO metaData = new AuthMetadataDTO(
+                            userDetails.getUsername(),
+                            primaryRole,
+                            primaryRole.getRank(),
+                            permissions
+                    );
 
-        // Collect all unique permissions from all roles
-        Set<String> permissions = roles.stream()
-                .flatMap(role -> role.getPermissions().stream())
-                .map(com.bcm.shared.config.permissions.Permission::getPermission)
-                .collect(java.util.stream.Collectors.toSet());
-
-        AuthMetadataDTO metaData = new AuthMetadataDTO(
-                userDetails.getUsername(),
-                primaryRole,
-                primaryRole.getRank(),
-                permissions
-        );
-
-        return ResponseEntity.ok(metaData);
+                    return ResponseEntity.ok(metaData);
+                })
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 }
 

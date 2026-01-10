@@ -34,6 +34,22 @@
         } @else {
           <ng-container [ngTemplateOutlet]="addButtonTemplate"></ng-container>
         }
+        @if (editButtonTemplate == null) {
+          @if (showEditButton) {
+            <button
+              type="button"
+              (click)="onEditClick()"
+              class="flex items-center justify-center hover:bg-primary-3 gap-2 px-4 py-2 h-10 text-sm font-medium text-foreground bg-primary-2 rounded-lg disabled:opacity-50"
+              [disabled]="!hasSingleSelection()"
+              [attr.aria-label]="editButtonText"
+              >
+              <img src="edit_user.svg" alt="" class="w-5 h-5"/>
+              {{ editButtonText }}
+            </button>
+          }
+        } @else {
+          <ng-container [ngTemplateOutlet]="editButtonTemplate"></ng-container>
+        }
         @if (showDeleteButton) {
           <button
             type="button"

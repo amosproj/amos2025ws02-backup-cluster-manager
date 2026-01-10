@@ -1,9 +1,9 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, signal, SimpleChanges, TemplateRef, AfterViewInit} from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, signal, SimpleChanges, TemplateRef, AfterViewInit } from '@angular/core';
 import { initFlowbite } from 'flowbite';
-import {Observable} from 'rxjs';
+import { Observable } from 'rxjs';
 import { NgClass, NgTemplateOutlet, CommonModule } from '@angular/common';
-import {SortOrder} from '../../types/SortTypes';
-import {FormsModule} from '@angular/forms';
+import { SortOrder } from '../../types/SortTypes';
+import { FormsModule } from '@angular/forms';
 
 interface PaginatedResponse {
   items: any[];
@@ -29,7 +29,7 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
   @Input() searchColumns: string[] = [];
   @Input() filters: any[] = [];
   @Input() isNodeButtonEnabled = true;
-  @Input() fetchData!: (page: number, itemsPerPage: number, filter:string, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
+  @Input() fetchData!: (page: number, itemsPerPage: number, filter: string, search: string, sortBy: string, orderBy: SortOrder) => Observable<PaginatedResponse>;
   @Input() loading: boolean | null = false;
   @Output() selectionChange = new EventEmitter<any[]>();
 
@@ -37,25 +37,33 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
   currentPage: number = 1;
   itemsPerPage: number = 15;
   totalPages: number = 1;
-  availablePageSizes = [1,2,3,15, 25, 50, 100];
+  availablePageSizes = [1, 2, 3, 15, 25, 50, 100];
   filterParam = "";
   selectedIds = new Set<string>();
 
   @Input() addButtonText = 'Add';
+  @Input() editButtonText = 'Edit';
+  @Input() deleteButtonText = 'Delete';
 
   @Input() showAddButton = true;
-  @Input() showDeleteButton = true;
+  @Input() showDeleteButton = false;
+  @Input() showEditButton = false;
   @Input() showActionsColumn = false;
   @Input() rowActions: TemplateRef<any> | null = null;
   @Input() addButtonTemplate: TemplateRef<unknown> | null = null;
+  @Input() editButtonTemplate: TemplateRef<unknown> | null = null;
+
   @Output() add = new EventEmitter<void>();
-  @Output() addClicked = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<void>();
+
   currentAddButtonText = this.addButtonText;
+  currentEditButtonText = this.editButtonText;
+  currentDeleteButtonText = this.deleteButtonText;
+
   @Output() deleteSelection = new EventEmitter<any[]>();
-
   @Input() showToggleButton = false;
-
   @Output() toggleChanged = new EventEmitter<any>();
+
 
   toggleManaged(item: any) {
     item.isManaged = !item?.isManaged;
@@ -109,6 +117,10 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
     return this.selectedIds && this.selectedIds.size > 0;
   }
 
+  hasSingleSelection(): boolean {
+    return this.selectedIds && this.selectedIds.size === 1;
+  }
+
   toggleRowSelection(row: any, event: Event): void {
     const input = event.target as HTMLInputElement;
     const checked = input?.checked ?? false;
@@ -130,7 +142,7 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
 
   loadData() {
     this.loading = true;
-    this.fetchData(this.currentPage, this.itemsPerPage, this.filterParam, this.currentSearchQuery, this.currentSortBy(),this.currentSortOrder()).subscribe({
+    this.fetchData(this.currentPage, this.itemsPerPage, this.filterParam, this.currentSearchQuery, this.currentSortBy(), this.currentSortOrder()).subscribe({
       next: (response: any) => {
         this.data = response.items;
         this.totalPages = response.totalPages;
@@ -162,6 +174,12 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
     }
     if (changes['addButtonText'] && !changes['addButtonText'].firstChange) {
       this.currentAddButtonText = this.addButtonText;
+    }
+    if (changes['editButtonText'] && !changes['editButtonText'].firstChange) {
+      this.currentEditButtonText = this.editButtonText;
+    }
+    if (changes['deleteButtonText'] && !changes['deleteButtonText'].firstChange) {
+      this.currentDeleteButtonText = this.deleteButtonText;
     }
   }
 
@@ -270,5 +288,9 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
 
   onAddClick() {
     this.add.emit();
+  }
+  onEditClick() {
+    const selectedRows = this.tableData().find(row => this.selectedIds.has(row.id));
+    this.edit.emit(selectedRows);
   }
 }

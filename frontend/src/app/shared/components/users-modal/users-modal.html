@@ -1,11 +1,6 @@
 <!-- add-users-modal.html -->
-<div
-  *ngIf="open"
-  class="fixed inset-0 z-50 flex justify-center items-center overflow-y-auto bg-opacity-40"
-  tabindex="-1"
-  aria-modal="true"
-  role="dialog"
->
+<div *ngIf="open" class="fixed inset-0 z-50 flex justify-center items-center overflow-y-auto bg-opacity-40"
+  tabindex="-1" aria-modal="true" role="dialog">
   <div class="relative p-4 w-full max-w-md">
     <div class="bg-neutral-primary-soft border border-default rounded-base shadow-sm p-4 md:p-6">
       <!-- Modal Header -->
@@ -13,19 +8,10 @@
         <h3 class="text-lg font-medium text-heading">
           {{ mode === 'create' ? 'Add User' : mode === 'edit' ? 'Edit User' : 'Delete User' }}
         </h3>
-        <button
-          (click)="close()"
-          class="w-9 h-9 flex justify-center items-center"
-          aria-label="Close"
-        >
+        <button (click)="close()" class="w-9 h-9 flex justify-center items-center" aria-label="Close">
           <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <path
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M6 18 17.94 6M18 18 6.06 6"
-            />
+            <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              d="M6 18 17.94 6M18 18 6.06 6" />
           </svg>
         </button>
       </div>
@@ -35,20 +21,25 @@
         <div class="py-4">
           <div class="relative">
             <label class="block mb-2 text-sm font-medium text-heading" for="edit-name">Name</label>
-            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)" (keydown)="onNameKeyDown($event)" [attr.aria-activedescendant]="getActiveDescendantId()" aria-autocomplete="list" aria-haspopup="listbox" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Search username" autocomplete="off" required />
+            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)"
+              (keydown)="onNameKeyDown($event)" [attr.aria-activedescendant]="getActiveDescendantId()"
+              aria-autocomplete="list" aria-haspopup="listbox" name="name"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+              placeholder="Search username" autocomplete="off" required />
             <!-- Suggestions Dropdown -->
-            <div *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1" class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
+            <div
+              *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1"
+              class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
               <div *ngIf="loadingUsers" class="px-3 py-2 text-xs text-body">Searching…</div>
               <ul *ngIf="!loadingUsers && chooseUsers.length" class="max-h-40 overflow-auto text-sm" role="listbox">
                 <li *ngFor="let user of chooseUsers; let i = index; trackBy: trackByUserName"
-                    (click)="selectedUser(user)"
-                    [id]="'user-option-' + i"
-                    [class.bg-neutral-primary-soft]="i === selectedSuggestionIndex"
-                    [attr.aria-selected]="i === selectedSuggestionIndex"
-                    class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft"
-                    role="option">{{ user.name }}</li>
+                  (click)="selectedUser(user)" [id]="'user-option-' + i"
+                  [class.bg-neutral-primary-soft]="i === selectedSuggestionIndex"
+                  [attr.aria-selected]="i === selectedSuggestionIndex"
+                  class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft" role="option">{{ user.name }}</li>
               </ul>
-              <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed" class="px-3 py-2 text-xs text-body">No matches</div>
+              <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed"
+                class="px-3 py-2 text-xs text-body">No matches</div>
             </div>
           </div>
           <p class="text-sm text-body mb-4">
@@ -58,7 +49,8 @@
         </div>
         <div class="flex justify-end space-x-3 border-t border-default pt-4">
           <button type="submit" class="px-4 py-2 text-sm bg-red-600 text-white rounded-base">Delete</button>
-          <button type="button" (click)="close()" class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
+          <button type="button" (click)="close()"
+            class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
       </form>
 
@@ -67,11 +59,15 @@
         <div class="grid gap-4 py-4">
           <div>
             <label class="block mb-2 text-sm font-medium text-heading" for="create-name">Name</label>
-            <input id="create-name" type="text" [(ngModel)]="formData.name" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Username" required />
+            <input id="create-name" type="text" [(ngModel)]="formData.name" name="name"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+              placeholder="Username" required />
           </div>
           <div>
             <label class="block mb-2 text-sm font-medium text-heading" for="create-password">Password</label>
-            <input id="create-password" type="password" [(ngModel)]="formData.passwordHash" name="passwordHash" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Password" required />
+            <input id="create-password" type="password" [(ngModel)]="formData.passwordHash" name="passwordHash"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+              placeholder="Password" required />
           </div>
           <div class="flex gap-6">
             <label class="flex items-center gap-2 text-sm">
@@ -84,16 +80,17 @@
             </label>
           </div>
           <div>
-           <select [(ngModel)]="formData.groupId" name="groupId"
-                    class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
+            <select [(ngModel)]="formData.groupId" name="groupId"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
               <option [ngValue]="undefined" disabled selected>Select Group</option>
               <option *ngFor="let g of groups" [ngValue]="g.id">{{ g.name }}</option>
             </select>
-          </div>  
+          </div>
         </div>
         <div class="flex items-center space-x-4 border-t border-default pt-4">
           <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Add User</button>
-          <button type="button" (click)="close()" class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
+          <button type="button" (click)="close()"
+            class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
       </form>
 
@@ -102,20 +99,25 @@
         <div class="grid gap-4 py-4">
           <div class="relative">
             <label class="block mb-2 text-sm font-medium text-heading" for="edit-name">Name</label>
-            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)" (keydown)="onNameKeyDown($event)" [attr.aria-activedescendant]="getActiveDescendantId()" aria-autocomplete="list" aria-haspopup="listbox" name="name" class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5" placeholder="Search username" autocomplete="off" required />
+            <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)"
+              (keydown)="onNameKeyDown($event)" [attr.aria-activedescendant]="getActiveDescendantId()"
+              aria-autocomplete="list" aria-haspopup="listbox" name="name"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+              placeholder="Search username" autocomplete="off" required />
             <!-- Suggestions Dropdown -->
-            <div *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1" class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
+            <div
+              *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1"
+              class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
               <div *ngIf="loadingUsers" class="px-3 py-2 text-xs text-body">Searching…</div>
               <ul *ngIf="!loadingUsers && chooseUsers.length" class="max-h-40 overflow-auto text-sm" role="listbox">
                 <li *ngFor="let user of chooseUsers; let i = index; trackBy: trackByUserName"
-                    (click)="selectedUser(user)"
-                    [id]="'user-option-' + i"
-                    [class.bg-neutral-primary-soft]="i === selectedSuggestionIndex"
-                    [attr.aria-selected]="i === selectedSuggestionIndex"
-                    class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft"
-                    role="option">{{ user.name }}</li>
+                  (click)="selectedUser(user)" [id]="'user-option-' + i"
+                  [class.bg-neutral-primary-soft]="i === selectedSuggestionIndex"
+                  [attr.aria-selected]="i === selectedSuggestionIndex"
+                  class="px-3 py-1 cursor-pointer hover:bg-neutral-primary-soft" role="option">{{ user.name }}</li>
               </ul>
-              <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed" class="px-3 py-2 text-xs text-body">No matches</div>
+              <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed"
+                class="px-3 py-2 text-xs text-body">No matches</div>
             </div>
           </div>
           <div class="flex gap-6">
@@ -137,7 +139,8 @@
         </div>
         <div class="flex items-center space-x-4 border-t border-default pt-4">
           <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Save Changes</button>
-          <button type="button" (click)="close()" class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
+          <button type="button" (click)="close()"
+            class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
       </form>
     </div>

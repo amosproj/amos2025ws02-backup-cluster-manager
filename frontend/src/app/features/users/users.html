@@ -1,37 +1,3 @@
-<div class="action-btn">
-  @if (authService.hasPermission(UserPermissionsEnum.UserCreate)) {
-    <button
-      class="flex items-center gap-2 border border-gray-200 cursor-pointer font-small transition-all duration-200 px-6
-  py-3 rounded-lg hover:border-gray-400"
-      type="button"
-      (click)="openAddUserModal('create')"
-    >
-      <img src="/add_user.svg" alt="Add User" class="w-5 h-5"/>
-      Add Users
-    </button>
-  }
-  @if (authService.hasPermission(UserPermissionsEnum.UserUpdate)) {
-    <button
-      class="flex items-center gap-2 border border-gray-200 cursor-pointer font-small transition-all duration-200 px-6 py-3 rounded-lg hover:border-gray-400"
-      type="button"
-      (click)="openAddUserModal('edit')"
-    >
-      <img src="/edit_user.svg" alt="Edit User" class="w-5 h-5"/>
-      Edit Users
-    </button>
-  }
-  @if (authService.hasPermission(UserPermissionsEnum.UserDelete)) {
-    <button
-      class="flex items-center gap-2 border border-gray-200 cursor-pointer font-small transition-all duration-200 px-6 py-3 rounded-lg hover:border-gray-400"
-      type="button"
-      (click)="openAddUserModal('delete')"
-    >
-      <img src="/delete_user.svg" alt="Delete User" class="w-5 h-5"/>
-      Delete Users
-    </button>
-  }
-</div>
-
 <app-users-modal
   [open]="isAddUserModalOpen"
   [mode]="modalMode"
@@ -42,5 +8,17 @@
   [columns]="tableColumns()"
   [filters]="tableFilters()"
   [isNodeButtonEnabled]="false"
-  [showAddButton]="false"
+  
+  [showAddButton]="authService.hasPermission(UserPermissionsEnum.UserCreate)"
+  [addButtonText]="'Add User'"
+  
+  [showEditButton]="authService.hasPermission(UserPermissionsEnum.UserUpdate)"
+  [editButtonText]="'Edit User'"
+  
+  [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.UserDelete)"
+  [deleteButtonText]="'Delete User'"
+
+  (add)="openAddUserModal('create')"
+  (edit)="openAddUserModal('edit')"
+  (deleteSelection)="openAddUserModal('delete')"
 />

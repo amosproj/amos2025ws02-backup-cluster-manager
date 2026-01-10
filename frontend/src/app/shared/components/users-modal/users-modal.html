@@ -44,11 +44,13 @@
           </div>-->
           <p class="text-sm text-body mb-4">
             Are you sure you want to delete user
-            <span class="font-semibold text-heading">{{user.name}}</span>?
+            <span *ngFor="let u of user; let last = last" class="font-semibold text-heading">
+              {{ u.name }}<span *ngIf="!last">, </span>
+            </span> ?
           </p>
         </div>
         <div class="flex justify-end space-x-3 border-t border-default pt-4">
-          <button type="button" class="px-4 py-2 text-sm bg-red-600 text-white rounded-base" (click)="onDeleteSubmit(user.id)">Delete</button>
+          <button type="button" class="px-4 py-2 text-sm bg-red-600 text-white rounded-base" (click)="onDeleteSubmit(user)">Delete</button>
           <button type="button" (click)="close()"
             class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>

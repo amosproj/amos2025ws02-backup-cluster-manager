@@ -144,8 +144,10 @@ export class UsersModal implements OnChanges, OnInit {
     });    
   }
 
-  onDeleteSubmit(id?: number) {
-      const userId = id
+  onDeleteSubmit(users: Array<number> | any) {
+    for (let i of users) {
+      const userId = i.id;
+      console.log("Deleting user ID", userId);
       this.api.delete(`users/${userId}`).subscribe({
         next: () => {
           this.close();
@@ -153,7 +155,7 @@ export class UsersModal implements OnChanges, OnInit {
         error: (err: any) => {
           console.error('Failed to delete user', err);
         }
-      }); 
+      }); }
   }
 
   close() {

@@ -10,6 +10,7 @@ import {authGuard} from './core/guards/auth.guard';
 import {permissionGuard} from './core/guards/permission.guard';
 import UserPermissionsEnum from './shared/types/Permissions';
 import { Clients } from './features/clients/clients';
+import {Permissions} from './features/permissions/permissions';
 
 export const routes: Routes = [
   {
@@ -59,6 +60,12 @@ export const routes: Routes = [
     component: Tasks,
     title: 'Tasks',
     canActivate: [authGuard, permissionGuard(UserPermissionsEnum.TaskRead)],
+  },
+  {
+    path: 'permissions',
+    component: Permissions,
+    title: 'Permissions',
+    canActivate: [authGuard, permissionGuard(UserPermissionsEnum.PermissionRead)],
   },
   {
     path: '**',

@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.cluster_manager.model.api.RolePermissionDTO;
+import com.bcm.shared.config.permissions.Permission;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.sort.RoleComparators;
@@ -20,7 +21,7 @@ public class PermissionService implements PaginationProvider<RolePermissionDTO> 
                 .map(role -> {
                     RolePermissionDTO pv = new RolePermissionDTO();
                     pv.setRole(role.name());
-                    pv.setPermissions(String.join(", ", role.getPermissions().toString()));
+                    pv.setPermissions(role.getPermissions().stream().sorted().map(Permission::getPermission).collect(Collectors.joining(", ")));
                     return pv;
                 })
                 .collect(Collectors.toList());

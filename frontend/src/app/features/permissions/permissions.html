@@ -1,1 +1,9 @@
-<p>permissions works!</p>
+<app-data-table
+  #permissionTable
+  [fetchData]="fetchNodes"
+  [columns]="tableColumns()"
+  [filters]="tableFilters()"
+  [showAddButton]="false"
+  [showDeleteButton]="false"
+  [showToggleButton]="false"
+/>

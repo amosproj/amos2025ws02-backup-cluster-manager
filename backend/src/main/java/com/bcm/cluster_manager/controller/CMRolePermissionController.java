@@ -5,16 +5,11 @@ import com.bcm.cluster_manager.model.api.BigClientDTO;
 import com.bcm.cluster_manager.model.api.RolePermissionDTO;
 import com.bcm.cluster_manager.service.PermissionService;
 import com.bcm.shared.config.permissions.Permission;
-import com.bcm.shared.config.permissions.Role;
-import com.bcm.shared.model.database.Group;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
-import com.bcm.shared.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

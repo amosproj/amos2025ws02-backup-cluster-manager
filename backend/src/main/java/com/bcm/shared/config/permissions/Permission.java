@@ -1,6 +1,11 @@
 package com.bcm.shared.config.permissions;
 
 public enum Permission {
+
+    // Permissions
+
+    PERMISSION_READ("permission:read"),
+
     // Users
     USER_READ("user:read"),
     USER_CREATE("user:create"),
@@ -42,6 +47,10 @@ public enum Permission {
 
     // Static constants for use in Annotations
     public static class Require {
+        // Permissions
+
+        public static final String PERMISSION_READ = "hasAuthority('permission:read')";
+
         // Users
         public static final String USER_READ = "hasAuthority('user:read')";
         public static final String USER_CREATE = "hasAuthority('user:create')";

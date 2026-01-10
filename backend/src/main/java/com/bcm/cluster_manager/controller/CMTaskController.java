@@ -11,6 +11,7 @@ import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class CMTaskController {
 
     @PreAuthorize(Permission.Require.TASK_READ)
     @GetMapping("/tasks")
-    public PaginationResponse<BigTaskDTO> getTasks(PaginationRequest pagination) {
+    public Mono<PaginationResponse<BigTaskDTO>> getTasks(PaginationRequest pagination) {
         return CMTaskService.getPaginatedItems(pagination);
     }
 

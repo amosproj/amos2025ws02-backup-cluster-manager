@@ -8,6 +8,7 @@ import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -19,21 +20,15 @@ public class TaskController {
     TaskService taskService;
 
     @GetMapping("/tasks")
-    public List<TaskDTO> getTasks(PaginationRequest pagination) {
+    public Mono<List<TaskDTO>> getTasks(PaginationRequest pagination) {
         return taskService.getAllTasks();
     }
 
     @PostMapping("/task")
-    public TaskDTO createTask(@RequestBody TaskDTO taskDTO) {
-        //System.out.println("Received task create request: {}" + taskDTO);
-
+    public Mono<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) {
         Task task = toEntity(taskDTO);
-        if (task.getClientId() == null) {
-            throw new IllegalArgumentException("clientId must not be null");
-        }
-
+        if (task.getClientId() == null) return Mono.error(new IllegalArgumentException("clientId must not be null"));
         return taskService.createTask(task);
-
     }
 
     private Task toEntity(TaskDTO taskDTO) {

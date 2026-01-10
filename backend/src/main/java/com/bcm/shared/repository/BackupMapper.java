@@ -1,155 +1,68 @@
 package com.bcm.shared.repository;
 
 import com.bcm.shared.model.database.Backup;
-import org.apache.ibatis.annotations.*;
+import org.springframework.data.r2dbc.repository.Modifying;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
-import java.util.List;
 
 
-public interface BackupMapper {
+public interface BackupMapper extends ReactiveCrudRepository<Backup,Long> {
 
-    @Select("""
-                SELECT
-                    id,
-                    client_id AS clientId,
-                    task_id AS taskId,
-                    start_time AS startTime,
-                    stop_time AS stopTime,
-                    size_bytes AS sizeBytes,
-                    state,
-                    message,
-                    created_at AS createdAt
-                FROM backups
-                WHERE id = #{id}
-                """)
-    Backup findById(Long id);
 
-    @Select("""
-            SELECT
-                id,
-                client_id AS clientId,
-                task_id AS taskId,
-                start_time AS startTime,
-                stop_time AS stopTime,
-                size_bytes AS sizeBytes,
-                state,
-                message,
-                created_at AS createdAt
-            FROM backups
-            WHERE client_id = #{clientId}
-            ORDER BY start_time DESC
-            """)
-    List<Backup> findByClient(Long clientId);
+    @Query("""
+    SELECT id, client_id, task_id, start_time, stop_time, size_bytes, state, message, created_at
+    FROM backups
+    WHERE client_id = :clientId
+    ORDER BY start_time DESC
+    """)
+    Flux<Backup> findByClient(Long clientId);
 
-    @Select("""
-            SELECT
-                id,
-                client_id AS clientId,
-                task_id AS taskId,
-                start_time AS startTime,
-                stop_time AS stopTime,
-                size_bytes AS sizeBytes,
-                state,
-                message,
-                created_at AS createdAt
-            FROM backups
-            WHERE task_id = #{taskId}
-            ORDER BY start_time DESC
-            """)
-    List<Backup> findByTask(Long taskId);
+    @Query("""
+    SELECT id, client_id, task_id, start_time, stop_time, size_bytes, state, message, created_at
+    FROM backups
+    WHERE task_id = :taskId
+    ORDER BY start_time DESC
+    """)
+    Flux<Backup> findByTask(Long taskId);
 
-    @Select("""
-            SELECT
-                id,
-                client_id AS clientId,
-                task_id AS taskId,
-                start_time AS startTime,
-                stop_time AS stopTime,
-                size_bytes AS sizeBytes,
-                state,
-                message,
-                created_at AS createdAt
-            FROM backups
-            WHERE state = #{state}
-            ORDER BY start_time DESC
-            """)
-    List<Backup> findByState(String state);
+    @Query("""
+    SELECT id, client_id, task_id, start_time, stop_time, size_bytes, state, message, created_at
+    FROM backups
+    WHERE state = CAST(:state AS backup_state)
+    ORDER BY start_time DESC
+    """)
+    Flux<Backup> findByState(String state);
 
-    //get All
-    @Select("""
-            SELECT
-                id,
-                client_id AS clientId,
-                task_id AS taskId,
-                start_time AS startTime,
-                stop_time AS stopTime,
-                size_bytes AS sizeBytes,
-                state,
-                message,
-                created_at AS createdAt
-            FROM backups
-            ORDER BY start_time DESC
-            """)
-    List<Backup> findAll();
 
-    @Select("""
-            SELECT
-                id,
-                client_id AS clientId,
-                task_id AS taskId,
-                start_time AS startTime,
-                stop_time AS stopTime,
-                size_bytes AS sizeBytes,
-                state,
-                message,
-                created_at AS createdAt
-            FROM backups
-            WHERE start_time BETWEEN #{from} AND #{to}
-            ORDER BY start_time DESC
-            """)
-    List<Backup> findBetween(Instant from, Instant to);
+    @Query("""
+    SELECT id, client_id, task_id, start_time, stop_time, size_bytes, state, message, created_at
+    FROM backups
+    WHERE start_time BETWEEN :from AND :to
+    ORDER BY start_time DESC
+    """)
+    Flux<Backup> findBetween(Instant from, Instant to);
 
-    @Insert("""
-            INSERT INTO backups (
-                client_id,
-                task_id,
-                start_time,
-                stop_time,
-                size_bytes,
-                state,
-                message,
-                created_at
-            ) VALUES (
-                #{clientId},
-                #{taskId},
-                #{startTime},
-                #{stopTime},
-                #{sizeBytes},
-                #{state}::backup_state,
-                #{message},
-                #{createdAt}
-            )
-            """)
-    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
-    int insert(Backup b);
+    @Modifying
+    @Query("""
+    INSERT INTO backups (client_id, task_id, start_time, stop_time, size_bytes, state, message, created_at)
+    VALUES (:#{#backup.clientId}, :#{#backup.taskId}, :#{#backup.startTime}, :#{#backup.stopTime}, 
+            :#{#backup.sizeBytes}, CAST(:#{#backup.state} AS backup_state), :#{#backup.message}, :#{#backup.createdAt})
+    """)
+    Mono<Integer> insert(Backup backup);
 
-    @Update("""
-            UPDATE backups SET
-                client_id = #{clientId},
-                task_id = #{taskId},
-                start_time = #{startTime},
-                stop_time = #{stopTime},
-                size_bytes = #{sizeBytes},
-                state = #{state}::backup_state,
-                message = #{message}
-            WHERE id = #{id}
-            """)
-    int update(Backup b);
 
-    @Delete("""
-                DELETE FROM backups
-                WHERE id = #{id}
-                """)
-    int delete(Long id);
+    @Modifying
+    @Query("""
+    UPDATE backups SET client_id = :#{#backup.clientId}, task_id = :#{#backup.taskId}, 
+           start_time = :#{#backup.startTime}, stop_time = :#{#backup.stopTime}, 
+           size_bytes = :#{#backup.sizeBytes}, state = CAST(:#{#backup.state} AS backup_state), 
+           message = :#{#backup.message}
+    WHERE id = :#{#backup.id}
+    """)
+    Mono<Integer> update(Backup b);
+
 }

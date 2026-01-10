@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class CMClientController {
 
     @PreAuthorize(Permission.Require.CLIENT_READ)
     @GetMapping("/clients")
-    public PaginationResponse<BigClientDTO> getClients(PaginationRequest pagination) {
+    public Mono<PaginationResponse<BigClientDTO>> getClients(PaginationRequest pagination) {
         return CMclientService.getPaginatedItems(pagination);
     }
 

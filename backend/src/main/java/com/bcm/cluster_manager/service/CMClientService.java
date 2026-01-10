@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -71,29 +72,33 @@ public class CMClientService implements PaginationProvider<BigClientDTO> {
     }
 
     @Override
-    public List<BigClientDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
-        List<BigClientDTO> allClients = (getAllClients());
+    public Mono<List<BigClientDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
+        return Mono.fromSupplier(() -> {
+            List<BigClientDTO> allClients = getAllClients();
 
-        List<BigClientDTO> filtered = applyFilters(allClients, filter);
-        List<BigClientDTO> searched = applySearch(filtered, filter);
-        List<BigClientDTO> sorted = SortProvider.sort(
-                searched,
-                filter.getSortBy(),
-                filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
-                BigClientComparators.COMPARATORS);
-        int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
-        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
-        if (fromIndex >= toIndex) {
-            return new ArrayList<>();
-        }
-        return sorted.subList(fromIndex, toIndex);
+            List<BigClientDTO> filtered = applyFilters(allClients, filter);
+            List<BigClientDTO> searched = applySearch(filtered, filter);
+            List<BigClientDTO> sorted = SortProvider.sort(
+                    searched,
+                    filter.getSortBy(),
+                    filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
+                    BigClientComparators.COMPARATORS
+            );
+
+            int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
+            int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+            if (fromIndex >= toIndex) return List.of();
+
+            return sorted.subList(fromIndex, toIndex);
+        });
     }
 
     @Override
-    public long getTotalItemsCount(Filter filter) {
-        List<BigClientDTO> base = (getAllClients());
-        return applySearch(applyFilters(base, filter), filter).size();
-    }
+    public Mono<Long> getTotalItemsCount(Filter filter) {
+        return Mono.fromSupplier(() -> {
+            List<BigClientDTO> base = getAllClients();
+            return (long) applySearch(applyFilters(base, filter), filter).size();
+        });    }
 
     private List<BigClientDTO> applyFilters(List<BigClientDTO> clients, Filter filter) {
         if (filter == null || filter.getFilters() == null || filter.getFilters().isEmpty()) {

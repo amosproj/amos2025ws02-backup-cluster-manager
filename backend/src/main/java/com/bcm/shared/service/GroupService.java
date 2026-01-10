@@ -6,6 +6,7 @@ import com.bcm.shared.model.database.Group;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,13 +21,13 @@ public class GroupService {
     }
 
     @Transactional
-    public Group getGroupById(Long id) {
+    public Mono<Group> getGroupById(Long id) {
         return groupMapper.findById(id);
     }
 
     @Transactional
-    public List<Group> getAllGroups() {
-        return groupMapper.findAll();
+    public Mono<List<Group>> getAllGroups() {
+        return groupMapper.findAllGroups().collectList();
     }
 
     /**
@@ -52,27 +53,23 @@ public class GroupService {
      * @return list of groups with lower rank
      */
     @Transactional
-    public List<Group> getAllGroupsWithRankCheck(int requesterRank) {
-        return groupMapper.findAll().stream()
-                .filter(group -> group.isEnabled())
+    public Mono<List<Group>> getAllGroupsWithRankCheck(int requesterRank) {
+        return groupMapper.findAll()
+                .filter(Group::isEnabled)
                 .filter(group -> getGroupRank(group) < requesterRank)
-                .collect(Collectors.toList());
+                .collectList();
     }
 
-    @Transactional
-    public Group addGroup(Group group) {
-        groupMapper.insert(group);
-        return groupMapper.findById(group.getId());
+    public Mono<Group> addGroup(Group group) {
+        return groupMapper.save(group);
     }
 
-    @Transactional
-    public Group editGroup(Group group) {
-        groupMapper.update(group);
-        return groupMapper.findById(group.getId());
+    public Mono<Group> editGroup(Group group) {
+        return groupMapper.save(group);
     }
 
-    @Transactional
-    public boolean deleteGroup(Long id) {
-        return groupMapper.delete(id) == 1;
+    public Mono<Boolean> deleteGroup(Long id) {
+        return groupMapper.deleteById(id).thenReturn(true);
+
     }
 }

@@ -7,6 +7,7 @@ import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.List;
@@ -19,7 +20,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/userlist")
-    public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination){
+    public Mono<PaginationResponse<UserDTO>> getUsers(PaginationRequest pagination){
         return userService.getPaginatedItems(pagination);
     }
 

@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class CMGroupController {
     }
 
     @GetMapping("/groups")
-    public List<Group> getGroups() {
+    public Mono<List<Group>> getGroups() {
         int requesterRank = getCurrentUserRank();
         return groupService.getAllGroupsWithRankCheck(requesterRank);
     }

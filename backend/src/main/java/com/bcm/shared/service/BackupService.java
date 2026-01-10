@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import com.bcm.shared.mapper.BackupConverter;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,60 +28,46 @@ public class BackupService {
     }
 
 
-    public BackupDTO findBackupById(Long id) {
-        return toDTO(backupMapper.findById(id));
+    public Mono<BackupDTO> findBackupById(Long id) {
+        return backupMapper.findById(id)
+                .map(BackupConverter::toDTO);
     }
-    public List<BackupDTO> getAllBackups() {
-        try {
-            List<Backup> backups = backupMapper.findAll();
-            if (backups == null || backups.isEmpty()) {
-                return List.of();
-            }
-            return backups.stream()
-                    .map(BackupConverter::toDTO)
-                    .collect(Collectors.toList());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return List.of();
-        }
+    public Mono<List<BackupDTO>> getAllBackups() {
+        return backupMapper.findAll()
+                .map(BackupConverter::toDTO)
+                .collectList()
+                .onErrorReturn(List.of());
     }
 
-    public void deleteBackup(Long backupId) {
-        backupMapper.delete(backupId);
+    public Mono<Void> deleteBackup(Long backupId) {
+        return backupMapper.deleteById(backupId);
     }
 
-    public void executeBackupSync(Long id, ExecuteBackupRequest request) {
-        // Mock implementation: In a real scenario, this would trigger the backup process.
-        // wait request.getDuration() and then return
+    public Mono<Void> executeBackupSync(Long id, ExecuteBackupRequest request) {
         long now = System.currentTimeMillis();
 
-         try {
-            Backup backup = backupMapper.findById(id);
-
-            backup.setState(BackupState.QUEUED);
-
-            backupMapper.update(backup);
-
-            Thread.sleep(request.getDuration());
-
-            if (request.getShouldSucceed()){
-                backup.setState(BackupState.COMPLETED);
-                backup.setMessage("Backup completed successfully.");
-            } else {
-                backup.setState(BackupState.FAILED);
-                backup.setMessage("Backup failed due to an error.");
-            }
-            backup.setStopTime(Instant.ofEpochMilli(now + request.getDuration()));
-            backupMapper.update(backup);
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
+        return backupMapper.findById(id)
+                .flatMap(backup -> {
+                    backup.setState(BackupState.QUEUED);
+                    return backupMapper.save(backup);
+                })
+                .then(Mono.delay(Duration.ofMillis(request.getDuration())))
+                .then(backupMapper.findById(id))
+                .flatMap(backup -> {
+                    if (request.getShouldSucceed()) {
+                        backup.setState(BackupState.COMPLETED);
+                        backup.setMessage("Backup completed successfully.");
+                    } else {
+                        backup.setState(BackupState.FAILED);
+                        backup.setMessage("Backup failed due to an error.");
+                    }
+                    backup.setStopTime(Instant.ofEpochMilli(now + request.getDuration()));
+                    return backupMapper.save(backup);
+                })
+                .then();
     }
 
-    public BackupDTO store(Long clientId, Long taskId, Long sizeBytes) {
+    public Mono<BackupDTO> store(Long clientId, Long taskId, Long sizeBytes) {
         Backup backup = new Backup();
         backup.setClientId(clientId);
         backup.setTaskId(taskId);
@@ -88,10 +77,8 @@ public class BackupService {
         backup.setMessage(null);
         backup.setCreatedAt(Instant.now());
 
-        backupMapper.insert(backup);
-
-        return toDTO(backup);
-
+        return backupMapper.save(backup)
+                .map(BackupConverter::toDTO);
     }
 
 }

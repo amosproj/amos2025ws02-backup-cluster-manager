@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.List;
@@ -46,7 +47,7 @@ public class CMUserController {
 
     @PreAuthorize(Permission.Require.USER_READ)
     @GetMapping("/userlist")
-    public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination){
+    public Mono<PaginationResponse<UserDTO>> getUsers(PaginationRequest pagination){
         return userService.getPaginatedItems(pagination);
     }
 

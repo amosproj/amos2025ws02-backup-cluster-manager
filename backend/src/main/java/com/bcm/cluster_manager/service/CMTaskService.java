@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -36,31 +37,35 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
 
 
     @Override
-    public long getTotalItemsCount(Filter filter) {
+    public Mono<Long> getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
-        List<BigTaskDTO> base = (getAllTasks());
-        return applySearch(applyFilters(base, filter), filter).size();
+        return Mono.fromSupplier(() -> {
+            List<BigTaskDTO> base = getAllTasks();
+            return (long) applySearch(applyFilters(base, filter), filter).size();
+        });
 
     }
 
     @Override
-    public List<BigTaskDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
-        List<BigTaskDTO> allBackups = (getAllTasks());
+    public Mono<List<BigTaskDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
+        return Mono.fromSupplier(() -> {
+            List<BigTaskDTO> allTasks = getAllTasks();
 
-        List<BigTaskDTO> filtered = applyFilters(allBackups, filter);
-        List<BigTaskDTO> searched = applySearch(filtered, filter);
-        List<BigTaskDTO> sorted = SortProvider.sort(
-                searched,
-                filter.getSortBy(),
-                filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
-                BigTaskComparators.COMPARATORS
-        );
-        int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
-        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
-        if (fromIndex >= toIndex) {
-            return new ArrayList<>();
-        }
-        return sorted.subList(fromIndex, toIndex);
+            List<BigTaskDTO> filtered = applyFilters(allTasks, filter);
+            List<BigTaskDTO> searched = applySearch(filtered, filter);
+            List<BigTaskDTO> sorted = SortProvider.sort(
+                    searched,
+                    filter.getSortBy(),
+                    filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
+                    BigTaskComparators.COMPARATORS
+            );
+
+            int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
+            int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+            if (fromIndex >= toIndex) return List.of();
+
+            return sorted.subList(fromIndex, toIndex);
+        });
     }
 
     public List<BigTaskDTO> getAllTasks() {

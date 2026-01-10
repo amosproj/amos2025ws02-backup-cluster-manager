@@ -24,7 +24,7 @@ public class CMBackupController {
     @PreAuthorize(Permission.Require.BACKUP_DELETE)
     @DeleteMapping("/backups/{id}")
     public Mono<ResponseEntity<Void>> deleteBackup(@PathVariable Long id, @RequestParam("nodeAddress") String nodeAddress) {
-        return Mono.fromRunnable(() -> CMBackupService.deleteBackup(id, nodeAddress))
+        return CMBackupService.deleteBackup(id, nodeAddress)
                 .thenReturn(ResponseEntity.noContent().<Void>build())
                 .onErrorResume(e -> {
                     e.printStackTrace();
@@ -32,29 +32,16 @@ public class CMBackupController {
                 });
     }
 
-    /*
-    @PostMapping("/backups/{id}/execute")
-    public ResponseEntity<Void> executeBackup(@PathVariable Long id, @RequestBody ExecuteBackupRequest req) {
-        try {
-            CMBackupService.executeBackup(id, req.getDuration(), req.getShouldSucceed());
-            return ResponseEntity.accepted().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    */
-
     @PreAuthorize(Permission.Require.BACKUP_READ)
     @GetMapping("/backups")
     public Mono<PaginationResponse<BigBackupDTO>> getBackups(PaginationRequest pagination) {
-        return Mono.fromSupplier(() -> CMBackupService.getPaginatedItems(pagination));
+        return CMBackupService.getPaginatedItems(pagination);
     }
 
     @PreAuthorize(Permission.Require.BACKUP_CREATE)
     @PostMapping("/backups")
     public Mono<ResponseEntity<BigBackupDTO>> createBackup(@RequestBody BigBackupDTO request) {
-        return Mono.fromSupplier(() -> CMBackupService.createBackup(request))
+        return CMBackupService.createBackup(request)
                 .map(result -> ResponseEntity.status(HttpStatus.CREATED).body(result))
                 .onErrorResume(e -> {;
                     e.printStackTrace();

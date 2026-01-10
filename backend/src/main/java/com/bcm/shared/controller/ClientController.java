@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -18,10 +19,12 @@ public class ClientController {
     ClientService clientService;
 
     @GetMapping("/clients")
-    public List<ClientDTO> getClients() {
-        return clientService.getAllClients().stream()
-                .map(this::toDto)
-                .toList();
+    public Mono<List<ClientDTO>> getClients() {
+        return clientService.getAllClients()
+                .map(clients -> clients.stream()
+                        .map(this::toDto)
+                        .toList()
+                );
     }
 
     private ClientDTO toDto(Client client) {

@@ -17,6 +17,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.List;
@@ -304,7 +305,7 @@ public class UserService implements PaginationProvider<UserDTO> {
     }
 
     @Override
-    public long getTotalItemsCount(Filter filter) {
+    public Mono<Long> getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
         Boolean isUserEnabled = getUserFilter(filter);
         return userMapper.getTotalCount(filter.getSearch(), isUserEnabled);
@@ -312,8 +313,9 @@ public class UserService implements PaginationProvider<UserDTO> {
     }
 
     @Override
-    public List<UserDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
+    public Mono<List<UserDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
         // Add SQL query with filter and pagination to get the actual items
+
         Boolean isUserEnabled = getUserFilter(filter);
 
         List<User> users = userMapper.getPaginatedAndFilteredUsers(page, itemsPerPage, filter.getSearch(), filter.getSortBy(), filter.getSortOrder(), isUserEnabled);

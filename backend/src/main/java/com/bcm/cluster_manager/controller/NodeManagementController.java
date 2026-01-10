@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class NodeManagementController {
 
     @PreAuthorize(Permission.Require.NODE_READ)
     @GetMapping("/nodes")
-    public PaginationResponse<NodeDTO> getNodes(PaginationRequest pagination) {
+    public Mono<PaginationResponse<NodeDTO>> getNodes(PaginationRequest pagination) {
         return nodeManagementService.getPaginatedItems(pagination);
     }
 

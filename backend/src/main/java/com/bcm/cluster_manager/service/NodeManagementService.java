@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,30 +38,36 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
     private SyncService syncService;
 
     @Override
-    public long getTotalItemsCount(Filter filter) {
+    public Mono<Long> getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
-        List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
-        List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
-        List<NodeDTO> filtered = applySearch(filteredNodes, filter);
-
-        return filtered.size();
-    }
+        return Mono.fromSupplier(() -> {
+            List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
+            List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
+            List<NodeDTO> filtered = applySearch(filteredNodes, filter);
+            return (long) filtered.size();
+        });    }
 
     @Override
-    public List<NodeDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
+    public Mono<List<NodeDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
         // Add SQL query with filter and pagination to get the actual items
-        List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
-        List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
-        List<NodeDTO> filtered = applySearch(filteredNodes, filter);
-        List<NodeDTO> sorted = SortProvider.sort(filtered, filter.getSortBy(), filter.getSortOrder().toString(), NodeComparators.COMPARATORS);
-        // Pagination
-        int fromIndex = (int) ((page - 1) * itemsPerPage);
-        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
-        if (fromIndex > toIndex) {
-            return new ArrayList<>();
-        }
-        sorted = sorted.subList(fromIndex, toIndex);
-        return sorted;
+        return Mono.fromSupplier(() -> {
+            List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
+            List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
+            List<NodeDTO> filtered = applySearch(filteredNodes, filter);
+
+            List<NodeDTO> sorted = SortProvider.sort(
+                    filtered,
+                    filter.getSortBy(),
+                    filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
+                    NodeComparators.COMPARATORS
+            );
+
+            int fromIndex = (int) ((page - 1) * itemsPerPage);
+            int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+            if (fromIndex >= toIndex) return List.of();
+
+            return sorted.subList(fromIndex, toIndex);
+        });
     }
 
     private List<NodeDTO> applyFilters(List<NodeDTO> nodes, Filter filter) {

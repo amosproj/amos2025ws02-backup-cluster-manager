@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,42 +36,39 @@ public class TaskService implements PaginationProvider<TaskDTO> {
      */
 
     @Override
-    public long getTotalItemsCount(Filter filter) {
+    public Mono<Long> getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
-        List<TaskDTO> base = (getAllTasks());
-        return applySearch(applyFilters(base, filter), filter).size();
-
+        return getAllTasks()
+                .map(list -> (long) applySearch(applyFilters(list, filter), filter).size());
     }
 
     @Override
-    public List<TaskDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
-        List<TaskDTO> allBackups = (getAllTasks());
+    public Mono<List<TaskDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
 
-        List<TaskDTO> filtered = applyFilters(allBackups, filter);
-        List<TaskDTO> searched = applySearch(filtered, filter);
-        List<TaskDTO> sorted = SortProvider.sort(
-                searched,
-                filter.getSortBy(),
-                filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
-                TaskComparators.COMPARATORS
-        );
-        int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
-        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
-        if (fromIndex >= toIndex) {
-            return new ArrayList<>();
-        }
-        return sorted.subList(fromIndex, toIndex);
+        return getAllTasks()
+                .map(allTasks -> {
+
+                    List<TaskDTO> filtered = applyFilters(allTasks, filter);
+                    List<TaskDTO> searched = applySearch(filtered, filter);
+                    List<TaskDTO> sorted = SortProvider.sort(
+                            searched,
+                            filter.getSortBy(),
+                            filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
+                            TaskComparators.COMPARATORS
+                    );
+                    int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
+                    int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+                    if (fromIndex >= toIndex) {
+                        return new ArrayList<>();
+                    }
+                    return sorted.subList(fromIndex, toIndex);
+                });
     }
 
-    public List<TaskDTO> getAllTasks() {
-        List<Task> tasks = taskMapper.findAll();
-        List<TaskDTO> taskDTOS = new ArrayList<>();
-
-        for (Task task : tasks) {
-            taskDTOS.add(toDto(task));
-        }
-        return taskDTOS;
-
+    public Mono<List<TaskDTO>> getAllTasks() {
+        return taskMapper.findAllTasks()
+                .map(this::toDto)
+                .collectList();
     }
 
     // Filters by BackupState parsed from filter.getFilters()
@@ -124,28 +122,24 @@ public class TaskService implements PaginationProvider<TaskDTO> {
      */
 
     @Transactional
-    public TaskDTO createTask(Task task) {
+    public Mono<TaskDTO> createTask(Task task) {
         //System.out.println("Creating task for clientId={}" + task.getClientId());
 
-        if (clientService.getClientById(task.getClientId()) != null) {
-            taskMapper.insert(task);
-            Task loaded = taskMapper.findById(task.getId());
-            return toDto(loaded);
-        }
-
-        //System.out.println("Client {} not found; not creating task" + task.getClientId());
-        return null;
+        return clientService.getClientById(task.getClientId())
+                .flatMap(client ->
+                        taskMapper.save(task).map(this::toDto)
+                )
+                .switchIfEmpty(Mono.empty());
     }
 
     @Transactional
-    public Task editTask(Task task) {
-        taskMapper.update(task);
-        return taskMapper.findById(task.getId());
+    public Mono<Task> editTask(Task task) {
+        return taskMapper.save(task);
     }
 
     @Transactional
-    public boolean deleteTask(Long taskId) {
-        return taskMapper.delete(taskId) == 1;
+    public Mono<Void> deleteTask(Long taskId) {
+        return taskMapper.deleteById(taskId);
     }
 
 

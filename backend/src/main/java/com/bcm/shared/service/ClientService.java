@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -19,34 +20,29 @@ public class ClientService {
     }
 
     @Transactional
-    public Client getClientById(Long id) {
+    public Mono<Client> getClientById(Long id) {
         return clientMapper.findById(id);
     }
 
     @Transactional
-    public Client getClientByNameOrIp(String nameOrIp) {
+    public Mono<Client> getClientByNameOrIp(String nameOrIp) {
         return clientMapper.findByNameOrIp(nameOrIp);
     }
 
     @Transactional
-    public List<Client> getAllClients() {
-        return clientMapper.findAll();
+    public Mono<List<Client>> getAllClients() {
+        return clientMapper.findAll().collectList();
     }
 
-    @Transactional
-    public Client addClient(Client client) {
-        clientMapper.insert(client);
-        return clientMapper.findById(client.getId());
+    public Mono<Client> addClient(Client client) {
+        return clientMapper.save(client);
     }
 
-    @Transactional
-    public Client editClient(Client client) {
-        clientMapper.update(client);
-        return clientMapper.findById(client.getId());
+    public Mono<Client> editClient(Client client) {
+        return clientMapper.save(client);
     }
 
-    @Transactional
-    public boolean deleteClient(Long id) {
-        return clientMapper.delete(id) == 1;
+    public Mono<Void> deleteClient(Long id) {
+        return clientMapper.deleteById(id);
     }
 }

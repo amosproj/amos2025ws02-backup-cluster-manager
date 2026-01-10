@@ -1,13 +1,15 @@
 <app-users-modal
   [open]="isAddUserModalOpen"
   [mode]="modalMode"
-  (closed)="isAddUserModalOpen = false"
+  [user]="selectedUser"
+  (closed)="onModalClosed()"
 ></app-users-modal>
 <app-data-table
   [fetchData]="fetchUsers"
   [columns]="tableColumns()"
   [filters]="tableFilters()"
   [isNodeButtonEnabled]="false"
+  [refreshTrigger]="refreshTrigger()"
   
   [showAddButton]="authService.hasPermission(UserPermissionsEnum.UserCreate)"
   [addButtonText]="'Add User'"
@@ -19,6 +21,6 @@
   [deleteButtonText]="'Delete User'"
 
   (add)="openAddUserModal('create')"
-  (edit)="openAddUserModal('edit')"
-  (deleteSelection)="openAddUserModal('delete')"
+  (edit)="openModifyUserModal('edit', $event)"
+  (deleteSelection)="openModifyUserModal('delete', $event[0])"
 />

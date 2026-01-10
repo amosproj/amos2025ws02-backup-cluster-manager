@@ -17,16 +17,16 @@
       </div>
 
       <!-- Delete Confirmation -->
-      <form *ngIf="mode === 'delete'" (ngSubmit)="onDeleteSubmit()">
+      <div *ngIf="mode === 'delete'" >
         <div class="py-4">
-          <div class="relative">
+          <!--<div class="relative">
             <label class="block mb-2 text-sm font-medium text-heading" for="edit-name">Name</label>
             <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)"
               (keydown)="onNameKeyDown($event)" [attr.aria-activedescendant]="getActiveDescendantId()"
               aria-autocomplete="list" aria-haspopup="listbox" name="name"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Search username" autocomplete="off" required />
-            <!-- Suggestions Dropdown -->
+            \\ Suggestions Dropdown 
             <div
               *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1"
               class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
@@ -41,19 +41,18 @@
               <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed"
                 class="px-3 py-2 text-xs text-body">No matches</div>
             </div>
-          </div>
+          </div>-->
           <p class="text-sm text-body mb-4">
             Are you sure you want to delete user
-            <span class="font-semibold text-heading">{{ user?.name }}</span>?
+            <span class="font-semibold text-heading">{{user.name}}</span>?
           </p>
         </div>
         <div class="flex justify-end space-x-3 border-t border-default pt-4">
-          <button type="submit" class="px-4 py-2 text-sm bg-red-600 text-white rounded-base">Delete</button>
+          <button type="button" class="px-4 py-2 text-sm bg-red-600 text-white rounded-base" (click)="onDeleteSubmit(user.id)">Delete</button>
           <button type="button" (click)="close()"
             class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
-      </form>
-
+      </div>
       <!-- Create Form -->
       <form *ngIf="mode === 'create'" (ngSubmit)="onCreateSubmit()">
         <div class="grid gap-4 py-4">
@@ -95,16 +94,16 @@
       </form>
 
       <!-- Edit Form -->
-      <form *ngIf="mode === 'edit'" (ngSubmit)="onEditSubmit()">
+      <div *ngIf="mode === 'edit'" >
         <div class="grid gap-4 py-4">
-          <div class="relative">
+          <!--<div class="relative">
             <label class="block mb-2 text-sm font-medium text-heading" for="edit-name">Name</label>
             <input id="edit-name" type="text" [(ngModel)]="formData.name" (input)="onNameInput($event.target.value)"
               (keydown)="onNameKeyDown($event)" [attr.aria-activedescendant]="getActiveDescendantId()"
               aria-autocomplete="list" aria-haspopup="listbox" name="name"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Search username" autocomplete="off" required />
-            <!-- Suggestions Dropdown -->
+            // Suggestions Dropdown 
             <div
               *ngIf="(chooseUsers.length || loadingUsers || usersSearchPerformed) && formData.name && formData.name.length >= 1"
               class="absolute left-0 right-0 mt-1 border border-default-medium rounded-base bg-neutral-secondary-medium shadow-lg z-10">
@@ -119,7 +118,8 @@
               <div *ngIf="!loadingUsers && !chooseUsers.length && usersSearchPerformed"
                 class="px-3 py-2 text-xs text-body">No matches</div>
             </div>
-          </div>
+          </div>-->
+            <span class="font-semibold text-heading">{{ user.name }}</span>
           <div class="flex gap-6">
             <label class="flex items-center gap-2 text-sm">
               <input type="radio" [(ngModel)]="formData.enabled" name="enabled" [value]="false" />
@@ -138,11 +138,11 @@
           </div>-->
         </div>
         <div class="flex items-center space-x-4 border-t border-default pt-4">
-          <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Save Changes</button>
+          <button type="button" class="px-4 py-2.5 bg-brand text-white rounded-base" (click)="onEditSubmit(user.id)">Save Changes</button>
           <button type="button" (click)="close()"
             class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>

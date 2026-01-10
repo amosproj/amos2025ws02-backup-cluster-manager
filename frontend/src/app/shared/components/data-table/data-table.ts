@@ -52,6 +52,7 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
   @Input() rowActions: TemplateRef<any> | null = null;
   @Input() addButtonTemplate: TemplateRef<unknown> | null = null;
   @Input() editButtonTemplate: TemplateRef<unknown> | null = null;
+  @Input() refreshTrigger: number = 0;
 
   @Output() add = new EventEmitter<void>();
   @Output() edit = new EventEmitter<void>();
@@ -180,6 +181,11 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
     }
     if (changes['deleteButtonText'] && !changes['deleteButtonText'].firstChange) {
       this.currentDeleteButtonText = this.deleteButtonText;
+    }
+    if (changes['refreshTrigger'] && !changes['refreshTrigger'].firstChange) {
+      this.currentPage = 1;
+      this.selectedIds.clear();
+      this.loadData();
     }
   }
 

@@ -128,8 +128,9 @@ export class UsersModal implements OnChanges, OnInit {
     this.selectedSuggestionIndex = -1;
   }
 
-  onEditSubmit() {
+  onEditSubmit(id?: number) {
     this.user = this.formData;
+    this.user.id = id;
     const payload = { ...this.user };
     payload.passwordHash = undefined; // only include if set
     console.log("payload", payload);
@@ -143,10 +144,8 @@ export class UsersModal implements OnChanges, OnInit {
     });    
   }
 
-  onDeleteSubmit() {
-    this.user = this.formData;
-    if (this.user) {
-      const userId = this.user.id;
+  onDeleteSubmit(id?: number) {
+      const userId = id
       this.api.delete(`users/${userId}`).subscribe({
         next: () => {
           this.close();
@@ -154,8 +153,7 @@ export class UsersModal implements OnChanges, OnInit {
         error: (err: any) => {
           console.error('Failed to delete user', err);
         }
-      });
-    }
+      }); 
   }
 
   close() {

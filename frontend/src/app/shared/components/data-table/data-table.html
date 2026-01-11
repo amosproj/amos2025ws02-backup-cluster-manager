@@ -47,6 +47,7 @@
         }
 
         <!--Filter-->
+        @if (showFilter) {
         <div class="flex items-center w-full md:w-auto">
           <button [id]="'filterDropdownButton-' + uniqueId" [attr.data-dropdown-toggle]="'filterDropdown-' + uniqueId"
                   class="flex items-center justify-center hover:bg-primary-3 gap-2 w-full px-4 py-2 h-10 text-sm font-medium text-foreground  rounded-lg bg-primary-2 "
@@ -71,6 +72,7 @@
             </ul>
           </div>
         </div>
+        }
       </div>
     </div>
   </div>

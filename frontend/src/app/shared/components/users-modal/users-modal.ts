@@ -4,6 +4,9 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { NodesService } from '../../../features/nodes/nodes.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { ToastTypeEnum } from '../../types/toast';
 
 type Group = { id: number; name: string; enabled?: boolean };
 type User = { id?: number; name: string; passwordHash?: string; enabled?: boolean; createdAt?: string; updatedAt?: string; };
@@ -18,10 +21,11 @@ type User = { id?: number; name: string; passwordHash?: string; enabled?: boolea
 
 export class UsersModal implements OnChanges, OnInit {
   @Input() open: boolean = false;
-  @Input() mode: 'create' | 'edit' | 'delete' = 'create';
+  @Input() mode: 'create' | 'edit' | 'delete' | 'node' | 'backups' | 'tasks' = 'create';
   @Input() user: any | null = null;
   @Output() closed = new EventEmitter<void>();
 
+  nodeAddress: string = '';
   formData: {
     id?: number;
     name: string;
@@ -29,11 +33,11 @@ export class UsersModal implements OnChanges, OnInit {
     enabled: boolean; // true enabled, false disabled
     groupId?: number;
   } = {
-    id: undefined,
-    name: '',
-    passwordHash: '',
-    enabled: true
-  };
+      id: undefined,
+      name: '',
+      passwordHash: '',
+      enabled: true
+    };
 
   groups: Group[] = [];
   chooseUsers: User[] = [];
@@ -43,7 +47,8 @@ export class UsersModal implements OnChanges, OnInit {
 
   private nameInput$ = new Subject<string>();
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private nodesService: NodesService, private toast: ToastService
+  ) { }
 
   ngOnInit() {
     this.loadGroups();
@@ -100,7 +105,7 @@ export class UsersModal implements OnChanges, OnInit {
       error: (err: any) => {
         console.error('Failed to create user', err);
       }
-    });    
+    });
   }
 
   onNameInput(value: string) {
@@ -141,7 +146,7 @@ export class UsersModal implements OnChanges, OnInit {
       error: (err: any) => {
         console.error('Failed to create user', err);
       }
-    });    
+    });
   }
 
   onDeleteSubmit(users: Array<number> | any) {
@@ -155,7 +160,23 @@ export class UsersModal implements OnChanges, OnInit {
         error: (err: any) => {
           console.error('Failed to delete user', err);
         }
-      }); }
+      });
+    }
+  }
+
+  onAddNode(): void {
+    const address = this.nodeAddress.trim();
+
+    this.nodesService.addNode(address).subscribe({
+      next: () => {
+        this.toast.show("Node added successfully!", ToastTypeEnum.SUCCESS);
+        this.close();
+      },
+      error: (error) => {
+        console.error(error);
+        this.toast.show("Error adding node!", ToastTypeEnum.ERROR);
+      }
+    })
   }
 
   close() {

@@ -6,7 +6,7 @@
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b border-default pb-4">
         <h3 class="text-lg font-medium text-heading">
-          {{ mode === 'create' ? 'Add User' : mode === 'edit' ? 'Edit User' : 'Delete User' }}
+          {{ mode === 'create' ? 'Add User' : mode ==='node' ? 'Add Node' : mode === 'edit' ? 'Edit User' : 'Delete User' }}
         </h3>
         <button (click)="close()" class="w-9 h-9 flex justify-center items-center" aria-label="Close">
           <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -15,6 +15,51 @@
           </svg>
         </button>
       </div>
+
+      <!-- Add Node -->
+       <form *ngIf="mode === 'node'" (ngSubmit)="onAddNode()">
+        <div class="grid !gap-1">
+            <label class="block text-sm font-medium text-heading" for="nodeAddress">Enter the address of the node to add:</label>
+            <input id="nodeAddress" type="text" [(ngModel)]="nodeAddress" name="nodeAddress"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base "
+              placeholder="Node Address" required />
+        </div>
+        <div class="flex items-center space-x-4 border-t border-default pt-4">
+          <button type="submit" class="px-4 py-2.5 bg-brand text-white rounded-base">Add Node</button>
+          <button type="button" (click)="close()"
+            class="px-4 py-2.5 bg-neutral-secondary-medium rounded-base">Cancel</button>
+        </div>
+      </form>
+
+       <!-- Add Backups 
+      <form *ngIf="mode === 'backups'" (ngSubmit)="onAddBackups()">
+        <div class="py-4">
+          <label class="block mb-2 text-sm font-medium text-heading" for="create-backups">Enter the address of the backups to add:</label>
+            <input id="create-backups" type="text" [(ngModel)]="backupsAddress" name="name"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+              placeholder="Node Address" required />
+        </div>
+        <div class="flex justify-end space-x-3 border-t border-default pt-4">
+          <button type="button" class="px-4 py-2 text-sm bg-brand text-white rounded-base" (click)="onAddBackups()">Add Backups</button>
+          <button type="button" (click)="close()"
+            class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
+        </div>
+      </form>
+
+       Add Tasks
+      <form *ngIf="mode === 'tasks'" (ngSubmit)="onAddTasks()">
+        <div class="py-4">
+          <label class="block mb-2 text-sm font-medium text-heading" for="create-tasks">Enter the address of the tasks to add:</label>
+            <input id="create-tasks" type="text" [(ngModel)]="tasksAddress" name="name"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+              placeholder="Node Address" required />
+        </div>
+        <div class="flex justify-end space-x-3 border-t border-default pt-4">
+          <button type="button" class="px-4 py-2 text-sm bg-brand text-white rounded-base" (click)="onAddTasks()">Add Tasks</button>
+          <button type="button" (click)="close()"
+            class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
+        </div>
+      </form> -->
 
       <!-- Delete Confirmation -->
       <div *ngIf="mode === 'delete'" >
@@ -55,6 +100,7 @@
             class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
       </div>
+
       <!-- Create Form -->
       <form *ngIf="mode === 'create'" (ngSubmit)="onCreateSubmit()">
         <div class="grid gap-4 py-4">

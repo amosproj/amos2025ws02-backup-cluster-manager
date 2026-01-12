@@ -18,7 +18,7 @@
 
       <!-- Add Node -->
        <form *ngIf="mode === 'node'" (ngSubmit)="onAddNode()">
-        <div class="grid !gap-1">
+        <div class="grid gap-4 py-4">
             <label class="block text-sm font-medium text-heading" for="nodeAddress">Enter the address of the node to add:</label>
             <input id="nodeAddress" type="text" [(ngModel)]="nodeAddress" name="nodeAddress"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base "
@@ -32,10 +32,10 @@
       </form>
 
        <!-- Add Backups -->
-      <form *ngIf="mode === 'backups'" (ngSubmit)="submitAddBackup()">
+      <form *ngIf="mode === 'backups'" [formGroup]="backupFormData" (ngSubmit)="submitAddBackup()">
         <div class="py-4">
            <label class="block text-sm mb-1">Client</label>
-          <select  [(ngModel)]="backupFormData.client" name="clientId"
+          <select  [formControlName]="'client'" name="clientId"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
               <option [ngValue]="undefined" disabled selected>Select Client</option>
               <option *ngFor="let client of clients()" [ngValue]="client">
@@ -45,7 +45,7 @@
         </div>
         <div class="py-4">
            <label class="block text-sm mb-1">Tasks</label>
-          <select [(ngModel)]="backupFormData.task" name="taskId"
+          <select [formControlName]="'task'" name="taskId"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
               <option [ngValue]="undefined" disabled selected>Select Task</option>
               <option *ngFor="let task of tasks()" [ngValue]="task">
@@ -55,7 +55,7 @@
         </div>
         <div>
             <label class="block mb-2 text-sm font-medium text-heading" for="size">Size (Bytes)</label>
-            <input id="size" type="number" [(ngModel)]="backupFormData.sizeBytes" name="size"
+            <input id="size" type="number" formControlName="sizeBytes" name="size"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
               placeholder="Size in Bytes" required />
           </div>

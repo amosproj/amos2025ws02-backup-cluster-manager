@@ -116,27 +116,5 @@ export class Tasks implements OnInit {
     this.showAddModal.set(false);
   }
 
-  submitTask() {
-    if (this.addForm.invalid) {
-      this.addForm.markAllAsTouched();
-      return;
-    }
-    const { clientSelection, ...taskData } = this.addForm.value;
-
-    this.tasksService.createTask({id: null, ...clientSelection, ...taskData}).subscribe({
-      next: (response) => {
-        //console.log('Backup created:', response);
-        this.closeAddModal();
-        if (this.dataTable) {
-          this.dataTable.loadData();
-        }
-      },
-      error: (error) => {
-        console.error('Error creating backup:', error);
-      }
-    });
-
-  }
-
   protected readonly UserPermissionsEnum = UserPermissionsEnum;
 }

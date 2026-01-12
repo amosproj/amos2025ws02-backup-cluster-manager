@@ -1,5 +1,20 @@
-import { Component, Input, Output, EventEmitter, OnChanges, OnInit, Signal, signal } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  OnInit,
+  Signal,
+  signal,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { Subject } from 'rxjs';
@@ -13,8 +28,14 @@ import { TasksService } from '../../../features/tasks/tasks.service';
 import { BackupDTO, BackupsService } from '../../../features/backups/backups.service';
 
 type Group = { id: number; name: string; enabled?: boolean };
-type User = { id?: number; name: string; passwordHash?: string; enabled?: boolean; createdAt?: string; updatedAt?: string; };
-
+type User = {
+  id?: number;
+  name: string;
+  passwordHash?: string;
+  enabled?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 @Component({
   selector: 'app-users-modal',
@@ -22,7 +43,6 @@ type User = { id?: number; name: string; passwordHash?: string; enabled?: boolea
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './users-modal.html',
 })
-
 export class UsersModal implements OnChanges, OnInit {
   @Input() open: boolean = false;
   @Input() mode: 'create' | 'edit' | 'delete' | 'node' | 'backups' | 'tasks' = 'create';
@@ -36,7 +56,7 @@ export class UsersModal implements OnChanges, OnInit {
   intervalOptions = [
     { value: 'DAILY', label: 'Daily' },
     { value: 'WEEKLY', label: 'Weekly' },
-    { value: 'MONTHLY', label: 'Monthly' }
+    { value: 'MONTHLY', label: 'Monthly' },
   ];
 
   nodeAddress: string = '';
@@ -47,22 +67,13 @@ export class UsersModal implements OnChanges, OnInit {
     enabled: boolean; // true enabled, false disabled
     groupId?: number;
   } = {
-      id: undefined,
-      name: '',
-      passwordHash: '',
-      enabled: true
-    };
+    id: undefined,
+    name: '',
+    passwordHash: '',
+    enabled: true,
+  };
 
-  backupFormData: {
-    client: any;
-    task: any;
-    sizeBytes: number;
-  } = {
-      client: null,
-      task: null,
-      sizeBytes: 0
-    };
-
+  backupFormData!: FormGroup;
   taskFormData!: FormGroup;
   groups: Group[] = [];
   chooseUsers: User[] = [];
@@ -72,7 +83,14 @@ export class UsersModal implements OnChanges, OnInit {
 
   private nameInput$ = new Subject<string>();
 
-  constructor(private api: ApiService, private nodesService: NodesService, private toast: ToastService, private backupsService: BackupsService, private clientsService: ClientsService, private tasksService: TasksService, private fb: FormBuilder
+  constructor(
+    private api: ApiService,
+    private nodesService: NodesService,
+    private toast: ToastService,
+    private backupsService: BackupsService,
+    private clientsService: ClientsService,
+    private tasksService: TasksService,
+    private fb: FormBuilder
   ) {
     this.taskFormData = this.fb.group({
       name: ['', Validators.required],
@@ -81,18 +99,23 @@ export class UsersModal implements OnChanges, OnInit {
       interval: ['', Validators.required],
       clientSelection: [null, Validators.required],
     });
-   }
+    this.backupFormData = this.fb.group({
+      client: [null, Validators.required],
+      task: [null, Validators.required],
+      sizeBytes: ['', [Validators.required, Validators.min(1)]],
+    });
+  }
 
   ngOnInit() {
     this.loadGroups();
-    
+
     this.clientsService.getClientList().subscribe({
       next: (clients) => {
         this.clients.set(clients ?? []);
       },
       error: (err) => {
         console.error('Failed to load clients', err);
-      }
+      },
     });
 
     this.tasksService.getTaskList().subscribe({
@@ -101,28 +124,28 @@ export class UsersModal implements OnChanges, OnInit {
       },
       error: (err) => {
         console.error('Failed to load tasks', err);
-      }
+      },
     });
 
     this.nameInput$
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
-        switchMap(term => this.api.get<User[]>(`users/search/${term}`))
+        switchMap((term) => this.api.get<User[]>(`users/search/${term}`))
       )
       .subscribe({
-        next: results => {
+        next: (results) => {
           this.chooseUsers = results;
           this.loadingUsers = false;
           this.usersSearchPerformed = true;
           this.selectedSuggestionIndex = -1; // reset index after new results
         },
-        error: err => {
+        error: (err) => {
           console.error('User search failed', err);
           this.loadingUsers = false;
           this.usersSearchPerformed = true;
           this.selectedSuggestionIndex = -1;
-        }
+        },
       });
   }
 
@@ -131,7 +154,7 @@ export class UsersModal implements OnChanges, OnInit {
       next: (groups: Group[]) => {
         this.groups = groups || [];
       },
-      error: (err: any) => console.error('Failed to load groups', err)
+      error: (err: any) => console.error('Failed to load groups', err),
     });
   }
 
@@ -155,7 +178,7 @@ export class UsersModal implements OnChanges, OnInit {
       },
       error: (err: any) => {
         console.error('Failed to create user', err);
-      }
+      },
     });
   }
 
@@ -173,7 +196,9 @@ export class UsersModal implements OnChanges, OnInit {
     }
   }
 
-  trackByUserName(index: number, user: User) { return user.name; }
+  trackByUserName(index: number, user: User) {
+    return user.name;
+  }
 
   selectedUser(user: User) {
     this.formData.id = user.id;
@@ -189,28 +214,28 @@ export class UsersModal implements OnChanges, OnInit {
     this.user.id = id;
     const payload = { ...this.user };
     payload.passwordHash = undefined; // only include if set
-    console.log("payload", payload);
+    console.log('payload', payload);
     this.api.put(`users/${this.user.id}`, payload).subscribe({
       next: () => {
         this.close();
       },
       error: (err: any) => {
         console.error('Failed to create user', err);
-      }
+      },
     });
   }
 
   onDeleteSubmit(users: Array<number> | any) {
     for (let i of users) {
       const userId = i.id;
-      console.log("Deleting user ID", userId);
+      console.log('Deleting user ID', userId);
       this.api.delete(`users/${userId}`).subscribe({
         next: () => {
           this.close();
         },
         error: (err: any) => {
           console.error('Failed to delete user', err);
-        }
+        },
       });
     }
   }
@@ -220,33 +245,29 @@ export class UsersModal implements OnChanges, OnInit {
 
     this.nodesService.addNode(address).subscribe({
       next: () => {
-        this.toast.show("Node added successfully!", ToastTypeEnum.SUCCESS);
+        this.toast.show('Node added successfully!', ToastTypeEnum.SUCCESS);
         this.close();
       },
       error: (error) => {
         console.error(error);
-        this.toast.show("Error adding node!", ToastTypeEnum.ERROR);
-      }
-    })
+        this.toast.show('Error adding node!', ToastTypeEnum.ERROR);
+      },
+    });
   }
 
   submitAddBackup() {
-    const client = this.backupFormData.client;
-    const task = this.backupFormData.task;
-    const sizeBytes = this.backupFormData.sizeBytes;
-
+    const { client, task, sizeBytes } = this.backupFormData.value;
     const payload: BackupDTO = {
       clientId: client.id,
       taskId: task.id,
-      sizeBytes:  Number(sizeBytes),
-      nodeDTO: client.nodeDTO
+      sizeBytes: Number(sizeBytes),
+      nodeDTO: client.nodeDTO,
     };
 
-console.log("Backup payload:", payload);
+    console.log('Backup payload:', payload);
     this.api.post('backup', this.backupFormData).subscribe({
       next: () => {
         this.close();
-
       },
     });
 
@@ -257,22 +278,21 @@ console.log("Backup payload:", payload);
       },
       error: (error) => {
         console.error('Error creating backup:', error);
-      }
+      },
     });
   }
 
   onAddTask(): void {
-
-      const { clientSelection, ...taskData } = this.taskFormData.value;    
+    const { clientSelection, ...taskData } = this.taskFormData.value;
     // console.log("Payload:",  {id:null, clientId: client.clientId, name,  source, enabled, interval, node: client.nodeDTO});
-    this.tasksService.createTask({id:null,...clientSelection, ...taskData}).subscribe({
+    this.tasksService.createTask({ id: null, ...clientSelection, ...taskData }).subscribe({
       next: (response) => {
         // console.log('Task created:', response);
         this.close();
       },
       error: (error) => {
         console.error('Error creating task:', error);
-      }
+      },
     });
   }
 
@@ -283,7 +303,9 @@ console.log("Backup payload:", payload);
   onNameKeyDown(event: KeyboardEvent) {
     // Only handle when suggestions list is visible
     const hasSuggestions = this.chooseUsers && this.chooseUsers.length > 0 && !this.loadingUsers;
-    if (!hasSuggestions && event.key !== 'Escape') { return; }
+    if (!hasSuggestions && event.key !== 'Escape') {
+      return;
+    }
 
     switch (event.key) {
       case 'ArrowDown':

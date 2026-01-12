@@ -3,20 +3,22 @@ package com.bcm.cluster_manager.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import com.bcm.shared.model.api.NodeDTO;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
+import java.util.Collection;
 
 @Service
 public class HeartbeatService {
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatService.class);
-    private final RestTemplate rest = new RestTemplate();
+
 
     @Autowired
     private RegistryService registry;
@@ -24,32 +26,52 @@ public class HeartbeatService {
     @Autowired
     private SyncService syncService;
 
-    public void heartbeatAll() {
-        logger.info("Heartbeat started at {}", Instant.now());
-        registry.getActiveNodes().forEach(this::pingNodeAsync);
-        // optionally ping inactive nodes to try revive them (if they respond
-        // successfully, entry is set active or added)
-        registry.getInactiveNodes().forEach(this::pingNodeAsync);
-        // after heartbeats, push updated tables to all nodes
-        syncService.syncNodes();
+    private final WebClient webClient;
+
+    public HeartbeatService(WebClient.Builder webClientBuilder){
+        this.webClient = webClientBuilder.build();
     }
 
-    @Async
-    public CompletableFuture<Void> pingNodeAsync(NodeDTO node) {
+    public void heartbeatAll() {
+        logger.info("Heartbeat started at {}", Instant.now());
+
+        Collection<NodeDTO> activeNodes = registry.getActiveNodes();
+        Collection<NodeDTO> inactiveNodes = registry.getInactiveNodes();
+
+        // Ping all active and inactive nodes in parallel
+        Flux.concat(
+                Flux.fromIterable(activeNodes).flatMap(this::pingNode),
+                Flux.fromIterable(inactiveNodes).flatMap(this::pingNode)
+        )
+        .doOnComplete(() -> {
+            logger.info("Heartbeat completed, syncing nodes");
+            syncService.syncNodes();
+        })
+        .subscribe();
+    }
+
+    public Mono<Void> pingNode(NodeDTO node) {
         String url = "http://" + node.getAddress() + "/api/v1/ping";
-        try {
-            ResponseEntity<String> r = rest.getForEntity(url, String.class);
-            if (r.getStatusCode().is2xxSuccessful()) {
-                logger.info("Node {} is alive", node.getAddress());
-                registry.markActive(node);
-            } else {
-                logger.warn("Node {} returned non-2xx: {}", node.getAddress(), r.getStatusCodeValue());
-                registry.markInactive(node);
-            }
-        } catch (Exception e) {
-            logger.warn("Node {} is unreachable: {}", node.getAddress(), e.toString());
-            registry.markInactive(node);
-        }
-        return CompletableFuture.completedFuture(null);
+
+        return webClient.get()
+                .uri(url)
+                .retrieve()
+                .toBodilessEntity()
+                .timeout(Duration.ofSeconds(5))
+                .doOnSuccess(response -> {
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        logger.info("Node {} is alive", node.getAddress());
+                        registry.markActive(node);
+                    } else {
+                        logger.warn("Node {} returned non-2xx: {}", node.getAddress(), response.getStatusCode().value());
+                        registry.markInactive(node);
+                    }
+                })
+                .onErrorResume(e -> {
+                    logger.warn("Node {} is unreachable: {}", node.getAddress(), e.toString());
+                    registry.markInactive(node);
+                    return Mono.empty();
+                })
+                .then();
     }
 }

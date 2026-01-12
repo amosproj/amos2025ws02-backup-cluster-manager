@@ -16,9 +16,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,12 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     @Autowired
     private SyncService syncService;
+
+    private final WebClient webClient;
+
+    public NodeManagementService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
 
     @Override
     public Mono<Long> getTotalItemsCount(Filter filter) {
@@ -123,18 +130,24 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
     }
 
     public void registerNode(RegisterRequest req) {
-        final RestTemplate restTemplate = new RestTemplate();
         JoinDTO dto = new JoinDTO();
         dto.setCmURL("http://cluster-manager:8080");
-        try {
-            restTemplate.postForEntity("http://" + req.getAddress() + "/api/v1/bn/join", dto, String.class);
-            registry.register(req);
-            syncService.syncNodes();
-        } catch (Exception e) {
-            System.err.println("Error registering node: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Failed to register node at " + req.getAddress());
-        }
+        String url = "http://" + req.getAddress() + "/api/v1/bn/join";
+
+        webClient.post()
+                .uri(url)
+                .bodyValue(dto)
+                .retrieve()
+                .toBodilessEntity()
+                .timeout(Duration.ofSeconds(10))
+                .doOnSuccess(response -> {
+                    registry.register(req);
+                    syncService.syncNodes();
+                })
+                .doOnError(e -> {
+                    logger.error("Error registering node: {}", e.getMessage());
+                })
+                .block();
     }
 
     public Optional<NodeDTO> getNodeById(Long id) {

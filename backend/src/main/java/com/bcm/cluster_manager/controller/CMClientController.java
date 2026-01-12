@@ -3,7 +3,6 @@ package com.bcm.cluster_manager.controller;
 import com.bcm.cluster_manager.model.api.BigClientDTO;
 import com.bcm.cluster_manager.service.CMClientService;
 import com.bcm.shared.config.permissions.Permission;
-import com.bcm.shared.model.database.Client;
 import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 
@@ -31,16 +30,7 @@ public class CMClientController {
 
     @PreAuthorize(Permission.Require.CLIENT_READ)
     @GetMapping("/clientsList")
-    public List<BigClientDTO> getClients() {
-        return CMclientService.getAllClients().stream()
-                .toList();
-    }
-
-    private BigClientDTO toDto(Client client) {
-        BigClientDTO dto = new BigClientDTO();
-        dto.setId(client.getId());
-        dto.setNameOrIp(client.getNameOrIp());
-        dto.setEnabled(client.isEnabled());
-        return dto;
+    public Mono<List<BigClientDTO>> getClientsList() {
+        return CMclientService.getAllClients();
     }
 }

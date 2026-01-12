@@ -29,14 +29,14 @@ public class CMTaskController {
     }
 
     @GetMapping("/tasks/list")
-    public List<BigTaskDTO> getTasksList() {
-        return CMTaskService.getAllTasks();
+    public Mono<List<BigTaskDTO>> getTasksList() {
+        return CMTaskService.getAllTasksReactive();
     }
 
     @PreAuthorize(Permission.Require.TASK_CREATE)
     @PostMapping("/task")
-    public BigTaskDTO createTask(@RequestBody BigTaskDTO taskDTO) {
-        return CMTaskService.addTask(taskDTO);
+    public Mono<BigTaskDTO> createTask(@RequestBody BigTaskDTO taskDTO) {
+        return CMTaskService.addTaskReactive(taskDTO);
     }
 
     private Task toEntity(TaskDTO taskDTO) {

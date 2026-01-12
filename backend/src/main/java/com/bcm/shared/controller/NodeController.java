@@ -22,19 +22,18 @@ public class NodeController {
     private NodeControlService nodeControlService;
 
     @GetMapping("/example")
-    public String test(){
-        return "Here is a string";
+    public Mono<String> test(){
+        return Mono.just("Here is a string");
     }
 
     @GetMapping("/ping")
-    public String ping() {
-        return "pong";
+    public Mono<String> ping() {
+        return Mono.just("pong");
     }
 
     @PostMapping("/sync")
     public Mono<Void> sync(@RequestBody SyncDTO dto) {
-        userService.replaceUsersWithCMUsers(dto.getCmUsers());
-        return Mono.empty();
+        return Mono.fromRunnable(() -> userService.replaceUsersWithCMUsers(dto.getCmUsers()));
     }
 
     @PostMapping("/shutdown")

@@ -1,39 +1,49 @@
 package com.bcm.shared.repository;
 
 import com.bcm.shared.model.database.UserGroupRelation;
-import org.apache.ibatis.annotations.*;
+import org.springframework.data.r2dbc.repository.Modifying;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface UserGroupRelationMapper {
+public interface UserGroupRelationMapper extends ReactiveCrudRepository<UserGroupRelation, Long> {
 
-    @Select("""
-                SELECT user_id AS userId, group_id AS groupId, added_at AS addedAt
-                FROM user_group_relations WHERE user_id = #{userId}
-                """)
-    List<UserGroupRelation> findByUser(@Param("userId") Long userId);
+    @Query("""
+        SELECT user_id, group_id, added_at
+        FROM user_group_relations
+        WHERE user_id = :userId
+    """)
+    Flux<UserGroupRelation> findByUser(Long userId);
 
-    @Select("""
-                SELECT user_id AS userId, group_id AS groupId, added_at AS addedAt
-                FROM user_group_relations WHERE group_id = #{groupId}
-                """)
-    List<UserGroupRelation> findByGroup(@Param("groupId") Long groupId);
+    @Query("""
+        SELECT user_id, group_id, added_at
+        FROM user_group_relations
+        WHERE group_id = :groupId
+    """)
+    Flux<UserGroupRelation> findByGroup(Long groupId);
 
-    @Insert("""
-                INSERT INTO user_group_relations (user_id, group_id, added_at)
-                VALUES (#{userId}, #{groupId}, #{addedAt})
-                """)
-    int insert(UserGroupRelation rel);
+    @Modifying
+    @Query("""
+        INSERT INTO user_group_relations (user_id, group_id, added_at)
+        VALUES (:#{#rel.userId}, :#{#rel.groupId}, :#{#rel.addedAt})
+    """)
+    Mono<Integer> insert(UserGroupRelation rel);
 
-    @Delete("""
-                DELETE FROM user_group_relations
-                WHERE user_id = #{userId} AND group_id = #{groupId}
-                """)
-    int delete(@Param("userId") Long userId, @Param("groupId") Long groupId);
+    @Modifying
+    @Query("""
+        DELETE FROM user_group_relations
+        WHERE user_id = :userId AND group_id = :groupId
+    """)
+    Mono<Integer> delete(Long userId, Long groupId);
 
-    @Select("""
-                SELECT EXISTS(SELECT 1 FROM user_group_relations
-                WHERE user_id = #{userId} AND group_id = #{groupId})
-                """)
-    boolean exists(@Param("userId") Long userId, @Param("groupId") Long groupId);
+    @Query("""
+        SELECT EXISTS(
+            SELECT 1 FROM user_group_relations
+            WHERE user_id = :userId AND group_id = :groupId
+        )
+    """)
+    Mono<Boolean> exists(Long userId, Long groupId);
 }

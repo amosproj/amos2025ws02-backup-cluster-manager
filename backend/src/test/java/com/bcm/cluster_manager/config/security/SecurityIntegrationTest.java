@@ -17,12 +17,15 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.springframework.http.MediaType;
+import reactor.core.publisher.Mono;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,8 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Instant;
 
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @Disabled("Skipping Spring context startup for now")
 class SecurityIntegrationTest {
@@ -47,15 +49,20 @@ class SecurityIntegrationTest {
                     .withPassword("bcm");
 
     @DynamicPropertySource
-    static void registerDataSourceProps(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.cm.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.cm.username", postgres::getUsername);
-        registry.add("spring.datasource.cm.password", postgres::getPassword);
+    static void registerProps(DynamicPropertyRegistry registry) {
+        registry.add("spring.r2dbc.url",
+                () -> "r2dbc:postgresql://" + postgres.getHost() + ":" + postgres.getFirstMappedPort() + "/" + postgres.getDatabaseName());
+        registry.add("spring.r2dbc.username", postgres::getUsername);
+        registry.add("spring.r2dbc.password", postgres::getPassword);
+
+        registry.add("spring.flyway.url", postgres::getJdbcUrl);
+        registry.add("spring.flyway.user", postgres::getUsername);
+        registry.add("spring.flyway.password", postgres::getPassword);
         registry.add("spring.flyway.enabled", () -> true);
     }
 
     @Autowired
-    MockMvc mockMvc;
+    WebTestClient webTestClient;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -74,38 +81,53 @@ class SecurityIntegrationTest {
 
     @BeforeEach
     void setup() {
-        User user = new User();
-        user.setName("testuser");
-        user.setPasswordHash(passwordEncoder.encode("secret"));
-        user.setEnabled(true);
-        user.setCreatedAt(Instant.now());
-        user.setUpdatedAt(Instant.now());
+        Mono<Void> init =
+                Mono.defer(() -> {
+                    User user = new User();
+                    user.setName("testuser");
+                    user.setPasswordHash("secret");
+                    user.setEnabled(true);
+                    user.setCreatedAt(Instant.now());
+                    user.setUpdatedAt(Instant.now());
 
-        userRepository.insert(user);
-        Long userId = user.getId();
+                    return userRepository.save(user)
+                            .flatMap(savedUser ->
+                                    groupRepository.findById(3L)
+                                            .flatMap(group -> {
+                                                UserGroupRelation ugr = new UserGroupRelation();
+                                                ugr.setUserId(savedUser.getId());
+                                                ugr.setGroupId(group.getId());
+                                                ugr.setAddedAt(Instant.now());
+                                                return userGroupRelationRepository.insert(ugr);
+                                            })
+                            )
+                            .then();
+                });
 
-        Group group = groupRepository.findById(3L);
-        Long groupId = group.getId();
-
-        var ugr = new UserGroupRelation();
-        ugr.setUserId(userId);
-        ugr.setGroupId(groupId);
-        ugr.setAddedAt(Instant.now());
-        userGroupRelationRepository.insert(ugr);
+        init.block();
     }
 
     @Test
-    void logged_in_can_access_users() throws Exception {
-        MvcResult loginResult = mockMvc.perform(post("/api/v1/cm/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                {"username":"testuser","password":"secret"}
-            """))
-                .andExpect(status().isOk()).andReturn();
+    void logged_in_can_access_users() {
+        var loginResult = webTestClient.post()
+                .uri("/api/v1/cm/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("""
+                    {"username":"testuser","password":"secret"}
+                """)
+                .exchange()
+                .expectStatus().isOk()
+                .returnResult(Void.class);
 
-        MockHttpSession session =
-                (MockHttpSession) loginResult.getRequest().getSession(false);
-        assertNotNull(session, "Session must not be null after login");
+        String setCookie = loginResult.getResponseHeaders().getFirst("Set-Cookie");
+        assertThat(setCookie).isNotBlank();
+
+        // Use cookie on next request (example: /users)
+        webTestClient.get()
+                .uri("/api/v1/cm/users")
+                .header("Cookie", setCookie)
+                .exchange()
+                .expectStatus().isOk();
     }
 
 

@@ -27,7 +27,7 @@ public class TaskService implements PaginationProvider<TaskDTO> {
 
     private final TaskMapper taskMapper;
 
-    public TaskService(@Qualifier("taskMapperBN") TaskMapper taskMapper) {
+    public TaskService( TaskMapper taskMapper) {
         this.taskMapper = taskMapper;
     }
 

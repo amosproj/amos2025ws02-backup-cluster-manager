@@ -23,7 +23,7 @@ public class BackupService {
 
     private final BackupMapper backupMapper;
 
-    public BackupService(@Qualifier("backupMapperBN") BackupMapper backupMapper) {
+    public BackupService( BackupMapper backupMapper) {
         this.backupMapper = backupMapper;
     }
 

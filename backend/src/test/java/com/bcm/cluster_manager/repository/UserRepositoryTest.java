@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -30,8 +33,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    void testInsertLogsIntReturnAndPersists() {
-        // Arrange: create a new user
+    void testInsertAndPersists() {
         User user = new User();
         user.setName("testuser_" + System.currentTimeMillis());
         user.setPasswordHash("hashedpwd");
@@ -39,23 +41,23 @@ public class UserRepositoryTest {
         user.setCreatedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
         user.setUpdatedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
 
-        // Act: insert and capture the int return value
-        int rowsInserted = userRepository.insert(user);
+        StepVerifier.create(userRepository.save(user))
+                .assertNext(savedUser -> {
+                    assertNotNull(savedUser.getId(), "User sollte eine ID haben");
+                    System.out.println("User gespeichert mit ID: " + savedUser.getId());
 
-        // Log the int return value (printing for demonstration; replace with a logger if preferred)
-        System.out.println("Rows inserted: " + rowsInserted);
+                    Mono<User> persisted = userRepository.findUserById(savedUser.getId());
 
-        // Assert: at least one row inserted
-        assertTrue(rowsInserted > 0, "Insert should affect at least one row");
-
-        // Optional: verify the object was persisted by fetching it back
-        User persisted = userRepository.findById(user.getId());
-        assertNotNull(persisted, "Persisted user should be retrievable");
-        assertEquals(user.getName(), persisted.getName(), "Names should match");
-        assertEquals(user.getPasswordHash(), persisted.getPasswordHash(), "Password hash should match");
-        assertEquals(user.isEnabled(), persisted.isEnabled(), "Enabled flag should match");
+                    StepVerifier.create(persisted)
+                            .assertNext(found -> {
+                                assertEquals(user.getName(), found.getName(), "Namen sollten übereinstimmen");
+                                assertEquals(user.getPasswordHash(), found.getPasswordHash(), "Password Hash sollte übereinstimmen");
+                                assertEquals(user.isEnabled(), found.isEnabled(), "Enabled Flag sollte übereinstimmen");
+                            })
+                            .verifyComplete();
+                })
+                .verifyComplete();
     }
-
 }
 
 // Additional tests (update, delete, retrieval) can follow

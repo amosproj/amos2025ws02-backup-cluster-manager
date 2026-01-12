@@ -17,6 +17,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.util.*;
@@ -59,38 +61,39 @@ class AuthControllerTest {
         SecurityContextHolder.setContext(securityContext);
 
         // Act
-        ResponseEntity<AuthMetadataDTO> response = authController.validateSession();
+        Mono<ResponseEntity<AuthMetadataDTO>> mono = authController.validateSession();
 
         // Assert
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
+        StepVerifier.create(mono)
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.getStatusCode());
+                    assertNotNull(response.getBody());
 
-        AuthMetadataDTO metadata = response.getBody();
-        assertEquals("testuser", metadata.getUsername());
-        assertEquals(Role.ADMINISTRATORS, metadata.getRole());
-        assertEquals(50, metadata.getRank());
-        assertTrue(metadata.getPermissions().contains("user:read"));
-        assertTrue(metadata.getPermissions().contains("user:create"));
+                    AuthMetadataDTO metadata = response.getBody();
+                    assertEquals("testuser", metadata.getUsername());
+                    assertEquals(Role.ADMINISTRATORS, metadata.getRole());
+                    assertEquals(50, metadata.getRank());
+                    assertTrue(metadata.getPermissions().contains("user:read"));
+                    assertTrue(metadata.getPermissions().contains("user:create"));
+                })
+                .verifyComplete();
 
-        // Cleanup
         SecurityContextHolder.clearContext();
     }
 
     @Test
     void validateSession_shouldReturnUnauthorized_whenNoAuthentication() {
-        // Arrange
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         SecurityContextHolder.setContext(securityContext);
 
-        // Act
-        ResponseEntity<AuthMetadataDTO> response = authController.validateSession();
+        StepVerifier.create(authController.validateSession())
+                .assertNext(response -> {
+                    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+                    assertNull(response.getBody());
+                })
+                .verifyComplete();
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertNull(response.getBody());
-
-        // Cleanup
         SecurityContextHolder.clearContext();
     }
 
@@ -98,22 +101,22 @@ class AuthControllerTest {
     void validateSession_shouldReturnUnauthorized_whenAuthenticationIsAnonymous() {
         // Arrange
         Authentication auth = new AnonymousAuthenticationToken(
-            "key",
-            "anonymous",
-            List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))
+                "key",
+                "anonymous",
+                List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))
         );
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(auth);
         SecurityContextHolder.setContext(securityContext);
 
-        // Act
-        ResponseEntity<AuthMetadataDTO> response = authController.validateSession();
+        // Act + Assert
+        StepVerifier.create(authController.validateSession())
+                .assertNext(response -> {
+                    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+                    assertNull(response.getBody());
+                })
+                .verifyComplete();
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertNull(response.getBody());
-
-        // Cleanup
         SecurityContextHolder.clearContext();
     }
 
@@ -127,32 +130,26 @@ class AuthControllerTest {
         securityContext.setAuthentication(auth);
         SecurityContextHolder.setContext(securityContext);
 
-        // Act
-        ResponseEntity<AuthMetadataDTO> response = authController.validateSession();
+        // Act + Assert
+        StepVerifier.create(authController.validateSession())
+                .assertNext(response -> {
+                    assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+                    assertNull(response.getBody());
+                })
+                .verifyComplete();
 
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertNull(response.getBody());
-
-        // Cleanup
         SecurityContextHolder.clearContext();
     }
 
     @Test
     void validateSession_shouldReturnForbidden_whenUserHasNoRoles() {
-        // Arrange
         Set<Role> emptyRoles = Collections.emptySet();
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
         CustomUserDetails userDetails = new CustomUserDetails(
-            1L,
-            "testuser",
-            "hashedPassword",
-            true,
-            Instant.now(),
-            Instant.now(),
-            authorities,
-            emptyRoles
+                1L, "testuser", "hashedPassword", true,
+                Instant.now(), Instant.now(),
+                authorities, emptyRoles
         );
 
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
@@ -160,20 +157,20 @@ class AuthControllerTest {
         securityContext.setAuthentication(auth);
         SecurityContextHolder.setContext(securityContext);
 
-        // Act
-        ResponseEntity<AuthMetadataDTO> response = authController.validateSession();
+        StepVerifier.create(authController.validateSession())
+                .assertNext(response -> {
+                    assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+                    assertNull(response.getBody());
+                })
+                .verifyComplete();
 
-        // Assert
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertNull(response.getBody());
-
-        // Cleanup
         SecurityContextHolder.clearContext();
     }
 
+
     @Test
     void validateSession_shouldReturnHighestRankedRole_whenUserHasMultipleRoles() {
-        // Arrange - User has both SUPERUSER (rank 100) and OPERATORS (rank 1)
+        // Arrange
         Set<Role> roles = Set.of(Role.SUPERUSER, Role.OPERATORS);
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_SUPERUSER"));
@@ -182,14 +179,14 @@ class AuthControllerTest {
         authorities.add(new SimpleGrantedAuthority("node:read"));
 
         CustomUserDetails userDetails = new CustomUserDetails(
-            1L,
-            "testuser",
-            "hashedPassword",
-            true,
-            Instant.now(),
-            Instant.now(),
-            authorities,
-            roles
+                1L,
+                "testuser",
+                "hashedPassword",
+                true,
+                Instant.now(),
+                Instant.now(),
+                authorities,
+                roles
         );
 
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
@@ -197,19 +194,19 @@ class AuthControllerTest {
         securityContext.setAuthentication(auth);
         SecurityContextHolder.setContext(securityContext);
 
-        // Act
-        ResponseEntity<AuthMetadataDTO> response = authController.validateSession();
+        // Act + Assert
+        StepVerifier.create(authController.validateSession())
+                .assertNext(response -> {
+                    assertNotNull(response);
+                    assertEquals(HttpStatus.OK, response.getStatusCode());
+                    assertNotNull(response.getBody());
 
-        // Assert
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
+                    AuthMetadataDTO metadata = response.getBody();
+                    assertEquals(Role.SUPERUSER, metadata.getRole());
+                    assertEquals(100, metadata.getRank());
+                })
+                .verifyComplete();
 
-        AuthMetadataDTO metadata = response.getBody();
-        assertEquals(Role.SUPERUSER, metadata.getRole());
-        assertEquals(100, metadata.getRank());
-
-        // Cleanup
         SecurityContextHolder.clearContext();
     }
 }

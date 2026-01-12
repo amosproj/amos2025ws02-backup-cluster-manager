@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -63,13 +64,13 @@ public class CMUserController {
 
     @PreAuthorize(Permission.Require.USER_READ)
     @GetMapping
-    public Mono<List<User>> getAllUsers() {
-        return Mono.fromCallable(() -> userService.getAllUsers());
+    public Flux<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 
     @GetMapping("/{id:\\d+}")
     public Mono<User> getUser(@PathVariable Long id) {
-        return Mono.fromCallable(() -> userService.getUserById(id));
+        return userService.getUserById(id);
     }
 
     // Commented out to avoid ambiguity with getUserById
@@ -82,7 +83,7 @@ public class CMUserController {
     @GetMapping("search/{name}")
     public Mono<List<User>> getUserBySubtext(@PathVariable String name) {
         return getCurrentUserRank()
-                .map(requesterRank -> userService.getUserBySubtextWithRankCheck(name, requesterRank));
+                .flatMap(requesterRank -> userService.getUserBySubtextWithRankCheck(name, requesterRank));
     }
 
     @PreAuthorize(Permission.Require.USER_CREATE)
@@ -91,7 +92,7 @@ public class CMUserController {
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
         return getCurrentUserRank()
-                .map(requesterRank -> userService.addUserAndAssignGroupWithRankCheck(user, group_id, requesterRank));
+                .flatMap(requesterRank -> userService.addUserAndAssignGroupWithRankCheck(user, group_id, requesterRank));
     }
 
     @PreAuthorize(Permission.Require.USER_UPDATE)
@@ -101,7 +102,7 @@ public class CMUserController {
         user.setUpdatedAt(Instant.now());
         user.setPasswordHash(null);
         return getCurrentUserRank()
-                .map(requesterRank -> userService.editUserWithRankCheck(user, requesterRank));
+                .flatMap(requesterRank -> userService.editUserWithRankCheck(user, requesterRank));
     }
 
     @PreAuthorize(Permission.Require.USER_DELETE)

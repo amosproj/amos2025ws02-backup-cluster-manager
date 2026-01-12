@@ -19,13 +19,16 @@ public interface PaginationProvider<T> {
                 .flatMap(totalItems -> {
                     long totalPages = (long) Math.ceil((double) totalItems / itemsPerPage);
 
-                    long safePage = page;
-                    if (safePage > totalPages && totalPages != 0) {
+                    long safePage = 0;
+                    if (safePage > totalPages) {
                         safePage = totalPages;
+                    } else {
+                        safePage = page;
                     }
 
+                    long finalSafePage = safePage;
                     return getDBItems(safePage, itemsPerPage, filter)
-                            .map(items -> new PaginationResponse<>(items, safePage, totalPages, totalItems));
+                            .map(items -> new PaginationResponse<>(items, finalSafePage, totalPages, totalItems));
                 });
     }
 }

@@ -15,7 +15,7 @@ public class ClientService {
 
     private final ClientMapper clientMapper;
 
-    public ClientService(@Qualifier("clientMapperBN") ClientMapper clientMapper) {
+    public ClientService( ClientMapper clientMapper) {
         this.clientMapper = clientMapper;
     }
 

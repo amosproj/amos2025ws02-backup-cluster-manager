@@ -2,6 +2,7 @@ package com.bcm.shared.service;
 
 import com.bcm.shared.config.permissions.Role;
 import com.bcm.shared.model.api.UserDTO;
+import com.bcm.shared.model.database.Group;
 import com.bcm.shared.model.database.User;
 import com.bcm.shared.model.database.UserGroupRelation;
 import com.bcm.shared.repository.GroupMapper;
@@ -17,10 +18,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,9 +47,9 @@ public class UserService implements PaginationProvider<UserDTO> {
 
     private final GroupMapper groupMapper;
 
-    public UserService(@Qualifier("userGroupRelationMapperBN") UserGroupRelationMapper userGroupRelationMapper,
-                       @Qualifier("userMapperBN") UserMapper userMapper,
-                       @Qualifier("groupMapperBN") GroupMapper groupMapper) {
+    public UserService( UserGroupRelationMapper userGroupRelationMapper,
+                        UserMapper userMapper,
+                        GroupMapper groupMapper) {
         this.userGroupRelationMapper = userGroupRelationMapper;
         this.userMapper = userMapper;
         this.groupMapper = groupMapper;
@@ -58,9 +61,8 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @param id the unique identifier of the user
      * @return the user with the specified ID, or null if no user is found
      */
-    @Transactional
-    public User getUserById(Long id) {
-        return userMapper.findById(id);
+    public Mono<User> getUserById(Long id) {
+        return userMapper.findUserById(id);
     }
 
     /**
@@ -69,8 +71,7 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @param name the name of the user to retrieve
      * @return the user with the specified name, or null if no user is found
      */
-    @Transactional
-    public User getUserByName(String name) {
+    public Mono<User> getUserByName(String name) {
         return userMapper.findByName(name);
     }
 
@@ -80,8 +81,7 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @param name the name of the user to retrieve
      * @return the user with the specified name, or null if no user is found
      */
-    @Transactional
-    public List<User> getUserBySubtext(String name) {
+    public Flux<User> getUserBySubtext(String name) {
         return userMapper.findByNameSubtext(name);
     }
 
@@ -90,8 +90,7 @@ public class UserService implements PaginationProvider<UserDTO> {
      *
      * @return a list of User objects representing all users stored in the repository
      */
-    @Transactional
-    public List<User> getAllUsers() {
+    public Flux<User> getAllUsers() {
         return userMapper.findAll();
     }
 
@@ -103,16 +102,19 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @return the user object representing the newly created user, including the generated ID
      */
     @Transactional
-    public User addUserAndAssignGroup(User user, Long groupID) {
-        // Groups give users permissions. So a user without a group would be awkward.
+    public Mono<User> addUserAndAssignGroup(User user, Long groupID) {
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
-        userMapper.insert(user);
-        UserGroupRelation userGroupRelation = new UserGroupRelation();
-        userGroupRelation.setUserId(user.getId());
-        userGroupRelation.setGroupId(groupID);
-        userGroupRelation.setAddedAt(Instant.now());
-        userGroupRelationMapper.insert(userGroupRelation);
-        return userMapper.findById(user.getId());
+        user.setId(null);
+
+        return userMapper.save(user)
+                .flatMap(saved -> {
+                    UserGroupRelation rel = new UserGroupRelation();
+                    rel.setUserId(saved.getId());
+                    rel.setGroupId(groupID);
+                    rel.setAddedAt(Instant.now());
+                    return userGroupRelationMapper.save(rel).thenReturn(saved);
+                })
+                .flatMap(saved -> userMapper.findUserById(saved.getId()));
     }
 
     /**
@@ -121,48 +123,49 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @param user the user object containing updated data. The user must have an existing ID for the update to be performed.
      * @return the user object with updated information, retrieved from the database after the update.
      */
-    @Transactional
-    public User editUser(User user) {
-        userMapper.update(user);
-        return userMapper.findById(user.getId());
+    public Mono<User> editUser(User user) {
+        return userMapper.save(user).flatMap(u -> userMapper.findUserById(u.getId()));
     }
 
     @Transactional
-    public void replaceUsersWithCMUsers(List<User> cmUsers) {
+    public Mono<Void> replaceUsersWithCMUsers(List<User> cmUsers) {
 
         // lock to prevent concurrent replacements
-        synchronized (userReplaceLock) {
             // as of now, we simply delete all users and re-insert from shared CM user table
             // in the future, we might want to do a more intelligent merge, but currently no way to identify node-wise unique users to only update changes
-            deleteAllUsers();
-            insertUsers(cmUsers);
+        return Mono.defer(() -> {
+            synchronized (userReplaceLock) {
+                return userMapper.deleteAll()
+                        .thenMany(Flux.fromIterable(cmUsers)
+                                .concatMap(u -> { u.setId(null); return userMapper.save(u); }))
+                        .then();
+            }
+        });
 
-        }
 
     }
 
+    /*
     private void insertUsers(List<User> users) {
         users.forEach(user -> {
-            userMapper.insert(user);
+            userMapper.save(user);
             logger.info("Inserted user {}", user.getName());
 
         });
     }
 
-    private int deleteAllUsers() {
+    private Mono<Void> deleteAllUsers() {
         return userMapper.deleteAll();
     }
-
+    */
     /**
      * Deletes a user by their unique identifier.
      *
      * @param id the unique identifier of the user to delete
      * @return true if a user was successfully deleted, false otherwise
      */
-    @Transactional
-    public boolean deleteUser(Long id) {
-        // deleting a user should also delete all related user-group relations through cascading
-        return userMapper.delete(id) == 1;
+    public Mono<Boolean> deleteUser(Long id) {
+        return userMapper.deleteUserById(id).thenReturn(true);
     }
 
     /**
@@ -171,23 +174,24 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @param userId the ID of the user
      * @return the highest rank value, or 0 if the user has no groups/roles
      */
-    @Transactional
-    public int getUserHighestRank(Long userId) {
-        var relations = userGroupRelationMapper.findByUser(userId);
-        return relations.stream()
-                .map(rel -> groupMapper.findById(rel.getGroupId()))
-                .filter(group -> group != null && group.isEnabled())
-                .map(group -> {
+    public Mono<Integer>  getUserHighestRank(Long userId) {
+        return userGroupRelationMapper.findByUser(userId)
+                .map(UserGroupRelation::getGroupId)
+                .distinct()
+                .collectList()
+                .flatMapMany(groupMapper::findAllById)   // avoids N+1
+                .filter(Group::isEnabled)
+                .mapNotNull(group -> {
                     try {
                         return Role.valueOf(group.getName().toUpperCase().replace(' ', '_'));
                     } catch (IllegalArgumentException e) {
                         return null;
                     }
                 })
-                .filter(role -> role != null)
-                .mapToInt(Role::getRank)
-                .max()
-                .orElse(0);
+                .filter(Objects::nonNull)
+                .map(role -> role != null ? role.getRank() : 0)
+                .reduce(0, Math::max);
+
     }
 
     /**
@@ -197,10 +201,12 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @param requesterRank the rank of the requesting user
      * @return filtered list of users with lower rank
      */
-    private List<User> filterUsersByRank(List<User> users, int requesterRank) {
-        return users.stream()
-                .filter(user -> getUserHighestRank(user.getId()) < requesterRank)
-                .collect(Collectors.toList());
+    public Flux<User> filterUsersByRank(Flux<User> users, int requesterRank) {
+        return users.flatMap(user ->
+                getUserHighestRank(user.getId())
+                        .filter(rank -> rank < requesterRank)
+                        .map(r -> user)
+        );
     }
 
     /**
@@ -210,12 +216,16 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @param requesterRank the rank of the requesting user
      * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
      */
-    private void validateRankPermission(Long targetUserId, int requesterRank) {
-        int targetRank = getUserHighestRank(targetUserId);
-        if (targetRank >= requesterRank) {
-            throw new AccessDeniedException("Insufficient rank to manage this user");
-        }
+    private Mono<Void> validateRankPermission(Long targetUserId, int requesterRank) {
+        return getUserHighestRank(targetUserId)
+                .flatMap(targetRank -> {
+                    if (targetRank >= requesterRank) {
+                        return Mono.error(new AccessDeniedException("Insufficient rank to manage this user"));
+                    }
+                    return Mono.empty();
+                });
     }
+
 
     /**
      * Retrieves users by name subtext, filtered by requester's rank.
@@ -225,10 +235,11 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @param requesterRank the rank of the requesting user
      * @return list of users with lower rank matching the name subtext
      */
-    @Transactional
-    public List<User> getUserBySubtextWithRankCheck(String name, int requesterRank) {
-        List<User> users = userMapper.findByNameSubtext(name);
-        return filterUsersByRank(users, requesterRank);
+    public Mono<List<User>> getUserBySubtextWithRankCheck(String name, int requesterRank) {
+        return userMapper.findByNameSubtext(name)
+                .filterWhen(user -> getUserHighestRank(user.getId())
+                        .map(rank -> rank < requesterRank))
+                .collectList();
     }
 
     /**
@@ -240,13 +251,9 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @return the updated user object
      * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
      */
-    @Transactional
-    public User editUserWithRankCheck(User user, int requesterRank) {
-        validateRankPermission(user.getId(), requesterRank);
-        userMapper.update(user);
-        return userMapper.findById(user.getId());
+    public Mono<User> editUserWithRankCheck(User user, int requesterRank) {
+        return validateRankPermission(user.getId(), requesterRank).then(userMapper.save(user));
     }
-
     /**
      * Deletes a user with rank validation.
      * Only allows deleting users with a lower rank than the requester.
@@ -257,9 +264,13 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
      */
     @Transactional
-    public boolean deleteUserWithRankCheck(Long id, int requesterRank) {
-        validateRankPermission(id, requesterRank);
-        return userMapper.delete(id) == 1;
+    public Mono<Boolean> deleteUserWithRankCheck(Long id, int requesterRank) {
+        return validateRankPermission(id, requesterRank)
+                .then(userMapper.existsUserById(id))
+                .flatMap(exists ->
+                        exists ? userMapper.deleteUserById(id).thenReturn(true)
+                                : Mono.just(false)
+                );
     }
 
     /**
@@ -273,23 +284,27 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @throws AccessDeniedException if the requester's rank is not higher than the target group's rank
      */
     @Transactional
-    public User addUserAndAssignGroupWithRankCheck(User user, Long groupID, int requesterRank) {
-        // Check if the requester has higher rank than the target group
-        var targetGroup = groupMapper.findById(groupID);
-        if (targetGroup != null && targetGroup.isEnabled()) {
-            try {
-                Role targetRole = Role.valueOf(targetGroup.getName().toUpperCase().replace(' ', '_'));
-                if (targetRole.getRank() >= requesterRank) {
-                    throw new AccessDeniedException("Insufficient rank to create user in this group");
-                }
-            } catch (IllegalArgumentException e) {
-                // Group doesn't map to a valid role, allow it
-            }
-        }
+    public Mono<User> addUserAndAssignGroupWithRankCheck(User user, Long groupId, int requesterRank) {
 
-        // Use the existing method to add user and assign group
-        return addUserAndAssignGroup(user, groupID);
+        return groupMapper.findById(groupId)
+                .flatMap(targetGroup -> {
+                    if (!targetGroup.isEnabled()) {
+                        return Mono.just(targetGroup);
+                    }
+                    try {
+                        Role targetRole = Role.valueOf(targetGroup.getName().toUpperCase().replace(' ', '_'));
+                        if (targetRole.getRank() >= requesterRank) {
+                            return Mono.error(new AccessDeniedException("Insufficient rank to create user in this group"));
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                    }
+
+                    return Mono.just(targetGroup);
+                })
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Group not found: " + groupId)))
+                .then(addUserAndAssignGroup(user, groupId));
     }
+
 
     // Generate example user for testing purposes
     public void generateExampleUsers(long amount) {
@@ -300,7 +315,7 @@ public class UserService implements PaginationProvider<UserDTO> {
             user.setEnabled(true);
             user.setCreatedAt(Instant.now());
             user.setUpdatedAt(Instant.now());
-            userMapper.insert(user);
+            userMapper.save(user);
         }
     }
 
@@ -312,15 +327,16 @@ public class UserService implements PaginationProvider<UserDTO> {
 
     }
 
-    @Override
     public Mono<List<UserDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
-        // Add SQL query with filter and pagination to get the actual items
+        Boolean enabled = getUserFilter(filter);
 
-        Boolean isUserEnabled = getUserFilter(filter);
-
-        List<User> users = userMapper.getPaginatedAndFilteredUsers(page, itemsPerPage, filter.getSearch(), filter.getSortBy(), filter.getSortOrder(), isUserEnabled);
-        return users.stream().map(UserDTO::fromUser).toList();
+        return userMapper
+                .getPaginatedAndFilteredUsers(page, itemsPerPage, filter.getSearch(),
+                        filter.getSortBy(), filter.getSortOrder(), enabled)
+                .map(UserDTO::fromUser)
+                .collectList();
     }
+
 
     private Boolean getUserFilter(Filter filter) {
         Set<String> filters = filter.getFilters();

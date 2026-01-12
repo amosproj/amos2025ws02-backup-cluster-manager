@@ -16,7 +16,7 @@ public class GroupService {
 
     private final GroupMapper groupMapper;
 
-    public GroupService(@Qualifier("groupMapperBN") GroupMapper groupMapper) {
+    public GroupService( GroupMapper groupMapper) {
         this.groupMapper = groupMapper;
     }
 

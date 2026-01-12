@@ -2,7 +2,6 @@ package com.bcm.shared.repository;
 
 import com.bcm.cluster_manager.model.api.BigClientDTO;
 import com.bcm.shared.model.database.Client;
-import org.apache.ibatis.annotations.*;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;

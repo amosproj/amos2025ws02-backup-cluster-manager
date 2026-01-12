@@ -13,12 +13,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = Replace.ANY) // Use in-memory DB for tests
@@ -43,19 +46,17 @@ class UserGroupRelationMapperTest {
     @Autowired
     private UserMapper userMapper;
 
-    private User createTestUser() {
-        // Arrange: create a new user
+    private Mono<User> createTestUser() {
         User user = new User();
         user.setName("testuser_" + System.currentTimeMillis());
         user.setPasswordHash("hashedpwd");
         user.setEnabled(true);
-        user.setCreatedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
-        user.setUpdatedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        user.setCreatedAt(now);
+        user.setUpdatedAt(now);
 
-        // Act: insert and capture the int return value
-        int rowsInserted = userMapper.insert(user);
-
-        return user;
+        return userMapper.save(user)
+                .doOnNext(saved -> assertThat(saved.getId()).isNotNull());
     }
 
     @Autowired
@@ -68,40 +69,55 @@ class UserGroupRelationMapperTest {
      *
      * @return the created and persisted test group instance
      */
-    private Group createTestGroup() {
+    private Mono<Group> createTestGroup() {
         Group group = new Group();
-        group.setName("Superuser");
+        group.setName("Superuser_" + System.currentTimeMillis());
         group.setEnabled(true);
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         group.setCreatedAt(now);
         group.setUpdatedAt(now);
-        groupMapper.insert(group);
-        return group;
+
+        return groupMapper.save(group)
+                .doOnNext(saved -> assertThat(saved.getId()).isNotNull());
     }
 
     @Test
     void testExistsWhenRelationExists() {
-        User user = createTestUser();
-        Group group = createTestGroup();
-        UserGroupRelation ugr = createTestUserGroupRelation(user.getId(), group.getId());
+        Mono<Boolean> flow =
+                createTestUser()
+                        .zipWith(createTestGroup())
+                        .flatMap(tuple -> {
+                            User user = tuple.getT1();
+                            Group group = tuple.getT2();
 
-        // Act
-        boolean result = userGroupRelationMapper.exists(user.getId(), group.getId());
+                            return Mono.fromSupplier(() ->
+                                    userGroupRelationMapper.insert(
+                                            createUgr(user.getId(), group.getId())
+                                    )
+                            ).then(
+                                    userGroupRelationMapper.exists(user.getId(), group.getId())
+                            );
+                        });
 
-        // Assert
-        assertTrue(result, "Exists should return true when the relation exists");
+        StepVerifier.create(flow)
+                .expectNext(true)
+                .verifyComplete();
+    }
+
+    private UserGroupRelation createUgr(Long userId, Long groupId) {
+        UserGroupRelation ugr = new UserGroupRelation();
+        ugr.setUserId(userId);
+        ugr.setGroupId(groupId);
+        ugr.setAddedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
+        return ugr;
     }
 
     @Test
     void testExistsWhenRelationDoesNotExist() {
-        // Arrange
-        Long userId = 99L;
-        Long groupId = 99L;
+        Mono<Boolean> flow = userGroupRelationMapper.exists(Long.MAX_VALUE - 1, Long.MAX_VALUE - 1);
 
-        // Act
-        boolean result = userGroupRelationMapper.exists(userId, groupId);
-
-        // Assert
-        assertFalse(result, "Exists should return false when the relation does not exist");
+        StepVerifier.create(flow)
+                .expectNext(false)
+                .verifyComplete();
     }
 }

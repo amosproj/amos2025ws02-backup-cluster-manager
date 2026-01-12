@@ -15,22 +15,19 @@ spring:
     #url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node0}
     #user: ${POSTGRES_USER:appuser}
     #password: ${POSTGRES_PASSWORD:apppassword}
-  datasource:
+  r2dbc:
     bn:
-      url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node0}
+      url: ${R2DBC_BN_URL:r2dbc:postgresql://localhost:5432/bcm_node0}
       username: ${POSTGRES_USER:appuser}
       password: ${POSTGRES_PASSWORD:apppassword}
-      driverClassName: org.postgresql.Driver
-      hikari:
-        maximum-pool-size: 10
-        minimum-idle: 5
-        connection-timeout: 30000
   logging:
     level:
       root: INFO
       com.bcm: DEBUG
+
 server:
   port: ${APPLICATION_PORT:8080}
+
 application:
   cors:
     allowed-origin: ${ALLOWED_ORIGINS:http://localhost:4200}
@@ -39,11 +36,12 @@ application:
   node:
     public-address: ${NODE_ADDRESS}
 
-mybatis:
-  type-aliases-package: com.bcm.shared.model.database
-  configuration:
-    map-underscore-to-camel-case: true
-    jdbc-type-for-null: OTHER
+
+# mybatis:
+#   type-aliases-package: com.bcm.shared.model.database
+#   configuration:
+#     map-underscore-to-camel-case: true
+#     jdbc-type-for-null: OTHER
 
 
 
@@ -53,16 +51,12 @@ spring:
   config:
     activate:
       on-profile: cluster_manager
-  datasource:
+
+  r2dbc:
     cm:
-      url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
+      url: ${R2DBC_CM_URL:r2dbc:postgresql://localhost:5432/bcm}
       username: ${POSTGRES_USER:appuser}
       password: ${POSTGRES_PASSWORD:apppassword}
-      driverClassName: org.postgresql.Driver
-      hikari:
-        maximum-pool-size: 10
-        minimum-idle: 5
-        connection-timeout: 30000
   #flyway:
   #  locations: classpath:db/migration/cluster_manager
   #  url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}

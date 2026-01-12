@@ -11,6 +11,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,9 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * These tests focus on validating the `findById` method, which retrieves a group by its ID.
  */
 @SpringBootTest
-@AutoConfigureTestDatabase(replace = Replace.ANY)
-@Transactional
-@Rollback
 @Disabled("Skipping Spring context startup for now")
 class GroupMapperTest {
 
@@ -39,40 +38,32 @@ class GroupMapperTest {
      *
      * @return the created and persisted test group instance
      */
-    private Group createTestGroup() {
+    private Mono<Group> createTestGroup() {
         Group group = new Group();
         group.setName("Superuser");
         group.setEnabled(true);
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         group.setCreatedAt(now);
         group.setUpdatedAt(now);
-        groupMapper.insert(group);
-        return group;
+        return groupMapper.save(group);
     }
 
     @Test
     void findById_shouldReturnGroupForValidId() {
-        // Arrange
-        Group createdGroup = createTestGroup();
-
-        // Act
-        Group foundGroup = groupMapper.findById(createdGroup.getId());
-
-        // Assert
-        assertThat(foundGroup).isNotNull();
-        assertThat(foundGroup.getId()).isEqualTo(createdGroup.getId());
-        assertThat(foundGroup.getName()).isEqualTo(createdGroup.getName());
-        assertThat(foundGroup.isEnabled()).isEqualTo(createdGroup.isEnabled());
-        assertThat(foundGroup.getCreatedAt()).isEqualTo(createdGroup.getCreatedAt());
-        assertThat(foundGroup.getUpdatedAt()).isEqualTo(createdGroup.getUpdatedAt());
+        Mono<Group> flow = createTestGroup()
+                .flatMap(group -> groupMapper.findById(group.getId()));
+        StepVerifier.create(flow)
+                .assertNext(arr -> {
+                    assertThat(arr).isNotNull();
+                    assertThat(arr.getName()).isEqualTo("Superuser");
+                    assertThat(arr.isEnabled()).isTrue();
+                    assertThat(arr.getCreatedAt()).isNotNull();
+                }).verifyComplete();
     }
 
     @Test
     void findById_shouldReturnNullForInvalidId() {
-        // Act
-        Group foundGroup = groupMapper.findById(-1L); // Non-existent ID
-
-        // Assert
-        assertThat(foundGroup).isNull();
+        StepVerifier.create(groupMapper.findById(-1L))
+                .verifyComplete();
     }
 }

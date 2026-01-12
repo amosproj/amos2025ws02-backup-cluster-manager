@@ -7,6 +7,7 @@ import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -31,13 +32,13 @@ public class UserController {
     }
 
     @GetMapping
-    public Mono<List<User>> getAllUsers() {
-        return Mono.fromCallable(() -> userService.getAllUsers());
+    public Flux<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 
     @GetMapping("/{id:\\d+}")
     public Mono<User> getUser(@PathVariable Long id) {
-        return Mono.fromCallable(() -> userService.getUserById(id));
+        return userService.getUserById(id);
     }
 
     // Commented out to avoid ambiguity with getUserById
@@ -47,22 +48,22 @@ public class UserController {
     // }
 
     @GetMapping("search/{name}")
-    public Mono<List<User>> getUserBySubtext(@PathVariable String name) {
-        return Mono.fromCallable(() -> userService.getUserBySubtext(name));
+    public Flux<User> getUserBySubtext(@PathVariable String name) {
+        return userService.getUserBySubtext(name);
     }
 
     @PostMapping("/{group_id}")
     public Mono<User> createUser(@PathVariable Long group_id, @RequestBody User user) {
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
-        return Mono.fromCallable(() -> userService.addUserAndAssignGroup(user, group_id));
+        return userService.addUserAndAssignGroup(user, group_id);
     }
 
     @PutMapping("/{id:\\d+}")
     public Mono<User> updateUser(@PathVariable Long id, @RequestBody User user) {
         user.setUpdatedAt(Instant.now());
         user.setPasswordHash(null);
-        return Mono.fromCallable(() -> userService.editUser(user));
+        return userService.editUser(user);
     }
 
     @DeleteMapping("/{id:\\d+}")

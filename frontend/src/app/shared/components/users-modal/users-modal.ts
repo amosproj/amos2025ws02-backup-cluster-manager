@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, OnInit, Signal, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { Subject } from 'rxjs';
@@ -19,7 +19,7 @@ type User = { id?: number; name: string; passwordHash?: string; enabled?: boolea
 @Component({
   selector: 'app-users-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './users-modal.html',
 })
 
@@ -32,6 +32,12 @@ export class UsersModal implements OnChanges, OnInit {
   clients = signal<any[]>([]);
   tasks = signal<any[]>([]);
   sizeBytes: number = 0;
+
+  intervalOptions = [
+    { value: 'DAILY', label: 'Daily' },
+    { value: 'WEEKLY', label: 'Weekly' },
+    { value: 'MONTHLY', label: 'Monthly' }
+  ];
 
   nodeAddress: string = '';
   formData: {
@@ -56,6 +62,8 @@ export class UsersModal implements OnChanges, OnInit {
       task: null,
       sizeBytes: 0
     };
+
+  taskFormData!: FormGroup;
   groups: Group[] = [];
   chooseUsers: User[] = [];
   loadingUsers = false;
@@ -64,8 +72,16 @@ export class UsersModal implements OnChanges, OnInit {
 
   private nameInput$ = new Subject<string>();
 
-  constructor(private api: ApiService, private nodesService: NodesService, private toast: ToastService, private backupsService: BackupsService, private clientsService: ClientsService, private tasksService: TasksService
-  ) { }
+  constructor(private api: ApiService, private nodesService: NodesService, private toast: ToastService, private backupsService: BackupsService, private clientsService: ClientsService, private tasksService: TasksService, private fb: FormBuilder
+  ) {
+    this.taskFormData = this.fb.group({
+      name: ['', Validators.required],
+      source: ['', Validators.required],
+      enabled: [true, Validators.required],
+      interval: ['', Validators.required],
+      clientSelection: [null, Validators.required],
+    });
+   }
 
   ngOnInit() {
     this.loadGroups();
@@ -243,7 +259,21 @@ console.log("Backup payload:", payload);
         console.error('Error creating backup:', error);
       }
     });
+  }
 
+  onAddTask(): void {
+
+      const { clientSelection, ...taskData } = this.taskFormData.value;    
+    // console.log("Payload:",  {id:null, clientId: client.clientId, name,  source, enabled, interval, node: client.nodeDTO});
+    this.tasksService.createTask({id:null,...clientSelection, ...taskData}).subscribe({
+      next: (response) => {
+        // console.log('Task created:', response);
+        this.close();
+      },
+      error: (error) => {
+        console.error('Error creating task:', error);
+      }
+    });
   }
 
   close() {

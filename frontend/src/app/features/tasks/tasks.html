@@ -1,12 +1,19 @@
+<app-users-modal
+  [open]="isAddTasksModalOpen"
+  [mode]="modalMode"
+  (closed)="onModalClosed()"
+></app-users-modal>
+
 <app-data-table
   [fetchData]="fetchTasks"
   [columns]="tableColumns()"
   [filters]="tableFilters()"
   [loading]="loading$ | async"
   [addButtonText]="'Add Task'"
-  (add)="openAddModal()"
+  (add)="openAddBackupModal('tasks')"
   [showAddButton]="authService.hasPermission(UserPermissionsEnum.TaskCreate)"
   [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.TaskDelete)"
+  [refreshTrigger]="refreshTrigger()"
 />
 
 @if (showAddModal()) {

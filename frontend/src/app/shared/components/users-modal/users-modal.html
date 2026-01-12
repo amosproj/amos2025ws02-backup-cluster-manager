@@ -66,20 +66,52 @@
         </div>
       </form>
 
-       <!--Add Tasks
-      <form *ngIf="mode === 'tasks'" (ngSubmit)="onAddTasks()">
+       <!--Add Tasks-->
+      <form *ngIf="mode === 'tasks'" [formGroup]="taskFormData" (ngSubmit)="onAddTask()">
         <div class="py-4">
-          <label class="block mb-2 text-sm font-medium text-heading" for="create-tasks">Enter the address of the tasks to add:</label>
-            <input id="create-tasks" type="text" [(ngModel)]="tasksAddress" name="name"
-              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
-              placeholder="Node Address" required />
+           <label class="block text-sm mb-1">Name</label>
+          <input id="name" type="text" formControlName="name" name="name"
+                class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+                placeholder="Task Name" required />
         </div>
+        <div class="py-4">
+           <label class="block text-sm mb-1">Client</label>
+          <select formControlName="clientSelection" name="clientId"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
+              <option [ngValue]="undefined" disabled selected>Select Client</option>
+              <option *ngFor="let client of clients()" [ngValue]="{ clientId: client.id, nodeDTO: client.nodeDTO }">
+                {{ client.nodeDTO.address + ' - ' + client.nameOrIp }}
+              </option>
+            </select>
+        </div>
+        <div class="py-4">
+            <label class="block mb-2 text-sm font-medium text-heading" for="source">Source</label>
+            <input id="source" type="text" formControlName="source" name="source"
+                class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5"
+                placeholder="Source" required />
+        </div>
+        <div class="py-4">
+            <label class="flex items-center gap-2 text-sm">
+                Enabled <input type="checkbox" formControlName="enabled" name="enabled" [value]="true" class="border border-1"/></label>
+
+        </div>
+         <div class="py-4">
+           <label class="block text-sm mb-1">Interval</label>
+          <select formControlName="interval" name="interval"
+              class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
+              <option [ngValue]="undefined" disabled selected>Select Interval</option>
+              <option *ngFor="let option of intervalOptions" [ngValue]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+        </div>
+
         <div class="flex justify-end space-x-3 border-t border-default pt-4">
-          <button type="button" class="px-4 py-2 text-sm bg-brand text-white rounded-base" (click)="onAddTasks()">Add Tasks</button>
+          <button type="submit" class="px-4 py-2 text-sm bg-brand text-white rounded-base" >Add Tasks</button>
           <button type="button" (click)="close()"
             class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
-      </form> -->
+      </form> 
 
       <!-- Delete Confirmation -->
       <div *ngIf="mode === 'delete'" >

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, OnInit, Signal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
@@ -7,6 +7,10 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { NodesService } from '../../../features/nodes/nodes.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ToastTypeEnum } from '../../types/toast';
+import { Backups } from '../../../features/backups/backups';
+import { ClientsService } from '../../../features/clients/clients.service';
+import { TasksService } from '../../../features/tasks/tasks.service';
+import { BackupDTO, BackupsService } from '../../../features/backups/backups.service';
 
 type Group = { id: number; name: string; enabled?: boolean };
 type User = { id?: number; name: string; passwordHash?: string; enabled?: boolean; createdAt?: string; updatedAt?: string; };
@@ -25,6 +29,10 @@ export class UsersModal implements OnChanges, OnInit {
   @Input() user: any | null = null;
   @Output() closed = new EventEmitter<void>();
 
+  clients = signal<any[]>([]);
+  tasks = signal<any[]>([]);
+  sizeBytes: number = 0;
+
   nodeAddress: string = '';
   formData: {
     id?: number;
@@ -39,6 +47,15 @@ export class UsersModal implements OnChanges, OnInit {
       enabled: true
     };
 
+  backupFormData: {
+    clientId: number;
+    taskId: number;
+    sizeBytes: number;
+  } = {
+      clientId: 0,
+      taskId: 0,
+      sizeBytes: 0
+    };
   groups: Group[] = [];
   chooseUsers: User[] = [];
   loadingUsers = false;
@@ -47,11 +64,29 @@ export class UsersModal implements OnChanges, OnInit {
 
   private nameInput$ = new Subject<string>();
 
-  constructor(private api: ApiService, private nodesService: NodesService, private toast: ToastService
+  constructor(private api: ApiService, private nodesService: NodesService, private toast: ToastService, private backupsService: BackupsService, private clientsService: ClientsService, private tasksService: TasksService
   ) { }
 
   ngOnInit() {
     this.loadGroups();
+    
+    this.clientsService.getClientList().subscribe({
+      next: (clients) => {
+        this.clients.set(clients ?? []);
+      },
+      error: (err) => {
+        console.error('Failed to load clients', err);
+      }
+    });
+
+    this.tasksService.getTaskList().subscribe({
+      next: (tasks) => {
+        this.tasks.set(tasks ?? []);
+      },
+      error: (err) => {
+        console.error('Failed to load tasks', err);
+      }
+    });
 
     this.nameInput$
       .pipe(
@@ -177,6 +212,39 @@ export class UsersModal implements OnChanges, OnInit {
         this.toast.show("Error adding node!", ToastTypeEnum.ERROR);
       }
     })
+  }
+
+  submitAddBackup() {
+    const clientId = this.backupFormData.clientId;
+    const taskId = this.backupFormData.taskId;
+    const sizeBytes = this.backupFormData.sizeBytes;
+
+    console.log('Submitting backup with data:', this.backupFormData);
+    const payload: BackupDTO = {
+      clientId: clientId,
+      taskId: taskId,
+      sizeBytes:  Number(sizeBytes),
+      nodeDTO: this.clients().find(c => c.id === clientId)?.nodeDTO
+    };
+
+
+    this.api.post('backup', this.backupFormData).subscribe({
+      next: () => {
+        this.close();
+
+      },
+    });
+
+    this.backupsService.createBackup(payload).subscribe({
+      next: (response) => {
+        //console.log('Backup created:', response);
+        this.close();
+      },
+      error: (error) => {
+        console.error('Error creating backup:', error);
+      }
+    });
+
   }
 
   close() {

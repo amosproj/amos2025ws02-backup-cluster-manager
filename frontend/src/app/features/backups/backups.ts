@@ -13,13 +13,15 @@ import {ClientsService} from '../clients/clients.service';
 import {TasksService} from '../tasks/tasks.service';
 import {AutoRefreshService} from '../../services/dynamic-page';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
+import { UsersModal } from '../../shared/components/users-modal/users-modal';
 
 @Component({
   selector: 'app-backups',
   imports: [
     AsyncPipe,
     DataTable,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    UsersModal
   ],
   templateUrl: './backups.html',
   styleUrl: './backups.css',
@@ -40,6 +42,18 @@ export class Backups {
   ]);
   clients = signal<any[]>([]);
   tasks = signal<any[]>([]);
+  
+  isAddBackupModalOpen = false;
+  refreshTrigger = signal(0);
+  modalMode: 'backups' = 'backups';
+  openAddBackupModal(mode: 'backups' ) {
+    this.modalMode = mode;
+    this.isAddBackupModalOpen = true;
+  }
+  onModalClosed() {
+    this.isAddBackupModalOpen = false;
+    this.refreshTrigger.update(value => value + 1);
+  }
 
   selectedBackups: any[] = [];
   onSelectionChange(rows: any[]): void {
@@ -139,43 +153,6 @@ export class Backups {
 
   closeAddModal() {
     this.showAddModal.set(false);
-  }
-
-  submitAddBackup() {
-    if (this.addForm.invalid) {
-      this.addForm.markAllAsTouched();
-      return;
-    }
-    const { clientId, taskId, sizeBytes } = this.addForm.value;
-
-    const payload: BackupDTO = {
-      clientId: clientId.id,
-      taskId: taskId.id,
-      sizeBytes: Number(sizeBytes),
-      nodeDTO: clientId.nodeDTO
-    };
-
-
-    this.apiService.post('backup', this.addForm.value).subscribe({
-      next: () => {
-        this.closeAddModal();
-
-      },
-    });
-
-    this.backupsService.createBackup(payload).subscribe({
-      next: (response) => {
-        //console.log('Backup created:', response);
-        this.closeAddModal();
-        if (this.dataTable) {
-          this.dataTable.loadData();
-        }
-      },
-      error: (error) => {
-        console.error('Error creating backup:', error);
-      }
-    });
-
   }
 
   ngOnInit(): void {

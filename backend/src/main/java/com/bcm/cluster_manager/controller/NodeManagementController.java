@@ -14,8 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
-
 import java.util.Collections;
 import java.util.Map;
 
@@ -35,52 +33,55 @@ public class NodeManagementController {
 
     @PreAuthorize(Permission.Require.NODE_UPDATE)
     @PutMapping("/node")
-    public void updateManageMode(@RequestBody NodeDTO nodeDTO) {
-        nodeManagementService.updateNodeManagedMode(nodeDTO);
+    public Mono<Void> updateManageMode(@RequestBody NodeDTO nodeDTO) {
+        return Mono.fromRunnable(() -> nodeManagementService.updateNodeManagedMode(nodeDTO));
     }
 
     @PreAuthorize(Permission.Require.NODE_DELETE)
     @DeleteMapping("/node/{id}")
-    public void deleteNode(@PathVariable Long id) {
-        nodeManagementService.deleteNode(id);
+    public Mono<Void> deleteNode(@PathVariable Long id) {
+        return Mono.fromRunnable(() -> nodeManagementService.deleteNode(id));
     }
 
     @PreAuthorize(Permission.Require.NODE_READ)
     @GetMapping("/nodes/{id}")
-    public ResponseEntity<NodeDTO> getNodeById(@PathVariable Long id) {
-        Optional<NodeDTO> node = nodeManagementService.getNodeById(id);
-        return node.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+    public Mono<ResponseEntity<NodeDTO>> getNodeById(@PathVariable Long id) {
+        return Mono.fromCallable(() -> nodeManagementService.getNodeById(id))
+                .map(optNode -> optNode.map(ResponseEntity::ok)
+                        .orElse(ResponseEntity.notFound().build()));
     }
 
     @PreAuthorize(Permission.Require.NODE_CREATE)
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> register(@RequestBody RegisterRequest req) {
-        try {
+    public Mono<ResponseEntity<Map<String, String>>> register(@RequestBody RegisterRequest req) {
+        return Mono.fromCallable(() -> {
             nodeManagementService.registerNode(req);
             return ResponseEntity.ok(Collections.singletonMap("status", "OK"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid request"));
-        }
+        }).onErrorResume(e ->
+                Mono.just(ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid request"))));
     }
 
     @PreAuthorize(Permission.Require.NODE_CONTROL)
     @PostMapping("/nodes/{id}/shutdown")
-    public ResponseEntity<NodeControlResponse> shutdownNode(@PathVariable Long id) {
-        boolean success = nodeManagementService.shutdownNode(id);
-        if (success) {
-            return ResponseEntity.ok(NodeControlResponse.success("Shutdown command sent successfully"));
-        }
-        return ResponseEntity.badRequest().body(NodeControlResponse.error("Failed to send shutdown command"));
+    public Mono<ResponseEntity<NodeControlResponse>> shutdownNode(@PathVariable Long id) {
+        return Mono.fromCallable(() -> nodeManagementService.shutdownNode(id))
+                .map(success -> {
+                    if (success) {
+                        return ResponseEntity.ok(NodeControlResponse.success("Shutdown command sent successfully"));
+                    }
+                    return ResponseEntity.badRequest().body(NodeControlResponse.error("Failed to send shutdown command"));
+                });
     }
 
     @PreAuthorize(Permission.Require.NODE_CONTROL)
     @PostMapping("/nodes/{id}/restart")
-    public ResponseEntity<NodeControlResponse> restartNode(@PathVariable Long id) {
-        boolean success = nodeManagementService.restartNode(id);
-        if (success) {
-            return ResponseEntity.ok(NodeControlResponse.success("Restart command sent successfully"));
-        }
-        return ResponseEntity.badRequest().body(NodeControlResponse.error("Failed to send restart command"));
+    public Mono<ResponseEntity<NodeControlResponse>> restartNode(@PathVariable Long id) {
+        return Mono.fromCallable(() -> nodeManagementService.restartNode(id))
+                .map(success -> {
+                    if (success) {
+                        return ResponseEntity.ok(NodeControlResponse.success("Restart command sent successfully"));
+                    }
+                    return ResponseEntity.badRequest().body(NodeControlResponse.error("Failed to send restart command"));
+                });
     }
 }

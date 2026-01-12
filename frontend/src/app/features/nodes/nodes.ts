@@ -70,12 +70,12 @@ export class Nodes {
   ) {
   }
 
-  isAddUserModalOpen = false;
+  isAddNodeModalOpen = false;
   refreshTrigger = signal(0);
   modalMode: 'node' = 'node';
   openAddNodeModal(mode: 'node' ) {
     this.modalMode = mode;
-    this.isAddUserModalOpen = true;
+    this.isAddNodeModalOpen = true;
   }
 
   fetchNodes = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder: SortOrder) => {
@@ -124,7 +124,7 @@ export class Nodes {
   }
 
   onModalClosed() {
-    this.isAddUserModalOpen = false;
+    this.isAddNodeModalOpen = false;
     this.refreshTrigger.update(value => value + 1);
   }
 

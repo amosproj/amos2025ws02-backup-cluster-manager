@@ -35,7 +35,7 @@
       <form *ngIf="mode === 'backups'" (ngSubmit)="submitAddBackup()">
         <div class="py-4">
            <label class="block text-sm mb-1">Client</label>
-          <select  [(ngModel)]="backupFormData.clientId" name="clientId"
+          <select  [(ngModel)]="backupFormData.client" name="clientId"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
               <option [ngValue]="undefined" disabled selected>Select Client</option>
               <option *ngFor="let client of clients()" [ngValue]="client">
@@ -45,7 +45,7 @@
         </div>
         <div class="py-4">
            <label class="block text-sm mb-1">Tasks</label>
-          <select [(ngModel)]="backupFormData.taskId" name="taskId"
+          <select [(ngModel)]="backupFormData.task" name="taskId"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
               <option [ngValue]="undefined" disabled selected>Select Task</option>
               <option *ngFor="let task of tasks()" [ngValue]="task">

@@ -48,12 +48,12 @@ export class UsersModal implements OnChanges, OnInit {
     };
 
   backupFormData: {
-    clientId: number;
-    taskId: number;
+    client: any;
+    task: any;
     sizeBytes: number;
   } = {
-      clientId: 0,
-      taskId: 0,
+      client: null,
+      task: null,
       sizeBytes: 0
     };
   groups: Group[] = [];
@@ -215,19 +215,18 @@ export class UsersModal implements OnChanges, OnInit {
   }
 
   submitAddBackup() {
-    const clientId = this.backupFormData.clientId;
-    const taskId = this.backupFormData.taskId;
+    const client = this.backupFormData.client;
+    const task = this.backupFormData.task;
     const sizeBytes = this.backupFormData.sizeBytes;
 
-    console.log('Submitting backup with data:', this.backupFormData);
     const payload: BackupDTO = {
-      clientId: clientId,
-      taskId: taskId,
+      clientId: client.id,
+      taskId: task.id,
       sizeBytes:  Number(sizeBytes),
-      nodeDTO: this.clients().find(c => c.id === clientId)?.nodeDTO
+      nodeDTO: client.nodeDTO
     };
 
-
+console.log("Backup payload:", payload);
     this.api.post('backup', this.backupFormData).subscribe({
       next: () => {
         this.close();

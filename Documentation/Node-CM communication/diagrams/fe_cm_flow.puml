@@ -1,0 +1,51 @@
+@startuml
+skinparam monochrome true
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Admin User" as User
+participant "Angular Frontend\n(Browser)" as FE
+participant "Cluster Manager\n(CM Backend)" as CM
+
+== Job Triggering (Asynchron) ==
+User -> FE: Klickt "Start Backup auf Node N1"
+activate FE
+
+FE -> CM: POST /api/backup/start {nodeId: "N1"}
+activate CM
+CM -> CM: Create Job ID "J123"
+CM -> CM: Add J123 to N1 Queue\nSet Status: PENDING
+CM --> FE: HTTP 202 Accepted\n{ "jobId": "J123" }
+deactivate CM
+note right of FE: UI zeigt "Backup wird gestartet..."\nFE merkt sich Job ID J123
+
+deactivate FE
+
+== Status Polling (Prototyp Implementierung) ==
+note over FE, CM: Node holt Job irgendwann ab und aktualisiert Status auf RUNNING...
+
+loop Alle 2 Sekunden
+    FE -> CM: GET /api/jobs/J123/status
+    activate CM
+    CM --> FE: { "status": "PENDING" }
+    deactivate CM
+
+    ... wait 2s ...
+
+    FE -> CM: GET /api/jobs/J123/status
+    activate CM
+    CM --> FE: { "status": "RUNNING", "progress": 50 }
+    deactivate CM
+    FE -> User: UI Update: Ladebalken 50%
+
+    ... wait 2s ...
+
+    FE -> CM: GET /api/jobs/J123/status
+    activate CM
+    CM --> FE: { "status": "COMPLETED" }
+    deactivate CM
+    FE -> User: UI Update: "Backup Erfolgreich!"
+end loop
+
+note right of FE: Alternative für Produktion:\nServer-Sent Events (Push statt Polling)
+@enduml

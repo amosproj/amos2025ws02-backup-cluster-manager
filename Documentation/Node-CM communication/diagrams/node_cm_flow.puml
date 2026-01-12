@@ -1,0 +1,22 @@
+@startuml
+skinparam monochrome true
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "Backup Node\n(Behind Firewall)" as Node
+participant "Cluster Manager\n(CM)" as CM
+
+== Phase: Heartbeat State (slow or fast) ==
+note over Node, CM: No job
+
+Node -> CM: GET /api/node/heartbeat?nodeId=N1
+CM --> Node: HTTP 200 OK\n{ "job": null }
+note left of Node: Node sleeps interval...
+
+... after interval ...
+
+Node -> CM: GET /api/node/heartbeat?nodeId=N1
+CM --> Node: HTTP 200 OK\n{ "job": null }
+note left of Node: Node sleeps interval...
+
+@enduml

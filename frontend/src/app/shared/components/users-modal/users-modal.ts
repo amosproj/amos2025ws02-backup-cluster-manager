@@ -5,7 +5,6 @@ import {
   EventEmitter,
   OnChanges,
   OnInit,
-  Signal,
   signal,
 } from '@angular/core';
 import {
@@ -22,7 +21,6 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { NodesService } from '../../../features/nodes/nodes.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ToastTypeEnum } from '../../types/toast';
-import { Backups } from '../../../features/backups/backups';
 import { ClientsService } from '../../../features/clients/clients.service';
 import { TasksService } from '../../../features/tasks/tasks.service';
 import { BackupDTO, BackupsService } from '../../../features/backups/backups.service';
@@ -107,8 +105,10 @@ export class UsersModal implements OnChanges, OnInit {
   }
 
   ngOnInit() {
+    if (this.mode === 'create' )
     this.loadGroups();
 
+    if (this.mode === 'backups' || this.mode === 'tasks' ) {
     this.clientsService.getClientList().subscribe({
       next: (clients) => {
         this.clients.set(clients ?? []);
@@ -126,7 +126,7 @@ export class UsersModal implements OnChanges, OnInit {
         console.error('Failed to load tasks', err);
       },
     });
-
+  }
     this.nameInput$
       .pipe(
         debounceTime(250),
@@ -271,11 +271,6 @@ export class UsersModal implements OnChanges, OnInit {
     };
 
     console.log('Backup payload:', payload);
-    this.api.post('backup', this.backupFormData).subscribe({
-      next: () => {
-        this.close();
-      },
-    });
 
     this.backupsService.createBackup(payload).subscribe({
       next: (response) => {

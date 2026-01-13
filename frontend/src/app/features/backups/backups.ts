@@ -1,6 +1,6 @@
 import {Component, signal, ViewChild, OnInit} from '@angular/core';
 import {ApiService} from '../../core/services/api.service';
-import {BackupDTO, BackupsService} from './backups.service';
+import {BackupsService} from './backups.service';
 import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
@@ -14,6 +14,8 @@ import {TasksService} from '../tasks/tasks.service';
 import {AutoRefreshService} from '../../services/dynamic-page';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 import { UsersModal } from '../../shared/components/users-modal/users-modal';
+import { ToastTypeEnum } from '../../shared/types/toast';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-backups',
@@ -30,6 +32,7 @@ export class Backups {
   @ViewChild(DataTable) dataTable!: DataTable;
   private refreshSub?: Subscription;
 
+  
   tableColumns = signal([
     { field: 'id', header: 'ID' },
     { field: 'address', header: 'Node'},
@@ -42,7 +45,8 @@ export class Backups {
   ]);
   clients = signal<any[]>([]);
   tasks = signal<any[]>([]);
-  
+ 
+
   isAddBackupModalOpen = false;
   refreshTrigger = signal(0);
   modalMode: 'backups' = 'backups';
@@ -73,8 +77,10 @@ export class Backups {
           if (completed === rows.length && this.dataTable) {
             this.dataTable.loadData();
           }
+          this.toast.show('Backup deleted successfully!', ToastTypeEnum.SUCCESS);
         },
         error: (error) => {
+          this.toast.show('Error deleting backup!', ToastTypeEnum.ERROR);
           console.error('Error deleting backup:', error);
         }
       });
@@ -117,7 +123,8 @@ export class Backups {
     private apiService: ApiService,
     private fb: FormBuilder,
     public authService: AuthService,
-    private autoRefreshService: AutoRefreshService
+    private autoRefreshService: AutoRefreshService,
+    public toast: ToastService
   ) {
     this.loading$ = this.apiService.loading$;
 

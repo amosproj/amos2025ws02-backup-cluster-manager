@@ -115,8 +115,10 @@ export class Nodes {
           if (completed === rows.length && this.dataTable) {
             this.dataTable.loadData();
           }
+          this.toast.show('Node deleted successfully!', ToastTypeEnum.SUCCESS);
         },
         error: (error) => {
+          this.toast.show('Error deleting node!', ToastTypeEnum.ERROR);
           console.error('Error deleting node:', error);
         }
       });

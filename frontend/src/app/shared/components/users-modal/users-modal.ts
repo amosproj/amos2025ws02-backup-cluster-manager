@@ -174,9 +174,11 @@ export class UsersModal implements OnChanges, OnInit {
     const payload = { ...this.user };
     this.api.post(`users/${this.formData.groupId}`, payload).subscribe({
       next: () => {
+        this.toast.show('User created successfully!', ToastTypeEnum.SUCCESS);
         this.close();
       },
       error: (err: any) => {
+        this.toast.show('Error creating user!', ToastTypeEnum.ERROR);
         console.error('Failed to create user', err);
       },
     });
@@ -217,10 +219,12 @@ export class UsersModal implements OnChanges, OnInit {
     console.log('payload', payload);
     this.api.put(`users/${this.user.id}`, payload).subscribe({
       next: () => {
+        this.toast.show('User updated successfully!', ToastTypeEnum.SUCCESS);
         this.close();
       },
       error: (err: any) => {
-        console.error('Failed to create user', err);
+        this.toast.show('Error updating user!', ToastTypeEnum.ERROR);
+        console.error('Failed to update user', err);
       },
     });
   }
@@ -231,9 +235,11 @@ export class UsersModal implements OnChanges, OnInit {
       console.log('Deleting user ID', userId);
       this.api.delete(`users/${userId}`).subscribe({
         next: () => {
+          this.toast.show('User deleted successfully!', ToastTypeEnum.SUCCESS);
           this.close();
         },
         error: (err: any) => {
+          this.toast.show('Error deleting user!', ToastTypeEnum.ERROR);
           console.error('Failed to delete user', err);
         },
       });
@@ -274,9 +280,11 @@ export class UsersModal implements OnChanges, OnInit {
     this.backupsService.createBackup(payload).subscribe({
       next: (response) => {
         //console.log('Backup created:', response);
+        this.toast.show('Backup created successfully!', ToastTypeEnum.SUCCESS);
         this.close();
       },
       error: (error) => {
+        this.toast.show('Error creating backup!', ToastTypeEnum.ERROR);
         console.error('Error creating backup:', error);
       },
     });
@@ -287,10 +295,12 @@ export class UsersModal implements OnChanges, OnInit {
     // console.log("Payload:",  {id:null, clientId: client.clientId, name,  source, enabled, interval, node: client.nodeDTO});
     this.tasksService.createTask({ id: null, ...clientSelection, ...taskData }).subscribe({
       next: (response) => {
+        this.toast.show('Task created successfully!', ToastTypeEnum.SUCCESS);
         // console.log('Task created:', response);
         this.close();
       },
       error: (error) => {
+        this.toast.show('Error creating task!', ToastTypeEnum.ERROR);
         console.error('Error creating task:', error);
       },
     });

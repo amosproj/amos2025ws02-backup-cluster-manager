@@ -10,7 +10,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@Table
+@Table("tasks")
 public class Task {
     @Id
     private Long id;

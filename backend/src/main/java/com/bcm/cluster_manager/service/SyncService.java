@@ -1,7 +1,6 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.SyncDTO;
-import com.bcm.shared.model.database.User;
 import com.bcm.shared.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Flux;
 
 import java.time.Duration;
-import java.util.List;
 
 @Service
 public class SyncService {
@@ -31,15 +28,19 @@ public class SyncService {
         this.webClient = webClientBuilder.build();
     }
 
-    public void syncNodes() {
-        //TODO: Change to reactive approach
-        List<User> cmUsers = (List<User>) userService.getAllUsers();
-        SyncDTO dto = new SyncDTO();
-        dto.setCmUsers(cmUsers);
+    public Mono<Void> syncNodes() {
+        return userService.getAllUsers()
+                .collectList()
+                .flatMapMany(cmUsers -> {
+                    SyncDTO dto = new SyncDTO();
+                    dto.setCmUsers(cmUsers);
 
-        Flux.fromIterable(registry.getActiveAndManagedNodes())
-                .flatMap(node -> pushToNode(node.getAddress(), dto))
-                .subscribe();
+                    return Flux.fromIterable(registry.getActiveAndManagedNodes())
+                            .flatMap(node -> pushToNode(node.getAddress(), dto));
+                })
+                .then()
+                .doOnError(e -> logger.error("Sync failed", e));
+
     }
 
     private Mono<Void> pushToNode(String address, SyncDTO dto) {

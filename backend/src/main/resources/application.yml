@@ -10,7 +10,9 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/migration/base
+    baseline-on-migrate: true
     #locations: classpath:db/migration/base
     #url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm_node0}
     #user: ${POSTGRES_USER:appuser}
@@ -20,6 +22,12 @@ spring:
       url: ${R2DBC_BN_URL:r2dbc:postgresql://localhost:5432/bcm_node0}
       username: ${POSTGRES_USER:appuser}
       password: ${POSTGRES_PASSWORD:apppassword}
+  datasource:
+    hikari:
+      jdbc-url: ${DATASOURCE_URL:jdbc:postgresql://postgres:5432/bcm_node0}
+      username: ${POSTGRES_USER:appuser}
+      password: ${POSTGRES_PASSWORD:apppassword}
+      driver-class-name: org.postgresql.Driver
   logging:
     level:
       root: INFO
@@ -57,6 +65,16 @@ spring:
       url: ${R2DBC_CM_URL:r2dbc:postgresql://localhost:5432/bcm}
       username: ${POSTGRES_USER:appuser}
       password: ${POSTGRES_PASSWORD:apppassword}
+  flyway:
+    locations: classpath:db/migration/base,classpath:db/migration/cluster_manager
+
+  cm-datasource:
+    hikari:
+      jdbc-url: ${CM_DATASOURCE_URL:jdbc:postgresql://postgres:5432/bcm}
+      username: ${POSTGRES_USER:appuser}
+      password: ${POSTGRES_PASSWORD:apppassword}
+      driver-class-name: org.postgresql.Driver
+
   #flyway:
   #  locations: classpath:db/migration/cluster_manager
   #  url: ${CM_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bcm}
@@ -84,4 +102,4 @@ spring:
     activate:
       on-profile: test
   flyway:
-    enabled: false
+    enabled: true

@@ -54,11 +54,10 @@ public class NodeManagementController {
     @PreAuthorize(Permission.Require.NODE_CREATE)
     @PostMapping("/register")
     public Mono<ResponseEntity<Map<String, String>>> register(@RequestBody RegisterRequest req) {
-        return Mono.fromCallable(() -> {
-            nodeManagementService.registerNode(req);
-            return ResponseEntity.ok(Collections.singletonMap("status", "OK"));
-        }).onErrorResume(e ->
-                Mono.just(ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid request"))));
+        return nodeManagementService.registerNode(req)
+                .thenReturn(ResponseEntity.ok(Collections.singletonMap("status", "OK")))
+                .onErrorResume(e ->
+                        Mono.just(ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()))));
     }
 
     @PreAuthorize(Permission.Require.NODE_CONTROL)

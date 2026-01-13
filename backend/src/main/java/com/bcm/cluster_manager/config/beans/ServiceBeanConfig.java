@@ -12,14 +12,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ServiceBeanConfig {
 
-    @Bean
+    @Bean("userServiceCM")
     public UserService userServiceCM (UserGroupRelationMapper userGroupRelationMapper,
                                       UserMapper userMapper,
                                       GroupMapper groupMapper) {
         return new UserService(userGroupRelationMapper, userMapper, groupMapper);
     }
 
-    @Bean
+    @Bean("groupServiceCM")
     public GroupService groupServiceCM ( GroupMapper groupMapper) {
         return new GroupService(groupMapper);
     }

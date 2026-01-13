@@ -10,13 +10,12 @@ import org.springframework.context.annotation.Profile;
 import javax.sql.DataSource;
 
 @Configuration
-@ConditionalOnProperty(prefix="app.flyway.base", name="enabled", havingValue="true")
 public class FlywayCMConfig {
 
     // Cluster manager Flyway (runs only if profile active)
     @Bean(initMethod = "migrate")
     @Profile("cluster_manager")
-    public Flyway cmFlyway( DataSource dataSource) {
+    public Flyway cmFlyway(@Qualifier("cmDataSource") DataSource dataSource) {
         return Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/cluster_manager")

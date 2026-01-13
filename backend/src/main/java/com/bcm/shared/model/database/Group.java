@@ -10,7 +10,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@Table
+@Table("groups")
 public class Group {
     @Id
     private Long id;

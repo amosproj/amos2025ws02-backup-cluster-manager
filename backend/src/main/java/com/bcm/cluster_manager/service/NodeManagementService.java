@@ -129,25 +129,20 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         registry.removeNode(id);
     }
 
-    public void registerNode(RegisterRequest req) {
+    public Mono<Void> registerNode(RegisterRequest req) {
         JoinDTO dto = new JoinDTO();
         dto.setCmURL("http://cluster-manager:8080");
         String url = "http://" + req.getAddress() + "/api/v1/bn/join";
 
-        webClient.post()
+        return webClient.post()
                 .uri(url)
                 .bodyValue(dto)
                 .retrieve()
                 .toBodilessEntity()
                 .timeout(Duration.ofSeconds(10))
-                .doOnSuccess(response -> {
-                    registry.register(req);
-                    syncService.syncNodes();
-                })
-                .doOnError(e -> {
-                    logger.error("Error registering node: {}", e.getMessage());
-                })
-                .block();
+                .doOnSuccess(response -> registry.register(req))
+                .then(syncService.syncNodes())
+                .doOnError(e -> logger.error("Error registering node: {}", e.getMessage()));
     }
 
     public Optional<NodeDTO> getNodeById(Long id) {

@@ -225,7 +225,7 @@ export class UsersModal implements OnChanges, OnInit {
     });
   }
 
-  onDeleteSubmit(users: Array<number> | any) {
+  onDeleteSubmit(users: Array<User>) {
     for (let i of users) {
       const userId = i.id;
       console.log('Deleting user ID', userId);

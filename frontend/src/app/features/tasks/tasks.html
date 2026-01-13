@@ -10,7 +10,7 @@
   [filters]="tableFilters()"
   [loading]="loading$ | async"
   [addButtonText]="'Add Task'"
-  (add)="openAddBackupModal('tasks')"
+  (add)="openAddTaskModal('tasks')"
   [showAddButton]="authService.hasPermission(UserPermissionsEnum.TaskCreate)"
   [showDeleteButton]="false"
   [refreshTrigger]="refreshTrigger()"

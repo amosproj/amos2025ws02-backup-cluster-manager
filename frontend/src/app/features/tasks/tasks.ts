@@ -58,7 +58,8 @@ export class Tasks implements OnInit {
   isAddTasksModalOpen = false;
   refreshTrigger = signal(0);
   modalMode: 'tasks' = 'tasks';
-  openAddBackupModal(mode: 'tasks' ) {
+  
+  openAddTaskModal(mode: 'tasks' ) {
     this.modalMode = mode;
     this.isAddTasksModalOpen = true;
   }

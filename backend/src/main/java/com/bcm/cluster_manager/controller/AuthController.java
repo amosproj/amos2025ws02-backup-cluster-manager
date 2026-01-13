@@ -11,7 +11,7 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
+import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
 //import jakarta.servlet.http.HttpServletRequest;
@@ -31,11 +31,12 @@ public class AuthController {
 
 
     private final ReactiveAuthenticationManager authenticationManager;
-    private final WebSessionServerSecurityContextRepository securityContextRepository;
+    private final ServerSecurityContextRepository securityContextRepository;
 
-    public AuthController(ReactiveAuthenticationManager authenticationManager) {
+    public AuthController(ReactiveAuthenticationManager authenticationManager,
+                          ServerSecurityContextRepository securityContextRepository) {
         this.authenticationManager = authenticationManager;
-        this.securityContextRepository = new WebSessionServerSecurityContextRepository();
+        this.securityContextRepository = securityContextRepository;
     }
 
     public static class LoginRequest {

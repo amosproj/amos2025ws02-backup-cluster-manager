@@ -51,9 +51,4 @@ public class DataSourceCMConfig {
     public R2dbcEntityTemplate cmTemplate(@Qualifier("cmConnectionFactory") ConnectionFactory cf) {
         return new R2dbcEntityTemplate(cf);
     }
-
-    @Bean("cmTxManager")
-    public ReactiveTransactionManager cmTxManager(@Qualifier("cmConnectionFactory") ConnectionFactory cf) {
-        return new R2dbcTransactionManager(cf);
-    }
 }

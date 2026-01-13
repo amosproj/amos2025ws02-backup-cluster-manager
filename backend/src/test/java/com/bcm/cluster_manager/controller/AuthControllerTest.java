@@ -3,20 +3,22 @@ package com.bcm.cluster_manager.controller;
 import com.bcm.cluster_manager.config.security.CustomUserDetails;
 import com.bcm.shared.config.permissions.Role;
 import com.bcm.shared.model.api.AuthMetadataDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -30,10 +32,17 @@ import static org.mockito.Mockito.*;
 class AuthControllerTest {
 
     @Mock
-    private AuthenticationManager authenticationManager;
+    private ReactiveAuthenticationManager authenticationManager;
 
-    @InjectMocks
+    @Mock
+    private ServerSecurityContextRepository securityContextRepository;
+
     private AuthController authController;
+
+    @BeforeEach
+    void setUp() {
+        authController = new AuthController(authenticationManager, securityContextRepository);
+    }
 
     @Test
     void validateSession_shouldReturnAuthMetadata_whenUserIsAuthenticated() {
@@ -56,15 +65,11 @@ class AuthControllerTest {
         );
 
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(auth);
-        SecurityContextHolder.setContext(securityContext);
+        SecurityContext securityContext = new SecurityContextImpl(auth);
 
-        // Act
-        Mono<ResponseEntity<AuthMetadataDTO>> mono = authController.validateSession();
-
-        // Assert
-        StepVerifier.create(mono)
+        // Act & Assert - Use contextWrite with the key that ReactiveSecurityContextHolder uses internally
+        StepVerifier.create(authController.validateSession()
+                        .contextWrite(ctx -> ctx.put(SecurityContext.class, Mono.just(securityContext))))
                 .assertNext(response -> {
                     assertNotNull(response);
                     assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -78,23 +83,17 @@ class AuthControllerTest {
                     assertTrue(metadata.getPermissions().contains("user:create"));
                 })
                 .verifyComplete();
-
-        SecurityContextHolder.clearContext();
     }
 
     @Test
     void validateSession_shouldReturnUnauthorized_whenNoAuthentication() {
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        SecurityContextHolder.setContext(securityContext);
-
+        // No security context set - empty context
         StepVerifier.create(authController.validateSession())
                 .assertNext(response -> {
                     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
                     assertNull(response.getBody());
                 })
                 .verifyComplete();
-
-        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -105,19 +104,16 @@ class AuthControllerTest {
                 "anonymous",
                 List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))
         );
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(auth);
-        SecurityContextHolder.setContext(securityContext);
+        SecurityContext securityContext = new SecurityContextImpl(auth);
 
         // Act + Assert
-        StepVerifier.create(authController.validateSession())
+        StepVerifier.create(authController.validateSession()
+                        .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext))))
                 .assertNext(response -> {
                     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
                     assertNull(response.getBody());
                 })
                 .verifyComplete();
-
-        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -126,19 +122,16 @@ class AuthControllerTest {
         Authentication auth = mock(Authentication.class);
         when(auth.isAuthenticated()).thenReturn(false);
 
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(auth);
-        SecurityContextHolder.setContext(securityContext);
+        SecurityContext securityContext = new SecurityContextImpl(auth);
 
         // Act + Assert
-        StepVerifier.create(authController.validateSession())
+        StepVerifier.create(authController.validateSession()
+                        .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext))))
                 .assertNext(response -> {
                     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
                     assertNull(response.getBody());
                 })
                 .verifyComplete();
-
-        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -153,18 +146,15 @@ class AuthControllerTest {
         );
 
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(auth);
-        SecurityContextHolder.setContext(securityContext);
+        SecurityContext securityContext = new SecurityContextImpl(auth);
 
-        StepVerifier.create(authController.validateSession())
+        StepVerifier.create(authController.validateSession()
+                        .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext))))
                 .assertNext(response -> {
                     assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
                     assertNull(response.getBody());
                 })
                 .verifyComplete();
-
-        SecurityContextHolder.clearContext();
     }
 
 
@@ -190,12 +180,11 @@ class AuthControllerTest {
         );
 
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(auth);
-        SecurityContextHolder.setContext(securityContext);
+        SecurityContext securityContext = new SecurityContextImpl(auth);
 
         // Act + Assert
-        StepVerifier.create(authController.validateSession())
+        StepVerifier.create(authController.validateSession()
+                        .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext))))
                 .assertNext(response -> {
                     assertNotNull(response);
                     assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -206,8 +195,6 @@ class AuthControllerTest {
                     assertEquals(100, metadata.getRank());
                 })
                 .verifyComplete();
-
-        SecurityContextHolder.clearContext();
     }
 }
 

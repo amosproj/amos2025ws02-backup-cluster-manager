@@ -2,7 +2,6 @@ package com.bcm.shared.repository;
 
 import com.bcm.shared.model.database.User;
 import com.bcm.shared.pagination.sort.SortOrder;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -43,10 +42,22 @@ public class UserRepositoryImpl implements UserRepository {
         AND (:enabled IS NULL OR enabled = :enabled)
       """;
 
-        return template.getDatabaseClient().sql(sql)
-                .bind("search", search)
-                .bind("enabled", isUserEnabled)
-                .map((row, meta) -> row.get("cnt", Long.class))
+        DatabaseClient.GenericExecuteSpec spec = template.getDatabaseClient().sql(sql);
+
+        // Handle null values properly for R2DBC
+        if (search != null) {
+            spec = spec.bind("search", search);
+        } else {
+            spec = spec.bindNull("search", String.class);
+        }
+
+        if (isUserEnabled != null) {
+            spec = spec.bind("enabled", isUserEnabled);
+        } else {
+            spec = spec.bindNull("enabled", Boolean.class);
+        }
+
+        return spec.map((row, meta) -> row.get("cnt", Long.class))
                 .one();
     }
 
@@ -65,16 +76,28 @@ public class UserRepositoryImpl implements UserRepository {
               SELECT id, name, password_hash, enabled, created_at, updated_at
               FROM users
               WHERE (:search IS NULL OR :search = '' OR
-                    name ILIKE '%' || :search || '%' OR CAST(id AS TEXT) ILIKE '%' || :search || '%')
+                    name ILIKE '%%' || :search || '%%' OR CAST(id AS TEXT) ILIKE '%%' || :search || '%%')
                 AND (:enabled IS NULL OR enabled = :enabled)
               ORDER BY %s %s
               LIMIT :limit OFFSET :offset
         """.formatted(orderBy, dir);
 
-        return template.getDatabaseClient().sql(sql)
-                .bind("search", search)
-                .bind("enabled", isUserEnabled)
-                .bind("limit", itemsPerPage)
+        DatabaseClient.GenericExecuteSpec spec = template.getDatabaseClient().sql(sql);
+
+        // Handle null values properly for R2DBC
+        if (search != null) {
+            spec = spec.bind("search", search);
+        } else {
+            spec = spec.bindNull("search", String.class);
+        }
+
+        if (isUserEnabled != null) {
+            spec = spec.bind("enabled", isUserEnabled);
+        } else {
+            spec = spec.bindNull("enabled", Boolean.class);
+        }
+
+        return spec.bind("limit", itemsPerPage)
                 .bind("offset", offset)
                 .map((row, meta) -> {
                     User u = new User();

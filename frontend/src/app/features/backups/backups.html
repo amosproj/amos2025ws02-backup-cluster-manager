@@ -1,16 +1,23 @@
+<app-users-modal
+  [open]="isAddBackupModalOpen"
+  [mode]="modalMode"
+  (closed)="onModalClosed()"
+></app-users-modal>
+
 <app-data-table
   [fetchData]="fetchBackups"
   [columns]="tableColumns()"
   [filters]="tableFilters()"
   [loading]="loading$ | async"
   [addButtonText]="'Add Backup'"
-  (add)="openAddModal()"
+  (add)="openAddBackupModal('backups')"
   (selectionChange)="onSelectionChange($event)"
   (deleteSelection)="onDeleteSelection($event)"
   [showAddButton]="authService.hasPermission(UserPermissionsEnum.BackupCreate)"
   [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.BackupDelete)"
+  [refreshTrigger]="refreshTrigger()"
 />
-
+<!-- 
 @if (showAddModal()){
   <div class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="fixed inset-0 bg-black opacity-50" (click)="closeAddModal()"></div>
@@ -70,5 +77,5 @@
       </form>
 
         </div>
-  </div>
-}
+  </div> -->
+<!-- } -->

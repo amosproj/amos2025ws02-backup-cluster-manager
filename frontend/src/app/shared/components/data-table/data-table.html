@@ -34,6 +34,22 @@
         } @else {
           <ng-container [ngTemplateOutlet]="addButtonTemplate"></ng-container>
         }
+        @if (editButtonTemplate == null) {
+          @if (showEditButton) {
+            <button
+              type="button"
+              (click)="onEditClick()"
+              class="flex items-center justify-center hover:bg-primary-3 gap-2 px-4 py-2 h-10 text-sm font-medium text-foreground bg-primary-2 rounded-lg disabled:opacity-50"
+              [disabled]="!hasSingleSelection()"
+              [attr.aria-label]="editButtonText"
+              >
+              <img src="edit_user.svg" alt="" class="w-5 h-5"/>
+              {{ editButtonText }}
+            </button>
+          }
+        } @else {
+          <ng-container [ngTemplateOutlet]="editButtonTemplate"></ng-container>
+        }
         @if (showDeleteButton) {
           <button
             type="button"
@@ -80,7 +96,7 @@
   <div class="relative overflow-auto flex-1 flex-col">
     <div class="rounded-lg overflow-auto max-h-full">
       <table class="w-full text-sm text-left rtl:text-right text-foreground-muted overflow-auto ">
-        <thead class="text-xs sticky top-0 text-foreground-muted uppercase bg-primary-2">
+        <thead class="text-xs sticky top-0 text-foreground-muted uppercase bg-primary-2 z-10">
         <tr>
         @if (showDeleteButton) {
           <th scope="col" class="px-6 py-3">
@@ -89,6 +105,7 @@
               (change)="toggleSelectAll($event)"
               [checked]="allRowsSelected()"
               style="accent-color: grey;"
+              class="w-5 h-5 rounded border-gray-300 accent-gray-400"
             />
           </th>
           }

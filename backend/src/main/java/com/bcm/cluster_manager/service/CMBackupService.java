@@ -84,8 +84,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
                     return webClient.get()
                             .uri(url)
                             .retrieve()
-                            .bodyToMono(BackupDTO[].class)
-                            .flatMapMany(Flux::fromArray)
+                            .bodyToFlux(BackupDTO.class)
                             .map(dto -> {
                                 BigBackupDTO big = new BigBackupDTO();
                                 big.setId(dto.getId());

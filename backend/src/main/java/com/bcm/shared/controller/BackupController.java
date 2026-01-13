@@ -1,10 +1,13 @@
 package com.bcm.shared.controller;
 
 
+import com.bcm.cluster_manager.service.CMBackupService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.service.BackupService;
 import com.bcm.shared.service.ClientService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,8 @@ public class BackupController {
 
     @Autowired
     private ClientService clientService;
+
+    private static final Logger logger = LoggerFactory.getLogger(BackupController.class);
 
 
     @DeleteMapping("/backups/{id}")
@@ -52,8 +57,10 @@ public class BackupController {
 
         return backupNodeService.store(dto.getClientId(), dto.getTaskId(), dto.getSizeBytes())
                 .map(ResponseEntity::ok)
-                .onErrorResume(e ->
-                        Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())
+                .onErrorResume(e ->{
+                        logger.error("Error in sync for client {}: {}", dto.getClientId(), e.getMessage(), e);
+                        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                        }
                 );
     }
 

@@ -49,7 +49,7 @@ public class BackupService {
         return backupMapper.findById(id)
                 .flatMap(backup -> {
                     backup.setState(BackupState.QUEUED);
-                    return backupMapper.save(backup);
+                    return backupMapper.insert(backup);
                 })
                 .then(Mono.delay(Duration.ofMillis(request.getDuration())))
                 .then(backupMapper.findById(id))
@@ -62,7 +62,7 @@ public class BackupService {
                         backup.setMessage("Backup failed due to an error.");
                     }
                     backup.setStopTime(Instant.ofEpochMilli(now + request.getDuration()));
-                    return backupMapper.save(backup);
+                    return backupMapper.insert(backup);
                 })
                 .then();
     }
@@ -77,7 +77,7 @@ public class BackupService {
         backup.setMessage(null);
         backup.setCreatedAt(Instant.now());
 
-        return backupMapper.save(backup)
+        return backupMapper.insert(backup)
                 .map(BackupConverter::toDTO);
     }
 

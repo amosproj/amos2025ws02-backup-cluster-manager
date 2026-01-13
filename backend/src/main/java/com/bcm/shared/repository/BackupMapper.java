@@ -46,22 +46,23 @@ public interface BackupMapper extends ReactiveCrudRepository<Backup,Long> {
     """)
     Flux<Backup> findBetween(Instant from, Instant to);
 
-    @Modifying
+
     @Query("""
     INSERT INTO backups (client_id, task_id, start_time, stop_time, size_bytes, state, message, created_at)
     VALUES (:#{#backup.clientId}, :#{#backup.taskId}, :#{#backup.startTime}, :#{#backup.stopTime}, 
-            :#{#backup.sizeBytes}, CAST(:#{#backup.state} AS backup_state), :#{#backup.message}, :#{#backup.createdAt})
+            :#{#backup.sizeBytes}, :#{#backup.state.name()}::backup_state, :#{#backup.message}, :#{#backup.createdAt})
     """)
-    Mono<Integer> insert(Backup backup);
+    Mono<Backup> insert(Backup backup);
 
 
     @Modifying
     @Query("""
     UPDATE backups SET client_id = :#{#backup.clientId}, task_id = :#{#backup.taskId}, 
            start_time = :#{#backup.startTime}, stop_time = :#{#backup.stopTime}, 
-           size_bytes = :#{#backup.sizeBytes}, state = CAST(:#{#backup.state} AS backup_state), 
+           size_bytes = :#{#backup.sizeBytes}, state = :#{#backup.state.name()}::backup_state,
            message = :#{#backup.message}
     WHERE id = :#{#backup.id}
+    RETURNING *
     """)
     Mono<Integer> update(Backup b);
 

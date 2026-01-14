@@ -85,7 +85,7 @@ public class PermissionService implements PaginationProvider<RolePermissionDTO> 
     }
 
     private Flux<RolePermissionDTO> applySearch(Flux<RolePermissionDTO> roles, Filter filter) {
-        if (filter != null || !StringUtils.hasText(filter.getSearch())) {
+        if (filter == null || !StringUtils.hasText(filter.getSearch())) {
             return roles;
         }
         String searchTerm = filter.getSearch().toLowerCase();

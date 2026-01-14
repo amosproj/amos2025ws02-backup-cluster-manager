@@ -1,0 +1,14 @@
+= Research on stress testing
+Author: AMOS Project team
+Date: {docdate}
+:toc: left
+:toc-title: Contents
+:icons: font
+:source-highlighter: rouge
+:imagesdir: diagrams
+
+== 1. General aspects
+
+This document provides an overview of the research results on stress testing.
+
+== 1.1 Details

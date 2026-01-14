@@ -1,4 +1,4 @@
-import {Component, signal, ViewChild, OnInit} from '@angular/core';
+import {Component, signal, ViewChild, OnInit, OnDestroy} from '@angular/core';
 import {ApiService} from '../../core/services/api.service';
 import {BackupsService} from './backups.service';
 import {AsyncPipe} from '@angular/common';
@@ -28,11 +28,11 @@ import { ToastService } from '../../core/services/toast.service';
   templateUrl: './backups.html',
   styleUrl: './backups.css',
 })
-export class Backups {
+export class Backups implements OnInit, OnDestroy {
   @ViewChild(DataTable) dataTable!: DataTable;
   private refreshSub?: Subscription;
 
-  
+
   tableColumns = signal([
     { field: 'id', header: 'ID' },
     { field: 'address', header: 'Node'},
@@ -45,7 +45,7 @@ export class Backups {
   ]);
   clients = signal<any[]>([]);
   tasks = signal<any[]>([]);
- 
+
 
   isAddBackupModalOpen = false;
   refreshTrigger = signal(0);
@@ -114,8 +114,6 @@ export class Backups {
   showAddModal = signal(false);
   addForm!: FormGroup;
 
-  private refreshIntervalId: any;
-
   constructor(
     private backupsService: BackupsService,
     private clientsService: ClientsService,
@@ -180,8 +178,8 @@ export class Backups {
   }
 
   ngOnDestroy(): void {
-    if (this.refreshIntervalId) {
-      clearInterval(this.refreshIntervalId);
+    if (this.refreshSub) {
+      this.refreshSub.unsubscribe();
     }
   }
 

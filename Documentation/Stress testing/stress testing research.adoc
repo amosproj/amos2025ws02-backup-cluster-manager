@@ -1,4 +1,4 @@
-= Research on stress testing
+= Research on Stress Testing
 Author: AMOS Project team
 Date: {docdate}
 :toc: left
@@ -7,8 +7,14 @@ Date: {docdate}
 :source-highlighter: rouge
 :imagesdir: diagrams
 
-== 1. General aspects
+== 1. General Aspects
 
 This document provides an overview of the research results on stress testing.
 
-== 1.1 Details
+=== 1.1 Details
+
+.Sequence: The CM is really stressed out right now
+[plantuml, target=stressed_out, format=png]
+....
+include::diagrams/stressed_out.puml[]
+....

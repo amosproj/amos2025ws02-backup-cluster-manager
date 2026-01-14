@@ -4,11 +4,13 @@ import com.bcm.shared.model.database.UserGroupRelation;
 import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Repository
 public interface UserGroupRelationMapper extends ReactiveCrudRepository<UserGroupRelation, Long> {
 
     @Query("""
@@ -38,6 +40,13 @@ public interface UserGroupRelationMapper extends ReactiveCrudRepository<UserGrou
         WHERE user_id = :userId AND group_id = :groupId
     """)
     Mono<Integer> delete(Long userId, Long groupId);
+
+    @Modifying
+    @Query("""
+        DELETE FROM user_group_relations
+        WHERE user_id = :userId
+    """)
+    Mono<Integer> deleteByUserId(Long userId);
 
     @Query("""
         SELECT EXISTS(

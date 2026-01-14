@@ -252,7 +252,25 @@ public class UserService implements PaginationProvider<UserDTO> {
      * @throws AccessDeniedException if the requester's rank is not higher than the target user's rank
      */
     public Mono<User> editUserWithRankCheck(User user, int requesterRank) {
-        return validateRankPermission(user.getId(), requesterRank).then(userMapper.save(user));
+        return validateRankPermission(user.getId(), requesterRank)
+                .then(userMapper.findUserById(user.getId())) // 1. Fetch existing user
+                .flatMap(existingUser -> {
+                    // 2. Map only the fields you want to allow changing
+                    existingUser.setName(user.getName());
+                    existingUser.setEnabled(user.isEnabled());
+                    existingUser.setUpdatedAt(Instant.now());
+
+                    // Do NOT touch password_hash here unless 'user' actually contains a new one
+                    if (user.getPasswordHash() != null) {
+                        existingUser.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+                        // If updating password, use save to update all fields including password
+                        return userMapper.save(existingUser);
+                    } else {
+                        // Update only name, enabled, updated_at
+                        return userMapper.updateUser(existingUser.getId(), existingUser.getName(), existingUser.isEnabled(), existingUser.getUpdatedAt())
+                                .then(userMapper.findUserById(existingUser.getId()));
+                    }
+                });
     }
     /**
      * Deletes a user with rank validation.
@@ -266,6 +284,7 @@ public class UserService implements PaginationProvider<UserDTO> {
     @Transactional
     public Mono<Boolean> deleteUserWithRankCheck(Long id, int requesterRank) {
         return validateRankPermission(id, requesterRank)
+                .then(userGroupRelationMapper.deleteByUserId(id))
                 .then(userMapper.existsUserById(id))
                 .flatMap(exists ->
                         exists ? userMapper.deleteUserById(id).thenReturn(true)
@@ -278,7 +297,7 @@ public class UserService implements PaginationProvider<UserDTO> {
      * Only allows creating users in groups with a lower rank than the requester.
      *
      * @param user          the user object to be added
-     * @param groupID       the ID of the group to assign to the user
+     * @param groupId       the ID of the group to assign to the user
      * @param requesterRank the rank of the requesting user
      * @return the newly created user object
      * @throws AccessDeniedException if the requester's rank is not higher than the target group's rank

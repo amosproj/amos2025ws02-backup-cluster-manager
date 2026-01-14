@@ -109,7 +109,7 @@ public class CMUserController {
     @DeleteMapping("/{id:\\d+}")
     public Mono<Void> deleteUser(@PathVariable Long id) {
         return getCurrentUserRank()
-                .doOnNext(requesterRank -> userService.deleteUserWithRankCheck(id, requesterRank))
+                .flatMap(requesterRank -> userService.deleteUserWithRankCheck(id, requesterRank))
                 .then();
     }
 }

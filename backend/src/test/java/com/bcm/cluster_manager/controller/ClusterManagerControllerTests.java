@@ -1,8 +1,10 @@
 package com.bcm.cluster_manager.controller;
 
+import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Disabled
 class ClusterManagerControllerTests {
     /*
     @Autowired

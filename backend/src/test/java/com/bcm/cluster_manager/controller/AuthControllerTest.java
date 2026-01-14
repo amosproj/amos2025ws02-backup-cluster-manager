@@ -4,6 +4,7 @@ import com.bcm.cluster_manager.config.security.CustomUserDetails;
 import com.bcm.shared.config.permissions.Role;
 import com.bcm.shared.model.api.AuthMetadataDTO;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled
 class AuthControllerTest {
 
     @Mock

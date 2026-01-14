@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 
 @RestController()
@@ -25,7 +26,7 @@ public class CMRolePermissionController {
 
     @PreAuthorize(Permission.Require.PERMISSION_READ)
     @GetMapping("/permissions")
-    public PaginationResponse<RolePermissionDTO> getRolePermissions(PaginationRequest pagination) {
+    public Mono<PaginationResponse<RolePermissionDTO>> getRolePermissions(PaginationRequest pagination) {
         return permissionService.getPaginatedItems(pagination);
     }
 }

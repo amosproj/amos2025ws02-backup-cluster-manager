@@ -63,7 +63,7 @@ public class NodeManagementController {
     @PreAuthorize(Permission.Require.NODE_CONTROL)
     @PostMapping("/nodes/{id}/shutdown")
     public Mono<ResponseEntity<NodeControlResponse>> shutdownNode(@PathVariable Long id) {
-        return Mono.fromCallable(() -> nodeManagementService.shutdownNode(id))
+        return nodeManagementService.shutdownNode(id)
                 .map(success -> {
                     if (success) {
                         return ResponseEntity.ok(NodeControlResponse.success("Shutdown command sent successfully"));
@@ -75,7 +75,7 @@ public class NodeManagementController {
     @PreAuthorize(Permission.Require.NODE_CONTROL)
     @PostMapping("/nodes/{id}/restart")
     public Mono<ResponseEntity<NodeControlResponse>> restartNode(@PathVariable Long id) {
-        return Mono.fromCallable(() -> nodeManagementService.restartNode(id))
+        return nodeManagementService.restartNode(id)
                 .map(success -> {
                     if (success) {
                         return ResponseEntity.ok(NodeControlResponse.success("Restart command sent successfully"));

@@ -153,11 +153,11 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         return registry.findByAddress(address);
     }
 
-    public boolean shutdownNode(Long nodeId) {
+    public Mono<Boolean> shutdownNode(Long nodeId) {
         Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
         if (nodeOpt.isEmpty()) {
             logger.warn("Node with id {} not found for shutdown", nodeId);
-            return false;
+            return Mono.just(false);
         }
 
         NodeDTO node = nodeOpt.get();
@@ -165,31 +165,31 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         // Don't allow shutdown of cluster manager
         if (node.getMode() == NodeMode.CLUSTER_MANAGER) {
             logger.warn("Cannot shutdown cluster manager node {}", node.getAddress());
-            return false;
+            return Mono.just(false);
         }
 
         registry.markShuttingDown(node.getAddress());
 
-        boolean success = nodeHttpClient.postNodeSyncNoResponse(node.getAddress(), "/api/v1/shutdown");
-        if (success) {
-            logger.info("Shutdown command sent to node {}", node.getAddress());
-            // Remove node from cluster since it won't come back
-            registry.removeNode(nodeId);
-            logger.info("Node {} removed from cluster after shutdown", node.getAddress());
-            syncService.syncNodes();
-            return true;
-        } else {
-            logger.error("Failed to send shutdown command to node {}", node.getAddress());
-            registry.markInactive(node);
-            return false;
-        }
+        return nodeHttpClient.postNodeNoResponse(node.getAddress(), "/api/v1/shutdown")
+                .doOnNext(success -> {
+                    if (success) {
+                        logger.info("Shutdown command sent to node {}", node.getAddress());
+                        // Remove node from cluster since it won't come back
+                        registry.removeNode(nodeId);
+                        logger.info("Node {} removed from cluster after shutdown", node.getAddress());
+                    } else {
+                        logger.error("Failed to send shutdown command to node {}", node.getAddress());
+                        registry.markInactive(node);
+                    }
+                })
+                .flatMap(success -> success ? syncService.syncNodes().thenReturn(true) : Mono.just(false));
     }
 
-    public boolean restartNode(Long nodeId) {
+    public Mono<Boolean> restartNode(Long nodeId) {
         Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
         if (nodeOpt.isEmpty()) {
             logger.warn("Node with id {} not found for restart", nodeId);
-            return false;
+            return Mono.just(false);
         }
 
         NodeDTO node = nodeOpt.get();
@@ -197,19 +197,19 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         // Don't allow restart of cluster manager
         if (node.getMode() == NodeMode.CLUSTER_MANAGER) {
             logger.warn("Cannot restart cluster manager node {}", node.getAddress());
-            return false;
+            return Mono.just(false);
         }
 
         registry.markRestarting(node.getAddress());
 
-        boolean success = nodeHttpClient.postNodeSyncNoResponse(node.getAddress(), "/api/v1/restart");
-        if (success) {
-            logger.info("Restart command sent to node {}", node.getAddress());
-            return true;
-        } else {
-            logger.error("Failed to send restart command to node {}", node.getAddress());
-            registry.markInactive(node);
-            return false;
-        }
+        return nodeHttpClient.postNodeNoResponse(node.getAddress(), "/api/v1/restart")
+                .doOnNext(success -> {
+                    if (success) {
+                        logger.info("Restart command sent to node {}", node.getAddress());
+                    } else {
+                        logger.error("Failed to send restart command to node {}", node.getAddress());
+                        registry.markInactive(node);
+                    }
+                });
     }
 }

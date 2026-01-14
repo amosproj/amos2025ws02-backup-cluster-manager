@@ -29,9 +29,10 @@ public interface TaskMapper extends ReactiveCrudRepository<Task, Long> {
     @Modifying
     @Query("""
     INSERT INTO tasks (name, client_id, source, enabled, "interval")
-    VALUES (:name, :clientId, :source, :enabled, CAST(:interval AS frequency_enum))
+    VALUES (:name, :clientId, :source, :enabled, :interval::frequency_enum)
+    RETURNING id
     """)
-    Mono<Integer> insert(String name, Long clientId, String source, boolean enabled, String interval);
+    Mono<Long> insertAndReturnId(String name, Long clientId, String source, boolean enabled, String interval);
 
     @Modifying
     @Query("""
@@ -41,7 +42,7 @@ public interface TaskMapper extends ReactiveCrudRepository<Task, Long> {
         source = :source,
         enabled = :enabled,
         updated_at = :updatedAt,
-        "interval" = CAST(:interval AS frequency_enum)
+        "interval" = :interval::frequency_enum
     WHERE id = :id
     """)
     Mono<Integer> update(Long id, String name, Long clientId, String source, boolean enabled, Instant updatedAt, String interval);

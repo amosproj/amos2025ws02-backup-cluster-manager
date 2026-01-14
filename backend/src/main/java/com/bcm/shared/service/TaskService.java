@@ -127,7 +127,8 @@ public class TaskService implements PaginationProvider<TaskDTO> {
 
         return clientService.getClientById(task.getClientId())
                 .flatMap(client ->
-                        taskMapper.save(task).map(this::toDto)
+                        taskMapper.insertAndReturnId(task.getName(), task.getClientId(), task.getSource(), task.isEnabled(), task.getInterval().name())
+                                .flatMap(id -> taskMapper.findById(id).map(this::toDto))
                 )
                 .switchIfEmpty(Mono.empty());
     }

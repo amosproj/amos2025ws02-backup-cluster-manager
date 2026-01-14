@@ -5,5 +5,5 @@
   [loading]="loading$ | async"
   [addButtonText]="'Add Client'"
   [showAddButton]="authService.hasPermission(UserPermissionsEnum.ClientCreate)"
-  [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.ClientDelete)"
+  [showDeleteButton]="false"
 />

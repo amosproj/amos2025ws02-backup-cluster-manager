@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 public enum Role {
     SUPERUSER(100, Set.of(
+            PERMISSION_READ,
             USER_READ, USER_CREATE, USER_UPDATE, USER_DELETE,
             NODE_READ, NODE_CREATE, NODE_UPDATE, NODE_DELETE, NODE_CONTROL,
             BACKUP_READ, BACKUP_CREATE, BACKUP_DELETE,
@@ -17,6 +18,7 @@ public enum Role {
             CLIENT_READ, CLIENT_CREATE, CLIENT_UPDATE, CLIENT_DELETE
     )),
     ADMINISTRATORS(50, Set.of(
+            PERMISSION_READ,
             USER_READ, USER_CREATE, USER_UPDATE, USER_DELETE,
             NODE_READ, NODE_CREATE, NODE_UPDATE, NODE_DELETE, NODE_CONTROL,
             CLIENT_READ,

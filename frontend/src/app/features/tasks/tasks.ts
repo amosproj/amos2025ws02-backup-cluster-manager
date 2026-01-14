@@ -10,13 +10,15 @@ import {map} from 'rxjs';
 import {PaginatedResponse} from '../../shared/types/PaginationTypes';
 import { AuthService } from '../../core/services/auth.service';
 import UserPermissionsEnum from '../../shared/types/Permissions';
+import { UsersModal } from '../../shared/components/users-modal/users-modal';
 
 @Component({
   selector: 'app-tasks',
   imports: [
     AsyncPipe,
     DataTable,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    UsersModal
   ],
   templateUrl: './tasks.html',
   styleUrl: './tasks.css',
@@ -52,6 +54,19 @@ export class Tasks implements OnInit {
     { value: 'WEEKLY', label: 'Weekly' },
     { value: 'MONTHLY', label: 'Monthly' }
   ];
+
+  isAddTasksModalOpen = false;
+  refreshTrigger = signal(0);
+  modalMode: 'tasks' = 'tasks';
+  
+  openAddTaskModal(mode: 'tasks' ) {
+    this.modalMode = mode;
+    this.isAddTasksModalOpen = true;
+  }
+  onModalClosed() {
+    this.isAddTasksModalOpen = false;
+    this.refreshTrigger.update(value => value + 1);
+  }
 
   trackClient = (_: number, client: ClientDTO) =>
     `${client.id}-${client.nodeDTO.id}`;
@@ -100,28 +115,6 @@ export class Tasks implements OnInit {
 
   closeAddModal() {
     this.showAddModal.set(false);
-  }
-
-  submitTask() {
-    if (this.addForm.invalid) {
-      this.addForm.markAllAsTouched();
-      return;
-    }
-    const { clientSelection, ...taskData } = this.addForm.value;
-
-    this.tasksService.createTask({id: null, ...clientSelection, ...taskData}).subscribe({
-      next: (response) => {
-        //console.log('Backup created:', response);
-        this.closeAddModal();
-        if (this.dataTable) {
-          this.dataTable.loadData();
-        }
-      },
-      error: (error) => {
-        console.error('Error creating backup:', error);
-      }
-    });
-
   }
 
   protected readonly UserPermissionsEnum = UserPermissionsEnum;

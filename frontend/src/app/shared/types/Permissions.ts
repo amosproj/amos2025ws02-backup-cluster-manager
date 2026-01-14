@@ -1,4 +1,7 @@
 enum UserPermissionsEnum {
+  // Permission Page Permissions
+  PermissionRead ="permission:read",
+
   // User Page Permissions
   UserRead ="user:read",
   UserCreate ="user:create",

@@ -10,6 +10,7 @@ import UserPermissionsEnum from '../../shared/types/Permissions';
 import {NodeDTO} from '../clients/clients.service';
 import {ToastService} from '../../core/services/toast.service';
 import {ToastTypeEnum} from '../../shared/types/toast';
+import { UsersModal } from '../../shared/components/users-modal/users-modal';
 
 export interface NodeItem {
   id: string;
@@ -23,7 +24,7 @@ export interface NodeItem {
 @Component({
   selector: 'app-nodes',
   imports: [
-    DataTable
+    DataTable, UsersModal
   ],
   templateUrl: './nodes.html',
   styleUrl: './nodes.css',
@@ -69,6 +70,14 @@ export class Nodes {
   ) {
   }
 
+  isAddNodeModalOpen = false;
+  refreshTrigger = signal(0);
+  modalMode: 'node' = 'node';
+  openAddNodeModal(mode: 'node' ) {
+    this.modalMode = mode;
+    this.isAddNodeModalOpen = true;
+  }
+
   fetchNodes = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder: SortOrder) => {
     return this.nodesService
       .getNodes(page, itemsPerPage, filters, search, sortBy, sortOrder)
@@ -106,31 +115,21 @@ export class Nodes {
           if (completed === rows.length && this.dataTable) {
             this.dataTable.loadData();
           }
+          this.toast.show('Node deleted successfully!', ToastTypeEnum.SUCCESS);
         },
         error: (error) => {
+          this.toast.show('Error deleting node!', ToastTypeEnum.ERROR);
           console.error('Error deleting node:', error);
         }
       });
     });
   }
 
-  onAddNode(): void {
-    const address = prompt("Enter the address of the node to add:");
-    if (!address) return;
-
-    this.nodesService.addNode(address).subscribe({
-      next: () => {
-        alert("Node added successfully!");
-        if (this.dataTable) {
-          this.dataTable.loadData();
-        }
-      },
-      error: (error) => {
-        console.error(error);
-        alert("Error adding node!");
-      }
-    })
+  onModalClosed() {
+    this.isAddNodeModalOpen = false;
+    this.refreshTrigger.update(value => value + 1);
   }
+
 
   canControlNodes(): boolean {
     return this.authService.hasPermission(UserPermissionsEnum.NodeControl);

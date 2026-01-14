@@ -1,3 +1,9 @@
+<app-users-modal
+  [open]="isAddNodeModalOpen"
+  [mode]="modalMode"
+  (closed)="onModalClosed()"
+></app-users-modal>
+
 <app-data-table
   #nodeTable
   [fetchData]="fetchNodes"
@@ -9,9 +15,10 @@
   [showToggleButton]="authService.hasPermission(UserPermissionsEnum.NodeUpdate)"
   (deleteSelection)="onDeleteSelection($event)"
   (toggleChanged)="onUpdate($event)"
-  (add)="onAddNode()"
+  (add)="openAddNodeModal('node')"
   [showActionsColumn]="canControlNodes() || canDeleteNodes()"
   [rowActions]="nodeActions"
+  [refreshTrigger]="refreshTrigger()"
 />
 
 <ng-template #nodeActions let-row>

@@ -69,6 +69,12 @@ export class App implements OnInit{
       route: "tasks",
       requiredPermission: UserPermissionsEnum.TaskRead
     },
+    {
+      label: "Permissions",
+      icon: "/key.svg",
+      route: "permissions",
+      requiredPermission: UserPermissionsEnum.PermissionRead
+    }
   ]);
 
   protected readonly navigationItems = computed(()=>{

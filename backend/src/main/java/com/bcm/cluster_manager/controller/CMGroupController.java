@@ -5,11 +5,12 @@ import com.bcm.shared.config.permissions.Role;
 import com.bcm.shared.model.database.Group;
 import com.bcm.shared.service.GroupService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -26,23 +27,27 @@ public class CMGroupController {
     /**
      * Gets the highest rank of the currently authenticated user.
      *
-     * @return the highest rank value
+     * @return a Mono containing the highest rank value
      */
-    private int getCurrentUserRank() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
-            return userDetails.getRoles().stream()
-                    .mapToInt(Role::getRank)
-                    .max()
-                    .orElse(0);
-        }
-        return 0;
+    private Mono<Integer> getCurrentUserRank() {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .map(auth -> {
+                    if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
+                        return userDetails.getRoles().stream()
+                                .mapToInt(Role::getRank)
+                                .max()
+                                .orElse(0);
+                    }
+                    return 0;
+                })
+                .defaultIfEmpty(0);
     }
 
     @GetMapping("/groups")
-    public List<Group> getGroups() {
-        int requesterRank = getCurrentUserRank();
-        return groupService.getAllGroupsWithRankCheck(requesterRank);
+    public Mono<List<Group>> getGroups() {
+        return getCurrentUserRank()
+                .flatMap(groupService::getAllGroupsWithRankCheck);
     }
 
 }

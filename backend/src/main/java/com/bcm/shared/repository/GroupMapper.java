@@ -1,45 +1,18 @@
 package com.bcm.shared.repository;
 
 import com.bcm.shared.model.database.Group;
-import org.apache.ibatis.annotations.*;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
-public interface GroupMapper {
+public interface GroupMapper extends ReactiveCrudRepository<Group, Long> {
 
-    @Select("""
-                SELECT id, name, enabled, created_at AS createdAt, updated_at AS updatedAt
-                FROM "groups"
-                WHERE id = #{id}
-                """)
-    Group findById(Long id);
-
-    @Select("""
-                SELECT id, name, enabled, created_at AS createdAt, updated_at AS updatedAt
-                FROM "groups"
-                ORDER BY id
-                """)
-    List<Group> findAll();
-
-    @Insert("""
-                INSERT INTO "groups" (name, enabled, created_at, updated_at)
-                VALUES (#{name}, #{enabled}, #{createdAt}, #{updatedAt})
-                """)
-    @Options(useGeneratedKeys = true, keyProperty = "id")
-    int insert(Group g);
-
-    @Update("""
-                UPDATE "groups"
-                SET name = #{name},
-                    enabled = #{enabled},
-                    updated_at = #{updatedAt}
-                WHERE id = #{id}
-                """)
-    int update(Group g);
-
-    @Delete("""
-               DELETE FROM "groups"
-               WHERE id = #{id}
-               """)
-    int delete(Long id);
+    @Query("""
+        SELECT id, name, enabled, created_at, updated_at
+        FROM "groups"
+        ORDER BY id
+    """)
+    Flux<Group> findAllGroups();
 }

@@ -1,5 +1,6 @@
 package com.bcm.shared.service;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ public class NodeControlService {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Getter
     private boolean managedMode = true;
 
     public void shutdown() {
@@ -42,8 +44,5 @@ public class NodeControlService {
         }, 2, TimeUnit.SECONDS);
     }
 
-    public boolean isManagedMode() {
-        return managedMode;
-    }
 }
 

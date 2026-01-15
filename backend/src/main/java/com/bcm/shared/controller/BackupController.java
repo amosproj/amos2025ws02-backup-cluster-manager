@@ -1,14 +1,20 @@
 package com.bcm.shared.controller;
 
 
+import com.bcm.cluster_manager.service.CMBackupService;
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.service.BackupService;
 import com.bcm.shared.service.ClientService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/bn")
@@ -20,26 +26,21 @@ public class BackupController {
     @Autowired
     private ClientService clientService;
 
+    private static final Logger logger = LoggerFactory.getLogger(BackupController.class);
+
 
     @DeleteMapping("/backups/{id}")
-    public ResponseEntity<Void> deleteBackup(@PathVariable Long id) {
-        try {
-            backupNodeService.deleteBackup(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public Mono<ResponseEntity<Void>> deleteBackup(@PathVariable Long id) {
+        return backupNodeService.deleteBackup(id)
+                .thenReturn(ResponseEntity.noContent().<Void>build())
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
     @GetMapping("/backups")
-    public ResponseEntity<?> getBackups() {
-        try {
-            return ResponseEntity.ok(backupNodeService.getAllBackups());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public Mono<ResponseEntity<List<BackupDTO>>> getBackups() {
+        return backupNodeService.getAllBackups()
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
     @GetMapping("/backups/test")
@@ -48,33 +49,29 @@ public class BackupController {
     }
 
     @PostMapping("/backups/sync")
-    public ResponseEntity<BackupDTO> receiveBackup(@RequestBody BackupDTO dto) {
-
-        if (clientService.getClientById(dto.getClientId()) != null) {
-            BackupDTO stored = backupNodeService.store(dto.getClientId(), dto.getTaskId(), dto.getSizeBytes());
-            return ResponseEntity.ok(stored);
-        } else {
-            System.out.println("Received backup for unknown client id: " + dto.getClientId());
-            return ResponseEntity.badRequest().build();  // 400, no body
+    public Mono<ResponseEntity<BackupDTO>> receiveBackup(@RequestBody BackupDTO dto) {
+        // TODO:
+        if (clientService.getClientById(dto.getClientId()) == null) {
+            return Mono.just(ResponseEntity.badRequest().build());
         }
+
+        return backupNodeService.store(dto.getClientId(), dto.getTaskId(), dto.getSizeBytes())
+                .map(ResponseEntity::ok)
+                .onErrorResume(e ->{
+                        logger.error("Error in sync for client {}: {}", dto.getClientId(), e.getMessage(), e);
+                        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                        }
+                );
     }
 
+
     @PostMapping("/backups/{id}/execute")
-    public ResponseEntity<Void> executeBackup(
-            @PathVariable Long id,
-            @RequestBody ExecuteBackupRequest request
-    ) {
-        try {
-            if (backupNodeService.findBackupById(id) != null) {
-                backupNodeService.executeBackupSync(id, request);
-            }
-
-            return ResponseEntity.ok().build();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // return 500
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public Mono<ResponseEntity<Void>> executeBackup(@PathVariable Long id,
+                                                    @RequestBody ExecuteBackupRequest request) {
+        return backupNodeService.findBackupById(id)
+                .flatMap(found -> backupNodeService.executeBackupSync(id, request)
+                        .thenReturn(ResponseEntity.ok().<Void>build()))
+                .switchIfEmpty(Mono.just(ResponseEntity.ok().build()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 }

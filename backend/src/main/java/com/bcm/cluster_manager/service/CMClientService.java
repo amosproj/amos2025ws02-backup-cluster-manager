@@ -7,13 +7,13 @@ import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.model.api.NodeDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class CMClientService implements PaginationProvider<BigClientDTO> {
@@ -21,78 +21,68 @@ public class CMClientService implements PaginationProvider<BigClientDTO> {
     @Autowired
     private RegistryService registryService;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final WebClient webClient;
 
-    public List<BigClientDTO> getAllClients() {
+    public CMClientService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
+
+    public Mono<List<BigClientDTO>> getAllClients() {
         Collection<NodeDTO> nodeAddresses = registryService.getActiveAndManagedNodes();
-        if (nodeAddresses.isEmpty()) return List.of();
-
-        List<CompletableFuture<BigClientDTO[]>> futures = nodeAddresses.stream().map(node -> CompletableFuture.supplyAsync(() -> {
-            try {
-                String url = "http://" + node.getAddress() + "/api/v1/bn/clients";
-                ResponseEntity<BigClientDTO[]> response = restTemplate.getForEntity(url, BigClientDTO[].class);
-                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                    return Arrays.stream(response.getBody()).map(BigClientDTO -> {;
-                        BigClientDTO bigClientDto = new BigClientDTO();
-                        bigClientDto.setId(BigClientDTO.getId());
-                        bigClientDto.setNameOrIp(BigClientDTO.getNameOrIp());
-                        bigClientDto.setEnabled(BigClientDTO.isEnabled());
-                        bigClientDto.setNodeDTO(node);
-                        return bigClientDto;
-                    }).toArray(BigClientDTO[]::new);
-                }
-            } catch (Exception e) {
-                System.out.println("Fehler beim Abruf von Tasks von Node " + node.getAddress());
-            }
-            return null;
-        })).toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-        List<BigClientDTO> allClients = new ArrayList<>();
-        //Set<Long> seenIds = new HashSet<>();
-
-        for (CompletableFuture<BigClientDTO[]> future : futures) {
-            try {
-                BigClientDTO[] clients = future.get();
-                if (clients != null) {
-                    for (BigClientDTO client : clients) {
-                        //if (client != null && seenIds.add(client.getId())) {
-                            allClients.add(client);
-                       // }
-                    }
-                }
-            } catch (Exception ignored) {
-            }
+        if (nodeAddresses.isEmpty()) {
+            return Mono.just(List.of());
         }
 
-        return allClients;
+        return Flux.fromIterable(nodeAddresses)
+                .flatMap(node -> fetchClientsFromNode(node)
+                        .onErrorResume(e -> {
+                            System.out.println("Fehler beim Abruf von Clients von Node " + node.getAddress());
+                            return Flux.empty();
+                        }))
+                .collectList();
+    }
+
+    private Flux<BigClientDTO> fetchClientsFromNode(NodeDTO node) {
+        String url = "http://" + node.getAddress() + "/api/v1/bn/clients";
+        return webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToFlux(BigClientDTO.class)
+                .map(client -> {
+                    BigClientDTO bigClientDto = new BigClientDTO();
+                    bigClientDto.setId(client.getId());
+                    bigClientDto.setNameOrIp(client.getNameOrIp());
+                    bigClientDto.setEnabled(client.isEnabled());
+                    bigClientDto.setNodeDTO(node);
+                    return bigClientDto;
+                });
     }
 
     @Override
-    public List<BigClientDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
-        List<BigClientDTO> allClients = (getAllClients());
+    public Mono<List<BigClientDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
+        return getAllClients()
+                .map(allClients -> {
+                    List<BigClientDTO> filtered = applyFilters(allClients, filter);
+                    List<BigClientDTO> searched = applySearch(filtered, filter);
+                    List<BigClientDTO> sorted = SortProvider.sort(
+                            searched,
+                            filter.getSortBy(),
+                            filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
+                            BigClientComparators.COMPARATORS
+                    );
 
-        List<BigClientDTO> filtered = applyFilters(allClients, filter);
-        List<BigClientDTO> searched = applySearch(filtered, filter);
-        List<BigClientDTO> sorted = SortProvider.sort(
-                searched,
-                filter.getSortBy(),
-                filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
-                BigClientComparators.COMPARATORS);
-        int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
-        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
-        if (fromIndex >= toIndex) {
-            return new ArrayList<>();
-        }
-        return sorted.subList(fromIndex, toIndex);
+                    int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
+                    int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+                    if (fromIndex >= toIndex) return List.of();
+
+                    return sorted.subList(fromIndex, toIndex);
+                });
     }
 
     @Override
-    public long getTotalItemsCount(Filter filter) {
-        List<BigClientDTO> base = (getAllClients());
-        return applySearch(applyFilters(base, filter), filter).size();
+    public Mono<Long> getTotalItemsCount(Filter filter) {
+        return getAllClients()
+                .map(base -> (long) applySearch(applyFilters(base, filter), filter).size());
     }
 
     private List<BigClientDTO> applyFilters(List<BigClientDTO> clients, Filter filter) {

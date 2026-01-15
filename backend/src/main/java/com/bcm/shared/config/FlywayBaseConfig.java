@@ -2,6 +2,7 @@ package com.bcm.shared.config;
 
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,7 +13,7 @@ public class FlywayBaseConfig {
 
     // Base Flyway (always runs)
     @Bean(initMethod = "migrate")
-    public Flyway baseFlyway(@Qualifier("dataSourceBN") DataSource dataSource) {
+    public Flyway baseFlyway( DataSource dataSource) {
         return Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/base")

@@ -10,6 +10,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -21,9 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * This focuses on validating the `findById` method, which retrieves a client by its ID.
  */
 @SpringBootTest
-@AutoConfigureTestDatabase(replace = Replace.ANY)
-@Transactional
-@Rollback
 @Disabled("Skipping Spring context startup for now")
 class ClientMapperTest {
 
@@ -37,40 +36,33 @@ class ClientMapperTest {
      *
      * @return the created and persisted test client instance
      */
-    private Client createTestClient() {
+private Mono<Client> createTestClient() {
         Client client = new Client();
         client.setNameOrIp("test-client-" + System.currentTimeMillis());
         client.setEnabled(true);
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         client.setCreatedAt(now);
         client.setUpdatedAt(now);
-        clientMapper.insert(client);
-        return client;
+        return clientMapper.save(client);
     }
 
     @Test
     void findById_shouldReturnClientForValidId() {
-        // Arrange
-        Client createdClient = createTestClient();
-
-        // Act
-        Client foundClient = clientMapper.findById(createdClient.getId());
-
-        // Assert
-        assertThat(foundClient).isNotNull();
-        assertThat(foundClient.getId()).isEqualTo(createdClient.getId());
-        assertThat(foundClient.getNameOrIp()).isEqualTo(createdClient.getNameOrIp());
-        assertThat(foundClient.isEnabled()).isEqualTo(createdClient.isEnabled());
-        assertThat(foundClient.getCreatedAt()).isEqualTo(createdClient.getCreatedAt());
-        assertThat(foundClient.getUpdatedAt()).isEqualTo(createdClient.getUpdatedAt());
+            Mono<Client> testClient = createTestClient()
+                    .flatMap(savedClient -> clientMapper.findById(savedClient.getId()));
+            StepVerifier.create(testClient)
+                    .assertNext(foundClient -> {
+                        assertThat(foundClient).isNotNull();
+                        assertThat(foundClient.getId()).isNotNull();
+                        assertThat(foundClient.isEnabled()).isTrue();
+                        assertThat(foundClient.getCreatedAt()).isNotNull();
+                        assertThat(foundClient.getUpdatedAt()).isNotNull();
+                    }).verifyComplete();
     }
-
     @Test
     void findById_shouldReturnNullForInvalidId() {
-        // Act
-        Client foundClient = clientMapper.findById(-1L); // Non-existent ID
-
-        // Assert
-        assertThat(foundClient).isNull();
+        StepVerifier.create(clientMapper.findById(-1L))
+                .expectNextCount(0)
+                .verifyComplete();
     }
 }

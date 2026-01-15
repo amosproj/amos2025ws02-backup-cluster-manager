@@ -7,6 +7,8 @@ import com.bcm.shared.pagination.PaginationRequest;
 import com.bcm.shared.pagination.PaginationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.List;
@@ -19,23 +21,23 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/userlist")
-    public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination){
+    public Mono<PaginationResponse<UserDTO>> getUsers(PaginationRequest pagination){
         return userService.getPaginatedItems(pagination);
     }
 
     @GetMapping("/generateUser")
-    public String generateUser(){
-        userService.generateExampleUsers(50);
-        return "Generated 50 example users";
+    public Mono<String> generateUser(){
+        return Mono.fromRunnable(() -> userService.generateExampleUsers(50))
+                .thenReturn("Generated 50 example users");
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public Flux<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id:\\d+}")
-    public User getUser(@PathVariable Long id) {
+    public Mono<User> getUser(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
@@ -46,26 +48,26 @@ public class UserController {
     // }
 
     @GetMapping("search/{name}")
-    public List<User> getUserBySubtext(@PathVariable String name) {
+    public Flux<User> getUserBySubtext(@PathVariable String name) {
         return userService.getUserBySubtext(name);
     }
 
     @PostMapping("/{group_id}")
-    public User createUser(@PathVariable Long group_id, @RequestBody User user) {
+    public Mono<User> createUser(@PathVariable Long group_id, @RequestBody User user) {
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
         return userService.addUserAndAssignGroup(user, group_id);
     }
 
     @PutMapping("/{id:\\d+}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+    public Mono<User> updateUser(@PathVariable Long id, @RequestBody User user) {
         user.setUpdatedAt(Instant.now());
         user.setPasswordHash(null);
         return userService.editUser(user);
     }
 
     @DeleteMapping("/{id:\\d+}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public Mono<Void> deleteUser(@PathVariable Long id) {
+        return Mono.fromRunnable(() -> userService.deleteUser(id));
     }
 }

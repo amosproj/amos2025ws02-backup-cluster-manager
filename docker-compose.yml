@@ -15,6 +15,8 @@ services:
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node0
       - CM_DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm
+      - R2DBC_BN_URL=r2dbc:postgresql://postgres:5432/bcm_node0
+      - R2DBC_CM_URL=r2dbc:postgresql://postgres:5432/bcm
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
       - NODE_ID=node0
@@ -39,6 +41,7 @@ services:
     restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node1
+      - R2DBC_BN_URL=r2dbc:postgresql://postgres:5432/bcm_node1
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
       - NODE_ID=node1
@@ -60,6 +63,7 @@ services:
     restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node2
+      - R2DBC_BN_URL=r2dbc:postgresql://postgres:5432/bcm_node2
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
       - NODE_ID=node2
@@ -81,6 +85,7 @@ services:
     restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node3
+      - R2DBC_BN_URL=r2dbc:postgresql://postgres:5432/bcm_node3
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
       - NODE_ID=node3
@@ -102,6 +107,7 @@ services:
     restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node4
+      - R2DBC_BN_URL=r2dbc:postgresql://postgres:5432/bcm_node4
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
       - NODE_ID=node4
@@ -123,6 +129,7 @@ services:
     restart: on-failure
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node5
+      - R2DBC_BN_URL=r2dbc:postgresql://postgres:5432/bcm_node5
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
       - NODE_ID=node5
@@ -143,6 +150,7 @@ services:
     container_name: node6
     environment:
       - DATASOURCE_URL=jdbc:postgresql://postgres:5432/bcm_node6
+      - R2DBC_BN_URL=r2dbc:postgresql://postgres:5432/bcm_node6
       - POSTGRES_USER=appuser
       - POSTGRES_PASSWORD=apppassword
       - NODE_ID=node6

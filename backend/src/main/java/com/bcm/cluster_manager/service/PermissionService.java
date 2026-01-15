@@ -9,89 +9,89 @@ import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.config.permissions.Role;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class PermissionService implements PaginationProvider<RolePermissionDTO>  {
+public class PermissionService implements PaginationProvider<RolePermissionDTO> {
 
-    Collection<RolePermissionDTO> getAllRolesAndPermissions() {
-        return Arrays.stream(Role.values())
+    Flux<RolePermissionDTO> getAllRolesAndPermissions() {
+        return Flux.fromArray(Role.values())
                 .map(role -> {
                     RolePermissionDTO pv = new RolePermissionDTO();
                     pv.setRole(role.name());
-                    pv.setPermissions(role.getPermissions().stream().sorted().map(Permission::getPermission).collect(Collectors.joining(", ")));
+                    String perms = role.getPermissions().stream()
+                            .sorted()
+                            .map(Permission::getPermission)
+                            .collect(Collectors.joining(", "));
+                    pv.setPermissions(perms);
                     return pv;
-                })
-                .collect(Collectors.toList());
+                });
     }
 
     @Override
-    public long getTotalItemsCount(Filter filter) {
+    public Mono<Long> getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
-        List<RolePermissionDTO> allNodes = new ArrayList<>(getAllRolesAndPermissions());
-        List<RolePermissionDTO> filteredNodes = applyFilters(allNodes, filter);
-        List<RolePermissionDTO> filtered = applySearch(filteredNodes, filter);
-
-        return filtered.size();
+        return getAllRolesAndPermissions()
+                .transform(flux -> applyFilters(flux, filter))
+                .transform(flux -> applySearch(flux, filter))
+                .count();
     }
 
     @Override
-    public List<RolePermissionDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
+    public Mono<List<RolePermissionDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
         // Add SQL query with filter and pagination to get the actual items
-        List<RolePermissionDTO> allNodes = new ArrayList<>(getAllRolesAndPermissions());
-        List<RolePermissionDTO> filteredNodes = applyFilters(allNodes, filter);
-        List<RolePermissionDTO> filtered = applySearch(filteredNodes, filter);
-        List<RolePermissionDTO> sorted = SortProvider.sort(filtered, filter.getSortBy(), filter.getSortOrder().toString(), RoleComparators.COMPARATORS);
-        // Pagination
-        int fromIndex = (int) ((page - 1) * itemsPerPage);
-        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
-        if (fromIndex > toIndex) {
-            return new ArrayList<>();
-        }
-        sorted = sorted.subList(fromIndex, toIndex);
-        return sorted;
+        return getAllRolesAndPermissions()
+                .transform(flux -> applyFilters(flux, filter))
+                .transform(flux -> applySearch(flux, filter))
+                // Sorting is easier to do on the full list unless you have a custom reactive sorter
+                .collectList()
+                .map(list -> {
+                    // Apply Sorting
+                    List<RolePermissionDTO> sorted = SortProvider.sort(
+                            list,
+                            filter.getSortBy(),
+                            filter.getSortOrder().toString(),
+                            RoleComparators.COMPARATORS
+                    );
+
+                    // Apply Pagination logic
+                    int fromIndex = (int) ((page - 1) * itemsPerPage);
+                    if (fromIndex >= sorted.size()) {
+                        return Collections.<RolePermissionDTO>emptyList();
+                    }
+
+                    int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+                    return sorted.subList(fromIndex, toIndex);
+                });
     }
 
-    private List<RolePermissionDTO> applyFilters(List<RolePermissionDTO> roles, Filter filter) {
+    private Flux<RolePermissionDTO> applyFilters(Flux<RolePermissionDTO> roles, Filter filter) {
         if (filter == null || filter.getFilters() == null || filter.getFilters().isEmpty()) {
             return roles;
         }
 
-        var requested = filter.getFilters().stream()
-                .filter(s -> !s.isEmpty())
+        Set<String> requestedRoles = filter.getFilters().stream()
+                .filter(StringUtils::hasText)
                 .map(String::toUpperCase)
-                .map(s -> {
-                    try {
-                        return Role.valueOf(s);
-                    } catch (IllegalArgumentException ex) {
-                        return null;
-                    }
-                })
-                .filter(ns -> ns != null)
-                .distinct()
-                .toList();
+                .collect(Collectors.toSet());
 
-        // If no valid statuses parsed, return original list
-        if (requested.isEmpty()) return roles;
+        if (requestedRoles.isEmpty()) return roles;
 
-        // If all possible statuses requested, skip filtering
-        if (requested.size() == Role.values().length) return roles;
-
-        return roles.stream().toList();
+        return roles.filter(dto -> requestedRoles.contains(dto.getRole().toUpperCase()));
     }
 
-    private List<RolePermissionDTO> applySearch(List<RolePermissionDTO> roles, Filter filter) {
-        if (filter != null && StringUtils.hasText(filter.getSearch())) {
-            String searchTerm = filter.getSearch().toLowerCase();
-            return roles.stream()
-                    .filter(role ->
-                            (role.getRole() != null && role.getRole().toLowerCase().contains(searchTerm)) ||
-                                    (role.getPermissions() != null && role.getPermissions().toLowerCase().contains(searchTerm))
-                    )
-                    .toList();
+    private Flux<RolePermissionDTO> applySearch(Flux<RolePermissionDTO> roles, Filter filter) {
+        if (filter == null || !StringUtils.hasText(filter.getSearch())) {
+            return roles;
         }
-        return roles;
+        String searchTerm = filter.getSearch().toLowerCase();
+        return roles.filter(role ->
+                (role.getRole() != null && role.getRole().toLowerCase().contains(searchTerm)) ||
+                        (role.getPermissions() != null && role.getPermissions().toLowerCase().contains(searchTerm))
+        );
     }
 }

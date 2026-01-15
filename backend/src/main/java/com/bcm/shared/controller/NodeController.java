@@ -9,6 +9,7 @@ import com.bcm.shared.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -21,38 +22,36 @@ public class NodeController {
     private NodeControlService nodeControlService;
 
     @GetMapping("/example")
-    public String test(){
-        return "Here is a string";
+    public Mono<String> test(){
+        return Mono.just("Here is a string");
     }
 
     @GetMapping("/ping")
-    public String ping() {
-        return "pong";
+    public Mono<String> ping() {
+        return Mono.just("pong");
     }
 
     @PostMapping("/sync")
-    public void sync(@RequestBody SyncDTO dto) {
-        userService.replaceUsersWithCMUsers(dto.getCmUsers());
+    public Mono<Void> sync(@RequestBody SyncDTO dto) {
+        return Mono.fromRunnable(() -> userService.replaceUsersWithCMUsers(dto.getCmUsers()));
     }
 
-
     @PostMapping("/shutdown")
-    public ResponseEntity<String> shutdown() {
+    public Mono<ResponseEntity<String>> shutdown() {
         nodeControlService.shutdown();
-        return ResponseEntity.ok("Shutdown initiated");
+        return Mono.just(ResponseEntity.ok("Shutdown initiated"));
     }
 
     @PostMapping("/restart")
-    public ResponseEntity<String> restart() {
+    public Mono<ResponseEntity<String>> restart() {
         nodeControlService.restart();
-        return ResponseEntity.ok("Restart initiated");
+        return Mono.just(ResponseEntity.ok("Restart initiated"));
     }
 
     @GetMapping("/status")
-    public ResponseEntity<NodeControlStatus> getStatus() {
-        return ResponseEntity.ok(new NodeControlStatus(nodeControlService.isManagedMode()));
+    public Mono<ResponseEntity<NodeControlStatus>> getStatus() {
+        return Mono.just(ResponseEntity.ok(new NodeControlStatus(nodeControlService.isManagedMode())));
     }
-
     public static class NodeControlStatus {
         private boolean managedMode;
 

@@ -12,106 +12,98 @@ import com.bcm.shared.pagination.sort.SortProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 
 @Service
 public class CMTaskService implements PaginationProvider<BigTaskDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(CMTaskService.class);
-
+    private static final String TASKS_ENDPOINT = "/api/v1/bn/tasks";
+    private static final String TASK_ENDPOINT = "/api/v1/bn/task";
 
     @Autowired
     private RegistryService registryService;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final WebClient webClient;
+
+    public CMTaskService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
 
 
     @Override
-    public long getTotalItemsCount(Filter filter) {
-        // Add SQL query with filter to get the actual count
-        List<BigTaskDTO> base = (getAllTasks());
-        return applySearch(applyFilters(base, filter), filter).size();
-
+    public Mono<Long> getTotalItemsCount(Filter filter) {
+        return getAllTasksReactive()
+                .map(list -> (long) applySearch(applyFilters(list, filter), filter).size());
     }
 
     @Override
-    public List<BigTaskDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
-        List<BigTaskDTO> allBackups = (getAllTasks());
+    public Mono<List<BigTaskDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
+        return getAllTasksReactive()
+                .map(allTasks -> {
+                    List<BigTaskDTO> filtered = applyFilters(allTasks, filter);
+                    List<BigTaskDTO> searched = applySearch(filtered, filter);
+                    List<BigTaskDTO> sorted = SortProvider.sort(
+                            searched,
+                            filter.getSortBy(),
+                            filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
+                            BigTaskComparators.COMPARATORS
+                    );
 
-        List<BigTaskDTO> filtered = applyFilters(allBackups, filter);
-        List<BigTaskDTO> searched = applySearch(filtered, filter);
-        List<BigTaskDTO> sorted = SortProvider.sort(
-                searched,
-                filter.getSortBy(),
-                filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
-                BigTaskComparators.COMPARATORS
-        );
-        int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
-        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
-        if (fromIndex >= toIndex) {
-            return new ArrayList<>();
-        }
-        return sorted.subList(fromIndex, toIndex);
+                    int fromIndex = (int) Math.max(0, (page - 1) * itemsPerPage);
+                    int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+                    if (fromIndex >= toIndex) return List.of();
+
+                    return sorted.subList(fromIndex, toIndex);
+                });
+    }
+
+    public Mono<List<BigTaskDTO>> getAllTasksReactive() {
+        Collection<NodeDTO> nodes = registryService.getActiveAndManagedNodes();
+        if (nodes.isEmpty()) return Mono.just(List.of());
+
+        return Flux.fromIterable(nodes)
+                .flatMap(this::fetchTasksFromNode)
+                .collectList();
+    }
+
+    private Flux<BigTaskDTO> fetchTasksFromNode(NodeDTO node) {
+        String url = "http://" + node.getAddress() + TASKS_ENDPOINT;
+
+        return webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(TaskDTO[].class)
+                .timeout(Duration.ofSeconds(10))
+                .flatMapMany(Flux::fromArray)
+                .map(taskDto -> {
+                    BigTaskDTO bigTaskDto = new BigTaskDTO();
+                    bigTaskDto.setId(taskDto.getId());
+                    bigTaskDto.setName(taskDto.getName());
+                    bigTaskDto.setClientId(taskDto.getClientId());
+                    bigTaskDto.setEnabled(taskDto.isEnabled());
+                    bigTaskDto.setInterval(taskDto.getInterval());
+                    bigTaskDto.setSource(taskDto.getSource());
+                    bigTaskDto.setNodeDTO(node);
+                    return bigTaskDto;
+                })
+                .onErrorResume(e -> {
+                    logger.info("Fehler beim Abruf von Tasks von Node " + node.getAddress() + ". Error: " + e.getMessage());
+                    return Flux.empty();
+                });
     }
 
     public List<BigTaskDTO> getAllTasks() {
-        Collection<NodeDTO> nodes = registryService.getActiveAndManagedNodes();
-        if (nodes.isEmpty()) return List.of();
-
-        List<CompletableFuture<BigTaskDTO[]>> futures = nodes.stream().map(node -> CompletableFuture.supplyAsync(() -> {
-            try {
-                String url = "http://" + node.getAddress() + "/api/v1/bn/tasks";
-                ResponseEntity<TaskDTO[]> response = restTemplate.getForEntity(url, TaskDTO[].class);
-                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                    return Arrays.stream(response.getBody())
-                            .map(taskDto -> {
-                                BigTaskDTO bigTaskDto = new BigTaskDTO();
-
-                                bigTaskDto.setId(taskDto.getId());
-                                bigTaskDto.setName(taskDto.getName());
-                                bigTaskDto.setClientId(taskDto.getClientId());
-                                bigTaskDto.setEnabled(taskDto.isEnabled());
-                                bigTaskDto.setInterval(taskDto.getInterval());
-                                bigTaskDto.setSource(taskDto.getSource());
-
-                                // Don't need to set NameOrIp and Enabled here, as they are not relevant for task pages
-                                bigTaskDto.setNodeDTO(node);
-
-                                return bigTaskDto;
-                            })
-                            .toArray(BigTaskDTO[]::new);
-                }
-            } catch (Exception e) {
-                logger.info("Fehler beim Abruf von Tasks von Node " + node.getAddress() + ". Error: " + (e.getMessage()));
-            }
-            return null;
-        })).toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-        List<BigTaskDTO> allTasks = new ArrayList<>();
-        //Set<Long> seenIds = new HashSet<>();
-
-        for (CompletableFuture<BigTaskDTO[]> future : futures) {
-            try {
-                BigTaskDTO[] tasks = future.get();
-                if (tasks != null) {
-                    allTasks.addAll(Arrays.asList(tasks));
-                }
-            } catch (Exception ignored) {
-            }
-        }
-
-        return allTasks;
+        return getAllTasksReactive().block();
     }
 
     // Filters by BackupState parsed from filter.getFilters()
@@ -166,8 +158,12 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
 
     @Transactional
     public BigTaskDTO addTask(BigTaskDTO task) {
+        return addTaskReactive(task).block();
+    }
+
+    public Mono<BigTaskDTO> addTaskReactive(BigTaskDTO task) {
         if (task == null || task.getNodeDTO() == null || task.getNodeDTO().getId() == null) {
-            return null;
+            return Mono.empty();
         }
 
         TaskDTO taskDTO = new TaskDTO();
@@ -179,40 +175,37 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
 
         Long targetNodeId = task.getNodeDTO().getId();
 
-        Optional<BigTaskDTO> result = registryService.getActiveAndManagedNodes().stream()
+        Optional<NodeDTO> targetNode = registryService.getActiveAndManagedNodes().stream()
                 .filter(node -> node.getId().equals(targetNodeId))
-                .findFirst()
-                .map(node -> {
-                    try {
-                        String url = "http://" + node.getAddress() + "/api/v1/bn/task";
-                        ResponseEntity<TaskDTO> response =
-                                restTemplate.postForEntity(url, taskDTO, TaskDTO.class);
+                .findFirst();
 
-                        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                            TaskDTO dto = response.getBody();
-
-                            BigTaskDTO createdTask = new BigTaskDTO();
-                            createdTask.setId(dto.getId());
-                            createdTask.setName(dto.getName());
-                            createdTask.setClientId(dto.getClientId());
-                            createdTask.setSource(dto.getSource());
-                            createdTask.setEnabled(dto.isEnabled());
-                            createdTask.setInterval(dto.getInterval());
-                            createdTask.setNodeDTO(node);
-                            return createdTask;
-                        }
-                    } catch (Exception e) {
-                        logger.error("Fehler beim Hinzufügen von Task an Node " + node.getAddress());
-                        throw e;
-                    }
-                    return null;
-                });
-        if (result.isPresent()) {
-            return result.get();
+        if (targetNode.isEmpty()) {
+            logger.error("Target node for new Task not found.");
+            return Mono.empty();
         }
 
-        logger.error("Target node for new Task not found or error occurred.");
-        return null;
+        NodeDTO node = targetNode.get();
+        String url = "http://" + node.getAddress() + TASK_ENDPOINT;
+
+        return webClient.post()
+                .uri(url)
+                .bodyValue(taskDTO)
+                .retrieve()
+                .bodyToMono(TaskDTO.class)
+                .timeout(Duration.ofSeconds(10))
+                .map(dto -> {
+                    BigTaskDTO createdTask = new BigTaskDTO();
+                    createdTask.setId(dto.getId());
+                    createdTask.setName(dto.getName());
+                    createdTask.setClientId(dto.getClientId());
+                    createdTask.setSource(dto.getSource());
+                    createdTask.setEnabled(dto.isEnabled());
+                    createdTask.setInterval(dto.getInterval());
+                    createdTask.setNodeDTO(node);
+                    return createdTask;
+                })
+                .doOnError(e -> logger.error("Fehler beim Hinzufügen von Task an Node " + node.getAddress() + ": " + e.getMessage()))
+                .onErrorResume(e -> Mono.empty());
     }
 
 

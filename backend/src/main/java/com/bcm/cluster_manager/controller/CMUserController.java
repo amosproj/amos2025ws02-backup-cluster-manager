@@ -10,9 +10,11 @@ import com.bcm.shared.pagination.PaginationResponse;
 import com.bcm.shared.service.UserService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,39 +33,43 @@ public class CMUserController {
     /**
      * Gets the highest rank of the currently authenticated user.
      *
-     * @return the highest rank value
+     * @return a Mono containing the highest rank value
      */
-    private int getCurrentUserRank() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
-            return userDetails.getRoles().stream()
-                    .mapToInt(Role::getRank)
-                    .max()
-                    .orElse(0);
-        }
-        return 0;
+    private Mono<Integer> getCurrentUserRank() {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .map(auth -> {
+                    if (auth != null && auth.getPrincipal() instanceof CustomUserDetails userDetails) {
+                        return userDetails.getRoles().stream()
+                                .mapToInt(Role::getRank)
+                                .max()
+                                .orElse(0);
+                    }
+                    return 0;
+                })
+                .defaultIfEmpty(0);
     }
 
     @PreAuthorize(Permission.Require.USER_READ)
     @GetMapping("/userlist")
-    public PaginationResponse<UserDTO> getUsers(PaginationRequest pagination){
+    public Mono<PaginationResponse<UserDTO>> getUsers(PaginationRequest pagination){
         return userService.getPaginatedItems(pagination);
     }
 
     @GetMapping("/generateUser")
-    public String generateUser(){
-        userService.generateExampleUsers(50);
-        return "Generated 50 example users";
+    public Mono<String> generateUser(){
+        return Mono.fromRunnable(() -> userService.generateExampleUsers(50))
+                .thenReturn("Generated 50 example users");
     }
 
     @PreAuthorize(Permission.Require.USER_READ)
     @GetMapping
-    public List<User> getAllUsers() {
+    public Flux<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id:\\d+}")
-    public User getUser(@PathVariable Long id) {
+    public Mono<User> getUser(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
@@ -75,34 +81,35 @@ public class CMUserController {
 
     @PreAuthorize(Permission.Require.USER_READ)
     @GetMapping("search/{name}")
-    public List<User> getUserBySubtext(@PathVariable String name) {
-        int requesterRank = getCurrentUserRank();
-        return userService.getUserBySubtextWithRankCheck(name, requesterRank);
+    public Mono<List<User>> getUserBySubtext(@PathVariable String name) {
+        return getCurrentUserRank()
+                .flatMap(requesterRank -> userService.getUserBySubtextWithRankCheck(name, requesterRank));
     }
 
     @PreAuthorize(Permission.Require.USER_CREATE)
     @PostMapping("/{group_id}")
-    public User createUser(@PathVariable Long group_id, @RequestBody User user) {
+    public Mono<User> createUser(@PathVariable Long group_id, @RequestBody User user) {
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
-        int requesterRank = getCurrentUserRank();
-        return userService.addUserAndAssignGroupWithRankCheck(user, group_id, requesterRank);
+        return getCurrentUserRank()
+                .flatMap(requesterRank -> userService.addUserAndAssignGroupWithRankCheck(user, group_id, requesterRank));
     }
 
     @PreAuthorize(Permission.Require.USER_UPDATE)
     @PutMapping("/{id:\\d+}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+    public Mono<User> updateUser(@PathVariable Long id, @RequestBody User user) {
         user.setId(id);
         user.setUpdatedAt(Instant.now());
         user.setPasswordHash(null);
-        int requesterRank = getCurrentUserRank();
-        return userService.editUserWithRankCheck(user, requesterRank);
+        return getCurrentUserRank()
+                .flatMap(requesterRank -> userService.editUserWithRankCheck(user, requesterRank));
     }
 
     @PreAuthorize(Permission.Require.USER_DELETE)
     @DeleteMapping("/{id:\\d+}")
-    public void deleteUser(@PathVariable Long id) {
-        int requesterRank = getCurrentUserRank();
-        userService.deleteUserWithRankCheck(id, requesterRank);
+    public Mono<Void> deleteUser(@PathVariable Long id) {
+        return getCurrentUserRank()
+                .flatMap(requesterRank -> userService.deleteUserWithRankCheck(id, requesterRank))
+                .then();
     }
 }

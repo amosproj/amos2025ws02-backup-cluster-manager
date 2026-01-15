@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @RestController()
 @RequestMapping("/api/v1/cm")
@@ -22,46 +23,30 @@ public class CMBackupController {
 
     @PreAuthorize(Permission.Require.BACKUP_DELETE)
     @DeleteMapping("/backups/{id}")
-    public ResponseEntity<Void> deleteBackup(@PathVariable Long id, @RequestParam("nodeAddress") String nodeAddress) {
-        try {
-            CMBackupService.deleteBackup(id, nodeAddress);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public Mono<ResponseEntity<Void>> deleteBackup(@PathVariable Long id, @RequestParam("nodeAddress") String nodeAddress) {
+        return CMBackupService.deleteBackup(id, nodeAddress)
+                .thenReturn(ResponseEntity.noContent().<Void>build())
+                .onErrorResume(e -> {
+                    e.printStackTrace();
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<Void>build());
+                });
     }
-
-    /*
-    @PostMapping("/backups/{id}/execute")
-    public ResponseEntity<Void> executeBackup(@PathVariable Long id, @RequestBody ExecuteBackupRequest req) {
-        try {
-            CMBackupService.executeBackup(id, req.getDuration(), req.getShouldSucceed());
-            return ResponseEntity.accepted().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    */
 
     @PreAuthorize(Permission.Require.BACKUP_READ)
     @GetMapping("/backups")
-    public PaginationResponse<BigBackupDTO> getBackups(PaginationRequest pagination) {
+    public Mono<PaginationResponse<BigBackupDTO>> getBackups(PaginationRequest pagination) {
         return CMBackupService.getPaginatedItems(pagination);
     }
 
     @PreAuthorize(Permission.Require.BACKUP_CREATE)
     @PostMapping("/backups")
-    public ResponseEntity<BigBackupDTO> createBackup(@RequestBody BigBackupDTO request) {
-        try {
-
-            BigBackupDTO result = CMBackupService.createBackup(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public Mono<ResponseEntity<BigBackupDTO>> createBackup(@RequestBody BigBackupDTO request) {
+        return CMBackupService.createBackup(request)
+                .map(result -> ResponseEntity.status(HttpStatus.CREATED).body(result))
+                .onErrorResume(e -> {;
+                    e.printStackTrace();
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                });
     }
 
 }

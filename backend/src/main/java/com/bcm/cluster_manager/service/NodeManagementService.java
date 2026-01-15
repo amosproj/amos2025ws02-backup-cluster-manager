@@ -16,8 +16,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,31 +38,43 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
     @Autowired
     private SyncService syncService;
 
-    @Override
-    public long getTotalItemsCount(Filter filter) {
-        // Add SQL query with filter to get the actual count
-        List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
-        List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
-        List<NodeDTO> filtered = applySearch(filteredNodes, filter);
+    private final WebClient webClient;
 
-        return filtered.size();
+    public NodeManagementService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
     }
 
     @Override
-    public List<NodeDTO> getDBItems(long page, long itemsPerPage, Filter filter) {
+    public Mono<Long> getTotalItemsCount(Filter filter) {
+        // Add SQL query with filter to get the actual count
+        return Mono.fromSupplier(() -> {
+            List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
+            List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
+            List<NodeDTO> filtered = applySearch(filteredNodes, filter);
+            return (long) filtered.size();
+        });    }
+
+    @Override
+    public Mono<List<NodeDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
         // Add SQL query with filter and pagination to get the actual items
-        List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
-        List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
-        List<NodeDTO> filtered = applySearch(filteredNodes, filter);
-        List<NodeDTO> sorted = SortProvider.sort(filtered, filter.getSortBy(), filter.getSortOrder().toString(), NodeComparators.COMPARATORS);
-        // Pagination
-        int fromIndex = (int) ((page - 1) * itemsPerPage);
-        int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
-        if (fromIndex > toIndex) {
-            return new ArrayList<>();
-        }
-        sorted = sorted.subList(fromIndex, toIndex);
-        return sorted;
+        return Mono.fromSupplier(() -> {
+            List<NodeDTO> allNodes = new ArrayList<>(registry.getAllNodes());
+            List<NodeDTO> filteredNodes = applyFilters(allNodes, filter);
+            List<NodeDTO> filtered = applySearch(filteredNodes, filter);
+
+            List<NodeDTO> sorted = SortProvider.sort(
+                    filtered,
+                    filter.getSortBy(),
+                    filter.getSortOrder() != null ? filter.getSortOrder().toString() : null,
+                    NodeComparators.COMPARATORS
+            );
+
+            int fromIndex = (int) ((page - 1) * itemsPerPage);
+            int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
+            if (fromIndex >= toIndex) return List.of();
+
+            return sorted.subList(fromIndex, toIndex);
+        });
     }
 
     private List<NodeDTO> applyFilters(List<NodeDTO> nodes, Filter filter) {
@@ -115,19 +129,20 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         registry.removeNode(id);
     }
 
-    public void registerNode(RegisterRequest req) {
-        final RestTemplate restTemplate = new RestTemplate();
+    public Mono<Void> registerNode(RegisterRequest req) {
         JoinDTO dto = new JoinDTO();
         dto.setCmURL("http://cluster-manager:8080");
-        try {
-            restTemplate.postForEntity("http://" + req.getAddress() + "/api/v1/bn/join", dto, String.class);
-            registry.register(req);
-            syncService.syncNodes();
-        } catch (Exception e) {
-            System.err.println("Error registering node: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Failed to register node at " + req.getAddress());
-        }
+        String url = "http://" + req.getAddress() + "/api/v1/bn/join";
+
+        return webClient.post()
+                .uri(url)
+                .bodyValue(dto)
+                .retrieve()
+                .toBodilessEntity()
+                .timeout(Duration.ofSeconds(10))
+                .doOnSuccess(response -> registry.register(req))
+                .then(syncService.syncNodes())
+                .doOnError(e -> logger.error("Error registering node: {}", e.getMessage()));
     }
 
     public Optional<NodeDTO> getNodeById(Long id) {
@@ -138,11 +153,11 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         return registry.findByAddress(address);
     }
 
-    public boolean shutdownNode(Long nodeId) {
+    public Mono<Boolean> shutdownNode(Long nodeId) {
         Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
         if (nodeOpt.isEmpty()) {
             logger.warn("Node with id {} not found for shutdown", nodeId);
-            return false;
+            return Mono.just(false);
         }
 
         NodeDTO node = nodeOpt.get();
@@ -150,31 +165,31 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         // Don't allow shutdown of cluster manager
         if (node.getMode() == NodeMode.CLUSTER_MANAGER) {
             logger.warn("Cannot shutdown cluster manager node {}", node.getAddress());
-            return false;
+            return Mono.just(false);
         }
 
         registry.markShuttingDown(node.getAddress());
 
-        boolean success = nodeHttpClient.postNodeSyncNoResponse(node.getAddress(), "/api/v1/shutdown");
-        if (success) {
-            logger.info("Shutdown command sent to node {}", node.getAddress());
-            // Remove node from cluster since it won't come back
-            registry.removeNode(nodeId);
-            logger.info("Node {} removed from cluster after shutdown", node.getAddress());
-            syncService.syncNodes();
-            return true;
-        } else {
-            logger.error("Failed to send shutdown command to node {}", node.getAddress());
-            registry.markInactive(node);
-            return false;
-        }
+        return nodeHttpClient.postNodeNoResponse(node.getAddress(), "/api/v1/shutdown")
+                .doOnNext(success -> {
+                    if (success) {
+                        logger.info("Shutdown command sent to node {}", node.getAddress());
+                        // Remove node from cluster since it won't come back
+                        registry.removeNode(nodeId);
+                        logger.info("Node {} removed from cluster after shutdown", node.getAddress());
+                    } else {
+                        logger.error("Failed to send shutdown command to node {}", node.getAddress());
+                        registry.markInactive(node);
+                    }
+                })
+                .flatMap(success -> success ? syncService.syncNodes().thenReturn(true) : Mono.just(false));
     }
 
-    public boolean restartNode(Long nodeId) {
+    public Mono<Boolean> restartNode(Long nodeId) {
         Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
         if (nodeOpt.isEmpty()) {
             logger.warn("Node with id {} not found for restart", nodeId);
-            return false;
+            return Mono.just(false);
         }
 
         NodeDTO node = nodeOpt.get();
@@ -182,19 +197,19 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         // Don't allow restart of cluster manager
         if (node.getMode() == NodeMode.CLUSTER_MANAGER) {
             logger.warn("Cannot restart cluster manager node {}", node.getAddress());
-            return false;
+            return Mono.just(false);
         }
 
         registry.markRestarting(node.getAddress());
 
-        boolean success = nodeHttpClient.postNodeSyncNoResponse(node.getAddress(), "/api/v1/restart");
-        if (success) {
-            logger.info("Restart command sent to node {}", node.getAddress());
-            return true;
-        } else {
-            logger.error("Failed to send restart command to node {}", node.getAddress());
-            registry.markInactive(node);
-            return false;
-        }
+        return nodeHttpClient.postNodeNoResponse(node.getAddress(), "/api/v1/restart")
+                .doOnNext(success -> {
+                    if (success) {
+                        logger.info("Restart command sent to node {}", node.getAddress());
+                    } else {
+                        logger.error("Failed to send restart command to node {}", node.getAddress());
+                        registry.markInactive(node);
+                    }
+                });
     }
 }

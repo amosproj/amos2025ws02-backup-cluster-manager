@@ -61,10 +61,8 @@ public class AuthController {
     @PostMapping("/logout")
     public Mono<ResponseEntity<Void>> logout(ServerWebExchange exchange) {
         return exchange.getSession()
-                .flatMap(session -> {
-                    session.invalidate();
-                    return Mono.just(ResponseEntity.ok().<Void>build());
-                });
+                .doOnNext(session -> session.getAttributes().remove(SPRING_SECURITY_CONTEXT_KEY))
+                .thenReturn(ResponseEntity.ok().<Void>build());
     }
 
     @GetMapping("/validate")
@@ -104,4 +102,3 @@ public class AuthController {
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 }
-

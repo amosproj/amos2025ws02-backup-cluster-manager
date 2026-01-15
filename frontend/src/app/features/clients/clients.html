@@ -4,6 +4,6 @@
   [filters]="tableFilters()"
   [loading]="loading$ | async"
   [addButtonText]="'Add Client'"
-  [showAddButton]="authService.hasPermission(UserPermissionsEnum.ClientCreate)"
+  [showAddButton]="false"
   [showDeleteButton]="false"
 />

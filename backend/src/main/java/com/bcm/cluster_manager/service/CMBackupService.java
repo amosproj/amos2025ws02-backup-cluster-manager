@@ -9,10 +9,13 @@ import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -45,6 +48,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
 
 
     @Override
+    @Cacheable(value = "backupsCount", key = "#filter.hashCode()")
     public Mono<Long> getTotalItemsCount(Filter filter) {
         return getAllBackups()
                 .map(list -> (long) applySearch(applyFilters(list, filter), filter).size());
@@ -72,7 +76,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
     }
 
 
-
+    @Cacheable(value = "backupsList", key = "'all'")
     public Mono<List<BigBackupDTO>> getAllBackups(){
         Collection<NodeDTO> nodes = registryService.getActiveAndManagedNodes();
         if (nodes.isEmpty()) return Mono.just(List.of());
@@ -105,7 +109,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
                                 return Flux.empty();
                             });
                 })
-                .collectList();
+                .collectList().cache(Duration.ofMinutes(2));
 
     }
 
@@ -155,6 +159,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         return backups;
     }
 
+    @CacheEvict(value = {"backupsList", "backupsCount"}, allEntries = true)
     public Mono<BigBackupDTO> createBackup(BigBackupDTO request) {
 
         BackupDTO backupDTO = new BackupDTO();
@@ -221,6 +226,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         return createdBackup;
     }
 
+    @CacheEvict(value = {"backupsList", "backupsCount"}, allEntries = true)
     public Mono<Void> deleteBackup(Long id, String nodeAddress) {
         boolean nodeIsActive = registryService.getActiveAndManagedNodes().stream()
                 .anyMatch(node -> node.getAddress().equals(nodeAddress));

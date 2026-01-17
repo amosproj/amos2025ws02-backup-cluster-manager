@@ -18,26 +18,16 @@ public class CacheConfig {
         // Configure and return the desired CacheManager implementation
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
 
-        // Backup list cache
-        cacheManager.registerCustomCache("backupsList",
+        // Cache for counts
+        cacheManager.registerCustomCache("backupPages",
                 Caffeine.newBuilder()
-                        .expireAfterWrite(2, TimeUnit.MINUTES)
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .expireAfterAccess(2, TimeUnit.MINUTES)
                         .maximumSize(100)
                         .recordStats()
                         .build()
         );
-
-        // Backup count cache
-        cacheManager.registerCustomCache("backupsCount",
-                Caffeine.newBuilder()
-                        .expireAfterWrite(5, TimeUnit.MINUTES)
-                        .maximumSize(50)
-                        .recordStats()
-                        .build()
-        );
-
         return cacheManager;
     }
-
 
 }

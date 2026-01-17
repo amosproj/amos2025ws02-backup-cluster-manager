@@ -9,13 +9,12 @@ import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -37,26 +36,39 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
     private static final String BACKUPS_ENDPOINT = "/api/v1/bn/backups";
 
     private static final Logger logger =LoggerFactory.getLogger(CMBackupService.class);
+    private final CacheManager cacheManager;
 
     public CMBackupService(RegistryService registryService,
                            WebClient.Builder webClientBuilder,
-                           NodeHttpClient nodeHttpClient) {
+                           NodeHttpClient nodeHttpClient, CacheManager cacheManager) {
         this.registryService = registryService;
         this.webClient = webClientBuilder.build();
         this.nodeHttpClient = nodeHttpClient;
+        this.cacheManager = cacheManager;
     }
 
 
     @Override
-    @Cacheable(value = "backupsCount", key = "#filter.hashCode()")
     public Mono<Long> getTotalItemsCount(Filter filter) {
-        return getAllBackups()
+        return getAllBackups(filter)
                 .map(list -> (long) applySearch(applyFilters(list, filter), filter).size());
+
     }
 
     @Override
     public Mono<List<BigBackupDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
-        return getAllBackups()
+
+        String cacheKey = buildCacheKey(page, itemsPerPage, filter);  // Use stable key
+
+        List<BigBackupDTO> cached = cacheManager.getCache("backupPages").get(cacheKey, List.class);
+        if (cached != null) {
+            logger.debug("Page cache HIT: {}", cacheKey);
+            return Mono.just(cached);
+        }
+
+        logger.debug("Page cache MISS: {}", cacheKey);
+
+        return getAllBackups(filter)
                 .map(allBackups -> {
                     List<BigBackupDTO> filtered = applyFilters(allBackups, filter);
                     List<BigBackupDTO> searched = applySearch(filtered, filter);
@@ -71,13 +83,18 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
                     int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
                     if (fromIndex >= toIndex) return List.of();
 
-                    return sorted.subList(fromIndex, toIndex);
+                    List<BigBackupDTO> result = sorted.subList(fromIndex, toIndex);
+
+                    // Cache the page result
+                    cacheManager.getCache("backupPages").put(cacheKey, result);
+                    logger.debug("Cached page {} ({} items)", page, result.size());
+                    return result;
+
                 });
     }
 
 
-    @Cacheable(value = "backupsList", key = "'all'")
-    public Mono<List<BigBackupDTO>> getAllBackups(){
+    public Mono<List<BigBackupDTO>> getAllBackups(Filter filter) {
         Collection<NodeDTO> nodes = registryService.getActiveAndManagedNodes();
         if (nodes.isEmpty()) return Mono.just(List.of());
 
@@ -109,7 +126,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
                                 return Flux.empty();
                             });
                 })
-                .collectList().cache(Duration.ofMinutes(2));
+                .collectList();
 
     }
 
@@ -159,7 +176,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         return backups;
     }
 
-    @CacheEvict(value = {"backupsList", "backupsCount"}, allEntries = true)
+    @CacheEvict(value = "backupPages", allEntries = true)
     public Mono<BigBackupDTO> createBackup(BigBackupDTO request) {
 
         BackupDTO backupDTO = new BackupDTO();
@@ -226,7 +243,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         return createdBackup;
     }
 
-    @CacheEvict(value = {"backupsList", "backupsCount"}, allEntries = true)
+    @CacheEvict(value = "backupPages", allEntries = true)
     public Mono<Void> deleteBackup(Long id, String nodeAddress) {
         boolean nodeIsActive = registryService.getActiveAndManagedNodes().stream()
                 .anyMatch(node -> node.getAddress().equals(nodeAddress));
@@ -246,4 +263,28 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
                 .doOnSuccess(v -> logger.info("Deleted backup {} from node {}", id, nodeAddress))
                 .doOnError(e -> logger.error("Error deleting backup {} from node {}: {}", id, nodeAddress, e.getMessage(), e));
     }
+    private String buildCacheKey(long page, long itemsPerPage, Filter filter) {
+        StringBuilder key = new StringBuilder();
+        key.append("page-").append(page);
+        key.append("-size-").append(itemsPerPage);
+
+        // Add filter components
+        if (filter != null) {
+            if (filter.getFilters() != null && !filter.getFilters().isEmpty()) {
+                key.append("-filters-").append(String.join(",", filter.getFilters().stream().sorted().toList()));
+            }
+            if (filter.getSearch() != null && !filter.getSearch().isEmpty()) {
+                key.append("-search-").append(filter.getSearch());
+            }
+            if (filter.getSortBy() != null) {
+                key.append("-sort-").append(filter.getSortBy());
+            }
+            if (filter.getSortOrder() != null) {
+                key.append("-order-").append(filter.getSortOrder());
+            }
+        }
+
+        return key.toString();
+    }
+
 }

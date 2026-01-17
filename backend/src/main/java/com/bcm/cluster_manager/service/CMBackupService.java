@@ -176,7 +176,6 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         return backups;
     }
 
-    @CacheEvict(value = "backupPages", allEntries = true)
     public Mono<BigBackupDTO> createBackup(BigBackupDTO request) {
 
         BackupDTO backupDTO = new BackupDTO();
@@ -243,7 +242,6 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         return createdBackup;
     }
 
-    @CacheEvict(value = "backupPages", allEntries = true)
     public Mono<Void> deleteBackup(Long id, String nodeAddress) {
         boolean nodeIsActive = registryService.getActiveAndManagedNodes().stream()
                 .anyMatch(node -> node.getAddress().equals(nodeAddress));

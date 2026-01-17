@@ -22,9 +22,12 @@ import static com.bcm.shared.mapper.BackupConverter.toDTO;
 public class BackupService {
 
     private final BackupMapper backupMapper;
+    private final CacheEventStore eventStore;
 
-    public BackupService( BackupMapper backupMapper) {
+    public BackupService( BackupMapper backupMapper, CacheEventStore eventStore) {
+
         this.backupMapper = backupMapper;
+        this.eventStore = eventStore;
     }
 
 
@@ -40,7 +43,11 @@ public class BackupService {
     }
 
     public Mono<Void> deleteBackup(Long backupId) {
-        return backupMapper.deleteById(backupId);
+        return backupMapper.deleteById(backupId)
+                .doOnSuccess(v-> eventStore.recordEvent(
+                        CacheInvalidationType.BACKUP_DELETED,
+                        backupId)
+                );
     }
 
     public Mono<Void> executeBackupSync(Long id, ExecuteBackupRequest request) {
@@ -64,6 +71,12 @@ public class BackupService {
                     backup.setStopTime(Instant.ofEpochMilli(now + request.getDuration()));
                     return backupMapper.insert(backup);
                 })
+                .doOnSuccess(backup ->
+                        eventStore.recordEvent(
+                                CacheInvalidationType.BACKUP_UPDATED,
+                                backup.getId()
+                        )
+                )
                 .then();
     }
 
@@ -78,6 +91,12 @@ public class BackupService {
         backup.setCreatedAt(Instant.now());
 
         return backupMapper.insert(backup)
+                .doOnSuccess(saved ->
+                        eventStore.recordEvent(
+                                CacheInvalidationType.BACKUP_CREATED,
+                                saved.getId()
+                        )
+                )
                 .map(BackupConverter::toDTO);
     }
 

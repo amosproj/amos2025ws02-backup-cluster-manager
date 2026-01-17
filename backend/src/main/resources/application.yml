@@ -48,21 +48,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: '*'
+        include: "*"
   endpoint:
     health:
       show-details: always
-  health:
-    diskspace:
-      enabled: true
-  metrics:
-    enable:
-      jvm: true
-      system: true
-      process: true
-    export:
-      simple:
-        enabled: true
 
 # mybatis:
 #   type-aliases-package: com.bcm.shared.model.database

@@ -1,0 +1,45 @@
+@startuml
+skinparam monochrome true
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "Backup Node\n(Behind Firewall)" as Node
+participant "Cluster Manager\n(CM)" as CM
+
+== Phase: Job Processing & Queue Draining ==
+note right of CM: GUI queued Job "J1" for N1
+note right of CM: GUI queued Job "J2" for N1
+
+Node -> CM: GET /api/node/heartbeat?nodeId=N1
+activate CM
+CM -> CM: Check Queue for N1\n-> Found Job J1
+CM --> Node: HTTP 200 OK\n{ "job": {id: "J1", cmd: "START"}}
+deactivate CM
+
+activate Node
+Node -> Node: Execute Job J1
+Node -> CM: POST /api/node/status {jobId: "J1", status: "COMPLETED"}
+deactivate Node
+
+activate CM
+CM -> CM: Check Queue for N1\n-> Found Job J2
+CM --> Node: HTTP 200 OK\n{ "job": {id: "J2", cmd: "START"}}
+deactivate CM
+
+activate Node
+Node -> Node: Execute Job J2
+Node -> CM: POST /api/node/status {jobId: "J2", status: "COMPLETED"}
+deactivate Node
+
+activate CM
+CM -> CM: Check Queue for N1\n-> Queue empty
+CM --> Node: HTTP 200 OK\n{ "job": null }
+deactivate CM
+note left of Node: No more work.\nHeartbeat interval.
+
+... after heartbeat interval ...
+
+Node -> CM: GET /api/node/heartbeat?nodeId=N1
+CM --> Node: HTTP 200 OK\n{ "job": null }
+
+@enduml

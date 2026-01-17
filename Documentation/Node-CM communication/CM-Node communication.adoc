@@ -1,0 +1,83 @@
+= Architecture Concept: Asynchronous Node Communication (Adaptive Polling)
+Author: AMOS Project team
+Date: {docdate}
+:toc: left
+:toc-title: Contents
+:icons: font
+:source-highlighter: rouge
+:imagesdir: diagrams
+
+== 1. Management Summary
+
+This document describes the architecture for the backup cluster manager prototype with an **asynchronous, queue-based communication**.
+
+The requirements:
+
+* Nodes cannot be called but must initiate the connection to the CM themselves.
+* Nodes must not keep a permanent connection.
+
+The selected solution uses **adaptive short polling** in which the nodes initiate the connection to the CM with a heartbeat.
+
+== 2. Solution: Adaptive Polling & Asynchronous Queue
+
+1.  **Node "Heartbeat" (short polling):**
+Nodes call the CM periodically (`GET /heartbeat`), to check if any jobs are queued. The CM sends the first queued job as answer to the node's heartbeat. The node sends another request immediately until the queue is drained.
+
+2.  **Adaptive Interval (optional):**
+To increase the responsiveness of the UI/app the CM will inform (relevant) Nodes if the UI is active (e.g. any user logged in)
+* **Idle Mode (default):** Long Interval e.g. 10s to minimize the network load.
+* **Active Mode (burst):** If a user is logged in or certain actions are performed, the interval is reduced to e.g. 1s.
+
+3.  **Asynchronous Queue:**
+Since the CM cannot actively call the nodes, it will queue jobs. In memory or in the database.
+
+== 3. Architecture: flow of communication
+
+The following diagrams show the decoupled communication paths.
+
+=== 3.1. Backup Node ↔ Cluster Manager (CM)
+
+Figure 1 shows the node heartbeat mechanism. The node does not hold a connection but rather creates a new http connection for every heartbeat. While the CM does not reply with any job the node keeps sending requests after every heartbeat interval.
+
+.Sequence: Node Heartbeat
+[plantuml, target=node_cm_flow, format=png]
+....
+include::diagrams/node_cm_flow.puml[]
+....
+
+Figure 2 shows the job processing and queue draining. Node keeps asking for work. If a job is in the CM's queue the node gets it, executes it and immediately sends another request to the CM with the result. While the CM replies with a job, this continues. Until the CM replies with no job. Then the node goes back to heartbeat.
+
+.Sequence: Node job processing & queue draining
+[plantuml, target=node_cm_draining_queue.puml, format=png]
+....
+include::diagrams/node_cm_draining_queue.puml[]
+....
+
+=== 3.2. Frontend (FE) ↔ Cluster Manager (CM)
+
+Figure 3 shows how the GUI stays up to date when creating jobs and receiving their results are handled separately, indirectly and thus with some delay.
+The frontend will periodically call the CM, which will answer with status updates on the jobs, if any.
+Alternatively, albeit a bit more complex, the CM can keep the connection open to push updates to the frontend. server-sent Events.
+
+.Sequenzdiagramm: Frontend Job Trigger & Status Polling
+[plantuml, target=fe_cm_flow, format=png]
+....
+include::diagrams/fe_cm_flow.puml[]
+....
+
+== 4. Architectural changes
+=== 4.1. CM
+The CM introduces job classes for anything that used to require a call to a node.
+All services that made calls to nodes will instead use a queue service to queue their jobs.
+The CM's heartbeat controller upon receiving a nodes request, will use the queue service to get the next job for that node and send it with the response.
+
+=== 4.2. Node
+The node's heartbeat service needs to use a job service to translate incoming jobs into actions and keep track of the jobs' status.
+
+=== 4.3. FE
+The FE needs to keep track of jobs.
+It will either have to keep short-polling the CM for status updates or receive server-sent events. And update the GUI accordingly.
+
+== 5. Conclusion
+
+Short polling satisfies the requirement for the node to call the CM and not keep a permanent connection. Adaptive short polling will be light on network usage when there is no action. But will keep the app and UI responsive when being used.

@@ -28,14 +28,14 @@
         @if (row.status !== 'shutting_down' && row.status !== 'restarting') {
           <button
             (click)="onNodeAction(row, 'shutdown')"
-            [disabled]="actionLoading()"
+            [disabled]="actionLoading() || row.status === 'inactive'"
             class="px-2 py-1 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded disabled:opacity-50"
             title="Shutdown Node">
             Shutdown
           </button>
           <button
             (click)="onNodeAction(row, 'restart')"
-            [disabled]="actionLoading()"
+            [disabled]="actionLoading() || row.status === 'inactive'"
             class="px-2 py-1 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded disabled:opacity-50"
             title="Restart Node">
             Restart

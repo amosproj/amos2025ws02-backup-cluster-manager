@@ -174,13 +174,10 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
                 .doOnNext(success -> {
                     if (success) {
                         logger.info("Shutdown command sent to node {}", node.getAddress());
-                        // Remove node from cluster since it won't come back
-                        registry.removeNode(nodeId);
-                        logger.info("Node {} removed from cluster after shutdown", node.getAddress());
                     } else {
                         logger.error("Failed to send shutdown command to node {}", node.getAddress());
-                        registry.markInactive(node);
                     }
+                    registry.markInactive(node);
                 })
                 .flatMap(success -> success ? syncService.syncNodes().thenReturn(true) : Mono.just(false));
     }

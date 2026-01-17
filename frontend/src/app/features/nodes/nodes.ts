@@ -1,4 +1,4 @@
-import {Component, signal, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal, ViewChild} from '@angular/core';
 import {NodesService} from './nodes.service';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
@@ -11,6 +11,8 @@ import {NodeDTO} from '../clients/clients.service';
 import {ToastService} from '../../core/services/toast.service';
 import {ToastTypeEnum} from '../../shared/types/toast';
 import { UsersModal } from '../../shared/components/users-modal/users-modal';
+import {Subscription} from 'rxjs/internal/Subscription';
+import {AutoRefreshService} from '../../services/dynamic-page';
 
 export interface NodeItem {
   id: string;
@@ -29,8 +31,11 @@ export interface NodeItem {
   templateUrl: './nodes.html',
   styleUrl: './nodes.css',
 })
-export class Nodes {
+export class Nodes implements OnInit, OnDestroy {
   @ViewChild('nodeTable') dataTable?: DataTable;
+
+  private refreshSub?: Subscription;
+
   tableColumns = signal([
     {field: 'id', header: 'ID'},
     {field: 'name', header: 'Name'},
@@ -66,8 +71,17 @@ export class Nodes {
   constructor(
     private nodesService: NodesService,
     public authService: AuthService,
-    public toast: ToastService
+    public toast: ToastService,
+    private autoRefreshService: AutoRefreshService
   ) {
+  }
+
+  ngOnInit(): void {
+    this.refreshSub = this.autoRefreshService.refresh$.subscribe(() => {
+      if (this.dataTable) {
+        this.dataTable.loadData();
+      }
+    });
   }
 
   isAddNodeModalOpen = false;
@@ -187,6 +201,12 @@ export class Nodes {
         this.actionLoading.set(false);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshSub) {
+      this.refreshSub.unsubscribe();
+    }
   }
 
   refreshData() {

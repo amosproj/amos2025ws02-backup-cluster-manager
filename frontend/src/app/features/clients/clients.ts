@@ -1,4 +1,4 @@
-import { Component, signal, ViewChild } from '@angular/core';
+import {Component, OnDestroy, OnInit, signal, ViewChild} from '@angular/core';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { DataTable } from '../../shared/components/data-table/data-table';
 import { ClientsService } from './clients.service';
@@ -18,7 +18,7 @@ import { AsyncPipe } from '@angular/common';
   templateUrl: './clients.html',
   styleUrl: './clients.css',
 })
-export class Clients {
+export class Clients implements OnInit, OnDestroy {
   @ViewChild(DataTable) dataTable!: DataTable;
   private refreshSub?: Subscription;
 
@@ -38,8 +38,6 @@ export class Clients {
     },
   ]);
   loading$;
-
-  private refreshIntervalId: any;
 
   constructor(
     private apiService: ApiService,
@@ -72,8 +70,8 @@ export class Clients {
   }
 
   ngOnDestroy(): void {
-    if (this.refreshIntervalId) {
-      clearInterval(this.refreshIntervalId);
+    if (this.refreshSub) {
+      this.refreshSub.unsubscribe();
     }
   }
 

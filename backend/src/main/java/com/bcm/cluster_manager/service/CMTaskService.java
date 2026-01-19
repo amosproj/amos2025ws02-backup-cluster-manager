@@ -224,6 +224,11 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
                     createdTask.setNodeDTO(node);
                     return createdTask;
                 })
+                .doOnNext(created -> {
+                    // Invalidate cache after successful task addition
+                    cacheManager.getCache("taskPages").clear();
+                    logger.info("Cache 'taskPages' invalidated after adding task {}", created.getId());
+                })
                 .doOnError(e -> logger.error("Fehler beim Hinzufügen von Task an Node " + node.getAddress() + ": " + e.getMessage()))
                 .onErrorResume(e -> Mono.empty());
     }

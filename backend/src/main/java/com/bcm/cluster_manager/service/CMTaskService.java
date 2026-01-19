@@ -12,6 +12,7 @@ import com.bcm.shared.pagination.sort.SortProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -34,9 +35,11 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
     private RegistryService registryService;
 
     private final WebClient webClient;
+    private final CacheManager cacheManager;
 
-    public CMTaskService(WebClient.Builder webClientBuilder) {
+    public CMTaskService(WebClient.Builder webClientBuilder, CacheManager cacheManager) {
         this.webClient = webClientBuilder.build();
+        this.cacheManager = cacheManager;
     }
 
 
@@ -48,6 +51,17 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
 
     @Override
     public Mono<List<BigTaskDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
+
+        String cacheKey = buildCacheKey(page, itemsPerPage, filter);  // Use stable key
+
+        List<BigTaskDTO> cached = cacheManager.getCache("taskPages").get(cacheKey, List.class);
+        if (cached != null) {
+            logger.info("Page cache HIT: {}", cacheKey);
+            return Mono.just(cached);
+        }
+
+        logger.info("Page cache MISS: {}", cacheKey);
+
         return getAllTasksReactive()
                 .map(allTasks -> {
                     List<BigTaskDTO> filtered = applyFilters(allTasks, filter);
@@ -63,7 +77,13 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
                     int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
                     if (fromIndex >= toIndex) return List.of();
 
-                    return sorted.subList(fromIndex, toIndex);
+                    List<BigTaskDTO> result = sorted.subList(fromIndex, toIndex);
+
+                    // Cache the page result
+                    cacheManager.getCache("taskPages").put(cacheKey, result);
+                    logger.info("Cached page {} ({} items)", page, result.size());
+                    return result;
+
                 });
     }
 
@@ -229,5 +249,29 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
         dto.setEnabled(task.isEnabled());
         dto.setInterval(task.getInterval());
         return dto;
+    }
+
+    private String buildCacheKey(long page, long itemsPerPage, Filter filter) {
+        StringBuilder key = new StringBuilder();
+        key.append("page-").append(page);
+        key.append("-size-").append(itemsPerPage);
+
+        // Add filter components
+        if (filter != null) {
+            if (filter.getFilters() != null && !filter.getFilters().isEmpty()) {
+                key.append("-filters-").append(String.join(",", filter.getFilters().stream().sorted().toList()));
+            }
+            if (filter.getSearch() != null && !filter.getSearch().isEmpty()) {
+                key.append("-search-").append(filter.getSearch());
+            }
+            if (filter.getSortBy() != null) {
+                key.append("-sort-").append(filter.getSortBy());
+            }
+            if (filter.getSortOrder() != null) {
+                key.append("-order-").append(filter.getSortOrder());
+            }
+        }
+
+        return key.toString();
     }
 }

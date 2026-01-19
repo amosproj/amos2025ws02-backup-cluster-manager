@@ -29,6 +29,26 @@ public class CacheConfig {
                         .recordStats()
                         .build()
         );
+
+        // Cache for client pages
+        cacheManager.registerCustomCache("clientPages",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .expireAfterAccess(2, TimeUnit.MINUTES)
+                        .maximumSize(100)
+                        .recordStats()
+                        .build()
+        );
+
+        // Cache for task pages
+        cacheManager.registerCustomCache("taskPages",
+                Caffeine.newBuilder()
+                        .expireAfterWrite(5, TimeUnit.MINUTES)
+                        .expireAfterAccess(2, TimeUnit.MINUTES)
+                        .maximumSize(100)
+                        .recordStats()
+                        .build()
+        );
         return cacheManager;
     }
 

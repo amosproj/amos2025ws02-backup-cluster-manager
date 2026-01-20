@@ -44,6 +44,14 @@ application:
   node:
     public-address: ${NODE_ADDRESS}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
 
 # mybatis:
 #   type-aliases-package: com.bcm.shared.model.database

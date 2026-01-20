@@ -56,7 +56,7 @@ public class BackupService {
         return backupMapper.findById(id)
                 .flatMap(backup -> {
                     backup.setState(BackupState.QUEUED);
-                    return backupMapper.insert(backup);
+                    return backupMapper.save(backup);
                 })
                 .then(Mono.delay(Duration.ofMillis(request.getDuration())))
                 .then(backupMapper.findById(id))
@@ -69,7 +69,7 @@ public class BackupService {
                         backup.setMessage("Backup failed due to an error.");
                     }
                     backup.setStopTime(Instant.ofEpochMilli(now + request.getDuration()));
-                    return backupMapper.insert(backup);
+                    return backupMapper.save(backup);
                 })
                 .doOnSuccess(backup ->
                         eventStore.recordEvent(
@@ -90,7 +90,7 @@ public class BackupService {
         backup.setMessage(null);
         backup.setCreatedAt(Instant.now());
 
-        return backupMapper.insert(backup)
+        return backupMapper.save(backup)
                 .doOnSuccess(saved ->
                         eventStore.recordEvent(
                                 CacheInvalidationType.BACKUP_CREATED,

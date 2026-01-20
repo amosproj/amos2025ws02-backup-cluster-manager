@@ -74,7 +74,7 @@ public class EventPollingService {
                 );
     }
 
-    private void processEvents(List<CacheEventDTO> events) {
+     void processEvents(List<CacheEventDTO> events) {
         Set<CacheInvalidationType> types = events.stream()
                 .map(CacheEventDTO::getType)
                 .collect(Collectors.toSet());

@@ -6,7 +6,10 @@ import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.model.api.NodeDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,13 +21,17 @@ import java.util.*;
 @Service
 public class CMClientService implements PaginationProvider<BigClientDTO> {
 
+    private static final Logger logger = LoggerFactory.getLogger(CMClientService.class);
+
     @Autowired
     private RegistryService registryService;
 
     private final WebClient webClient;
+    private final CacheManager cacheManager;
 
-    public CMClientService(WebClient.Builder webClientBuilder) {
+    public CMClientService(WebClient.Builder webClientBuilder, CacheManager cacheManager) {
         this.webClient = webClientBuilder.build();
+        this.cacheManager = cacheManager;
     }
 
     public Mono<List<BigClientDTO>> getAllClients() {
@@ -60,6 +67,17 @@ public class CMClientService implements PaginationProvider<BigClientDTO> {
 
     @Override
     public Mono<List<BigClientDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
+
+        String cacheKey = buildCacheKey(page, itemsPerPage, filter);  // Use stable key
+
+        List<BigClientDTO> cached = cacheManager.getCache("clientPages").get(cacheKey, List.class);
+        if (cached != null) {
+            logger.info("Page cache HIT: {}", cacheKey);
+            return Mono.just(cached);
+        }
+
+        logger.info("Page cache MISS: {}", cacheKey);
+
         return getAllClients()
                 .map(allClients -> {
                     List<BigClientDTO> filtered = applyFilters(allClients, filter);
@@ -75,7 +93,13 @@ public class CMClientService implements PaginationProvider<BigClientDTO> {
                     int toIndex = Math.min(fromIndex + (int) itemsPerPage, sorted.size());
                     if (fromIndex >= toIndex) return List.of();
 
-                    return sorted.subList(fromIndex, toIndex);
+                    List<BigClientDTO> result = sorted.subList(fromIndex, toIndex);
+
+                    // Cache the page result
+                    cacheManager.getCache("clientPages").put(cacheKey, result);
+                    logger.info("Cached page {} ({} items)", page, result.size());
+                    return result;
+
                 });
     }
 
@@ -125,5 +149,29 @@ public class CMClientService implements PaginationProvider<BigClientDTO> {
                     .toList();
         }
         return clients;
+    }
+
+    private String buildCacheKey(long page, long itemsPerPage, Filter filter) {
+        StringBuilder key = new StringBuilder();
+        key.append("page-").append(page);
+        key.append("-size-").append(itemsPerPage);
+
+        // Add filter components
+        if (filter != null) {
+            if (filter.getFilters() != null && !filter.getFilters().isEmpty()) {
+                key.append("-filters-").append(String.join(",", filter.getFilters().stream().sorted().toList()));
+            }
+            if (filter.getSearch() != null && !filter.getSearch().isEmpty()) {
+                key.append("-search-").append(filter.getSearch());
+            }
+            if (filter.getSortBy() != null) {
+                key.append("-sort-").append(filter.getSortBy());
+            }
+            if (filter.getSortOrder() != null) {
+                key.append("-order-").append(filter.getSortOrder());
+            }
+        }
+
+        return key.toString();
     }
 }

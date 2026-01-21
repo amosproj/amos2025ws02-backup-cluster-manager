@@ -1,0 +1,41 @@
+Title	URL	Assignees	Status	Estimated size	Real size
+Add Stress Testing Profiles	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/189		Product Backlog		
+Update Dashboard	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/132		Product Backlog		
+Bug: Backup Modal Window	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/200		Product Backlog		
+UI Update #2	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/190		Product Backlog		
+Setup Grafana Dashboard	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/201		Product Backlog		
+List Backups dynamically from nodes	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/110		Product Backlog		
+Cluster Manager Failover	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/69		Product Backlog		
+Simulate performing a restore	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/124		Product Backlog		
+Research Stress Testing	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/194		In Progress	2	
+BUG: Not able to re-add node after it was removed	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/183	HansKiller-TH	In Progress	2	
+Webflux Refresh	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/164	ervinn09, krueger-hash	Awaiting Review	5	
+BUG: Automatic refresh doesn't work for nodes page	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/185	fe27hity	Awaiting Review	2	
+BUG: Shutdowned node should not be removed	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/184	fe27hity	Awaiting Review	2	
+Expose Metrics via Actuator/Prometheus	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/163	robinrj6	Awaiting Review	3	
+Improve Data caching	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/145	ervinn09, krueger-hash	Awaiting Review	5	
+Tunneling Research	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/173	HansKiller-TH	Feature Archive	2	2
+Update UI	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/165	robinrj6	Feature Archive	5	5
+Permissions/Groups Tab	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/77	fe27hity	Feature Archive	3	3
+Dynamic Page/Content Updates	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/67	ervinn09	Feature Archive	2	2
+Updated Join behavior	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/146	HansKiller-TH, krueger-hash	Feature Archive	5	5
+Shutdown, Restart, and Remove	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/148	krueger-hash, robinrj6	Feature Archive	5	5
+Managed/Unmanaged mode	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/147	fe27hity	Feature Archive	3	5
+Architecture Review: Proper Operation Foward	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/167	ervinn09, fe27hity	Feature Archive	5	5
+Bulk Data Insertion / Preparation	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/144	fe27hity	Feature Archive	3	3
+Architecture Review/Revisit	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/157	ervinn09, fe27hity	Feature Archive	5	8
+Permission handling (Authorization)	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/123	HansKiller-TH, krueger-hash	Feature Archive	5	8
+Cluster Manager is a Node	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/135	robinrj6	Feature Archive	2	2
+Bug: Nodes Cannot Register (Auth)	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/154	HansKiller-TH	Feature Archive	2	5
+Filter / Sort Backups	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/78	robinrj6	Feature Archive	3	1
+Create Documentation	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/26	ervinn09, fe27hity, HansKiller-TH, krueger-hash, robinrj6	Feature Archive	2	2
+Basic Backup Schedules	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/112	ervinn09, fe27hity	Feature Archive	5	5
+Mock Backup Tasks	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/113	ervinn09, fe27hity	Feature Archive	3	3
+Authentication	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/120	HansKiller-TH, krueger-hash	Feature Archive	5	5
+Mid Project Release	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/63		Feature Archive		
+Create Backup	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/71	ervinn09	Feature Archive	5	5
+Delete Backup	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/82	ervinn09	Feature Archive	3	3
+Create / Update / Delete User	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/79	HansKiller-TH, robinrj6	Feature Archive	3	3
+Backend: Add Pagination To APIs	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/75	krueger-hash	Feature Archive	3	3
+List Users	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/76	krueger-hash	Feature Archive	3	3
+Filter / Sort Nodes	https://github.com/amosproj/amos2025ws02-backup-cluster-manager/issues/80	robinrj6	Feature Archive	3	3

@@ -1,0 +1,39 @@
+Stress-test high number of backups per node:
+- Having only one node
+- Start with 100 Backups
+- Add 100 Backups per iteration (or more)
+Monitor:
+- Storage utilization
+- CPU utilization
+- API response time for backups endpoint with specific search queries
+Concerns:
+- Hardware resources
+
+Stress-test high number of backups + high number of nodes:
+- Initialize a high number of backups and nodes
+- Start with 5 Nodes
+- Add 5 Nodes per iteration (or more)
+- Per node iteration test with 1.000 Backups/Node, 100.000 Backups/Node and 1.000.000 Backups/Node
+Monitor:
+- Storage utilization
+- CPU utilization
+- API response time for backups endpoint with specific search queries
+Concerns:
+- Hardware resources
+
+Concurrent backup creation and deletion
+- Initialize with 1 Node
+- Many concurrent create-backup and delete-backup requests
+- Start with 100 concurrent requests (create/delete)
+- Add 100 requests per iteration (or more)
+Monitor:
+- CPU utilization
+- API response time for create/delete request
+- Check data integrity after tests are finished
+
+Concurrent tasks creation:
+- Initialize with 1 Node
+- Many concurrent create-task requests
+- Start with 100 concurrent creation-requests
+- Add 100 requests per iteration (or more)
+- Has to be checked if this is just a duplicate of "Concurrent backup creation"

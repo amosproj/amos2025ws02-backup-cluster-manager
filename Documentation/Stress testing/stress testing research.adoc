@@ -9,7 +9,76 @@ Date: {docdate}
 
 == 1. General Aspects
 
-This document provides an overview of the research results on stress testing.
+One way to stress test the application could be using k6 of grafana (separate of the grafana features).
+
+One container definition can be done per expected docker profile while reusing all 3 containers for the combined profile.
+
+In general, we can use scripted approaches to mass produce http calls simultaneously for creation process.
+Additionally, we can think of paginated requests to check the caching and reading capabilities, either manually once the masses of data are created, or in an automated manner.
+We probably will have some challenges regarding data randomizing, even though almost all the ids are generated internally by dbs, so we probably wont have big unique data constraints from our outside perspective.
+
+Example:
+`k6:
+    image: grafana/k6
+    profiles: ["stress-client"]
+    volumes:
+    - ./stress/k6-client.js:/scripts/k6-client.js
+    command: ["run", "/scripts/k6-client.js"]`
+
+``docker compose --profile test --profile stress-client up
+``
+
+
+Testing at which point the application struggles, is possible via grafana k6.
+Actuall checking internal metric needs to be done while test are running, once the grafana-prometheus features are merged.
+
+=== Example stress test script
+
+`import http from "k6/http";
+import { check, sleep } from "k6";
+
+export let options = {
+stages: [
+{ duration: "1m", target: 20 },
+{ duration: "2m", target: 50 },
+{ duration: "2m", target: 100 },
+{ duration: "2m", target: 200 },
+{ duration: "2m", target: 400 }
+]
+};
+
+const BASE_URL = "http://cluster_manager:8080/api/v1/cm/";
+const HEADERS = {
+headers: {
+"Content-Type": "application/json",
+"Authorization": "Bearer test-admin-token"
+}
+};
+
+export default function () {
+const payload = JSON.stringify({
+nodeId: ...,
+...
+
+});
+
+  let res = http.post(
+    `${BASE_URL}/backups`,
+    payload,
+    HEADERS
+  );
+
+  check(res, {
+    "backup created": (r) => r.status === 201,
+    "latency < 3s": (r) => r.timings.duration < 3000
+  });
+
+  sleep(0.5);
+}`
+
+
+
+
 
 === 1.1 Details
 

@@ -13,7 +13,7 @@ export interface TaskDTO {
   source: string;
   enabled: boolean;
   interval: "DAILY" | "WEEKLY" | "MONTHLY";
-  node: NodeDTO;
+  nodeDTO: NodeDTO;
 }
 
 @Injectable({
@@ -37,7 +37,7 @@ export class TasksService {
     return this.apiService.get<PaginatedResponse>('tasks', {params});
   }
 
-  getTaskList(){
+  getTaskList():Observable<TaskDTO[]>{
     return this.apiService.get<any>('tasks/list');
   }
 

@@ -14,6 +14,7 @@ import com.bcm.shared.service.NodeHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -37,6 +38,9 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     @Autowired
     private SyncService syncService;
+
+    @Value("${CM_ADDRESS}")
+    private String cmPublicAddress;
 
     private final WebClient webClient;
 
@@ -126,13 +130,46 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
     }
 
     public Mono<Void> deleteNode(Long id) {
-        registry.removeNode(id);
-        return Mono.empty();
+
+        // get node before deletion
+        Optional<NodeDTO> nodeOpt = registry.findById(id);
+
+        // Node is removed from the cluster regardless of successful notification to the node
+        try {
+            registry.removeNode(id);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Must not delete node {}: {}", id, e.getMessage());
+            return Mono.error(e);
+        }
+
+        // try to notify node about deletion from the cluster
+
+        if (nodeOpt.isEmpty()) {
+            logger.warn("Node with id {} not found. Cannot notify of deletion", id);
+            return Mono.empty();
+        }
+
+        NodeDTO node = nodeOpt.get();
+        String nodeAddress = node.getAddress();
+        JoinDTO dto = new JoinDTO();
+        dto.setCmURL(cmPublicAddress);
+        String url = "http://" + nodeAddress + "/api/v1/bn/leave";
+
+        return webClient.post()
+                .uri(url)
+                .bodyValue(dto)
+                .retrieve()
+                .toBodilessEntity()
+                .timeout(Duration.ofSeconds(10))
+                .doOnSuccess(response -> logger.info("Node {} was notified about deletion", nodeAddress))
+                .doOnError(e -> logger.warn("Node {} was not notified about deletion: {}", nodeAddress, e.getMessage()))
+                .then()
+                .onErrorResume(e -> Mono.empty());
     }
 
     public Mono<Void> registerNode(RegisterRequest req) {
         JoinDTO dto = new JoinDTO();
-        dto.setCmURL("http://cluster-manager:8080");
+        dto.setCmURL(cmPublicAddress);
         String url = "http://" + req.getAddress() + "/api/v1/bn/join";
 
         return webClient.post()

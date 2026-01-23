@@ -55,9 +55,13 @@ public class BackupService {
 
         return backupMapper.findById(id)
                 .flatMap(backup -> {
-                    backup.setState(BackupState.QUEUED);
+                    backup.setState(BackupState.RUNNING);
                     return backupMapper.update(backup);
-                })
+                }).doOnSuccess(backup ->
+                eventStore.recordEvent(
+                        CacheInvalidationType.BACKUP_UPDATED,
+                        backup.getId()
+                ))
                 .then(Mono.delay(Duration.ofMillis(request.getDuration())))
                 .then(backupMapper.findById(id))
                 .flatMap(backup -> {

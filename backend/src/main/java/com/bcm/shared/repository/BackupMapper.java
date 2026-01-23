@@ -31,15 +31,14 @@ public interface BackupMapper extends ReactiveCrudRepository<Backup,Long> {
         """)
     Mono<Backup> insert(Backup backup);
 
-    @Modifying
     @Query("""
-    UPDATE backups SET client_id = :#{#backup.clientId}, task_id = :#{#backup.taskId}, 
-           start_time = :#{#backup.startTime}, stop_time = :#{#backup.stopTime}, 
-           size_bytes = :#{#backup.sizeBytes}, state = :#{#backup.state.name()}::backup_state,
-           message = :#{#backup.message}
-    WHERE id = :#{#backup.id}
-    RETURNING *
-    """)
-    Mono<Integer> update(Backup b);
+        UPDATE backups SET client_id = :#{#backup.clientId}, task_id = :#{#backup.taskId}, 
+               start_time = :#{#backup.startTime}, stop_time = :#{#backup.stopTime}, 
+               size_bytes = :#{#backup.sizeBytes}, state = :#{#backup.state.name()}::backup_state,
+               message = :#{#backup.message}
+        WHERE id = :#{#backup.id}
+        RETURNING *
+        """)
+    Mono<Backup> update(Backup backup);
 
 }

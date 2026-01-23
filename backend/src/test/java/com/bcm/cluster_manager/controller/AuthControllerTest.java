@@ -4,13 +4,11 @@ import com.bcm.cluster_manager.config.security.CustomUserDetails;
 import com.bcm.shared.config.permissions.Role;
 import com.bcm.shared.model.api.AuthMetadataDTO;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@Disabled
 class AuthControllerTest {
 
     @Mock
@@ -71,7 +68,7 @@ class AuthControllerTest {
 
         // Act & Assert - Use contextWrite with the key that ReactiveSecurityContextHolder uses internally
         StepVerifier.create(authController.validateSession()
-                        .contextWrite(ctx -> ctx.put(SecurityContext.class, Mono.just(securityContext))))
+                        .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext))))
                 .assertNext(response -> {
                     assertNotNull(response);
                     assertEquals(HttpStatus.OK, response.getStatusCode());

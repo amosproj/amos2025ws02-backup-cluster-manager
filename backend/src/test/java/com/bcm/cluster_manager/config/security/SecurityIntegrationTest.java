@@ -92,7 +92,7 @@ class SecurityIntegrationTest {
                 Mono.defer(() -> {
                     User user = new User();
                     user.setName("testuser");
-                    user.setPasswordHash("secret");
+                    user.setPasswordHash(passwordEncoder.encode("secret"));
                     user.setEnabled(true);
                     user.setCreatedAt(Instant.now());
                     user.setUpdatedAt(Instant.now());

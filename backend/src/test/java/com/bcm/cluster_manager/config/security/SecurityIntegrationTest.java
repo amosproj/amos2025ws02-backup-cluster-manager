@@ -88,27 +88,28 @@ class SecurityIntegrationTest {
 
     @BeforeEach
     void setup() {
-        Mono<Void> init = Mono.defer(() -> {
-            User user = new User();
-            user.setName("testuser");
-            user.setPasswordHash(passwordEncoder.encode("secret"));
-            user.setEnabled(true);
-            user.setCreatedAt(Instant.now());
-            user.setUpdatedAt(Instant.now());
+        Mono<Void> init =
+                Mono.defer(() -> {
+                    User user = new User();
+                    user.setName("testuser");
+                    user.setPasswordHash("secret");
+                    user.setEnabled(true);
+                    user.setCreatedAt(Instant.now());
+                    user.setUpdatedAt(Instant.now());
 
-            return userRepository.save(user)
-                    .flatMap(savedUser ->
-                            groupRepository.findById(3L)
-                                    .flatMap(group -> {
-                                        UserGroupRelation ugr = new UserGroupRelation();
-                                        ugr.setUserId(savedUser.getId());
-                                        ugr.setGroupId(group.getId());
-                                        ugr.setAddedAt(Instant.now());
-                                        return userGroupRelationRepository.insert(ugr);
-                                    })
-                    )
-                    .then();
-        });
+                    return userRepository.save(user)
+                            .flatMap(savedUser ->
+                                    groupRepository.findById(3L)
+                                            .flatMap(group -> {
+                                                UserGroupRelation ugr = new UserGroupRelation();
+                                                ugr.setUserId(savedUser.getId());
+                                                ugr.setGroupId(group.getId());
+                                                ugr.setAddedAt(Instant.now());
+                                                return userGroupRelationRepository.insert(ugr);
+                                            })
+                            )
+                            .then();
+                });
 
         init.block();
     }

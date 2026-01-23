@@ -22,7 +22,14 @@ public interface BackupMapper extends ReactiveCrudRepository<Backup,Long> {
 
     Flux<Backup> findByStartTimeBetweenOrderByStartTimeDesc(Instant from, Instant to);
 
-
+    @Query("""
+        INSERT INTO backups (client_id, task_id, start_time, size_bytes, state, created_at, message, stop_time) 
+        VALUES (:#{#backup.clientId}, :#{#backup.taskId}, :#{#backup.startTime}, 
+                :#{#backup.sizeBytes}, :#{#backup.state.name()}::backup_state, 
+                :#{#backup.createdAt}, :#{#backup.message}, :#{#backup.stopTime})
+        RETURNING *
+        """)
+    Mono<Backup> insert(Backup backup);
 
     @Modifying
     @Query("""

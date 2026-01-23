@@ -125,8 +125,9 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         registry.updateIsManaged(nodeDTO);
     }
 
-    public void deleteNode(Long id) {
+    public Mono<Void> deleteNode(Long id) {
         registry.removeNode(id);
+        return Mono.empty();
     }
 
     public Mono<Void> registerNode(RegisterRequest req) {

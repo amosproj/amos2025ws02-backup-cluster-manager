@@ -22,7 +22,7 @@ import { NodesService } from '../../../features/nodes/nodes.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ToastTypeEnum } from '../../types/toast';
 import { ClientsService } from '../../../features/clients/clients.service';
-import { TasksService } from '../../../features/tasks/tasks.service';
+import {TaskDTO, TasksService} from '../../../features/tasks/tasks.service';
 import { BackupDTO, BackupsService } from '../../../features/backups/backups.service';
 
 type Group = { id: number; name: string; enabled?: boolean };
@@ -49,6 +49,8 @@ export class UsersModal implements OnChanges, OnInit {
 
   clients = signal<any[]>([]);
   tasks = signal<any[]>([]);
+  unfilteredTasks: TaskDTO[] = [];
+  client: any = null;
   sizeBytes: number = 0;
 
   intervalOptions = [
@@ -104,6 +106,15 @@ export class UsersModal implements OnChanges, OnInit {
     });
   }
 
+  public onClientSelectionChanged() {
+    const { client } = this.backupFormData.value;
+    console.log("Client", client);
+    this.client = client;
+    console.log("Tasks: ", this.tasks())
+    console.log("Unfiltered Tasks: ", this.unfilteredTasks)
+    this.tasks.set(this.unfilteredTasks.filter(task => this.client ? task?.nodeDTO.id === (this.client.nodeDTO.id) : false));
+  }
+
   ngOnInit() {
     if (this.mode === 'create' )
     this.loadGroups();
@@ -119,8 +130,8 @@ export class UsersModal implements OnChanges, OnInit {
     });
 
     this.tasksService.getTaskList().subscribe({
-      next: (tasks) => {
-        this.tasks.set(tasks ?? []);
+      next: (tasks: TaskDTO[]) => {
+        this.unfilteredTasks = tasks;
       },
       error: (err) => {
         console.error('Failed to load tasks', err);

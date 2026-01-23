@@ -35,7 +35,7 @@
       <form *ngIf="mode === 'backups'" [formGroup]="backupFormData" (ngSubmit)="submitAddBackup()">
         <div class="py-4">
            <label class="block text-sm mb-1">Client</label>
-          <select  [formControlName]="'client'" name="clientId"
+          <select  [formControlName]="'client'" name="clientId" (change)="onClientSelectionChanged()"
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
               <option [ngValue]="undefined" disabled selected>Select Client</option>
               <option *ngFor="let client of clients()" [ngValue]="client">
@@ -49,7 +49,7 @@
               class="w-full bg-neutral-secondary-medium border border-default-medium rounded-base px-3 py-2.5 mt-2">
               <option [ngValue]="undefined" disabled selected>Select Task</option>
               <option *ngFor="let task of tasks()" [ngValue]="task">
-                {{ task.nodeDTO.address + ' - ' + task.id }}
+                {{ task.nodeDTO.address + ' - ' + task.name }}
               </option>
             </select>
         </div>
@@ -111,7 +111,7 @@
           <button type="button" (click)="close()"
             class="px-4 py-2 text-sm bg-neutral-secondary-medium rounded-base">Cancel</button>
         </div>
-      </form> 
+      </form>
 
       <!-- Delete Confirmation -->
       <div *ngIf="mode === 'delete'" >

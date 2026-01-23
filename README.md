@@ -55,3 +55,35 @@ To start the application along with simulated nodes (defined in the `test` profi
 docker compose --profile test up --build
 ```
 This includes the components above plus the configured backup nodes.
+
+## Metrics, Prometheus & Grafana
+
+This project includes integrated monitoring with **Prometheus** and **Grafana** to track system performance metrics from the cluster manager and backup nodes.
+
+### Overview
+
+- **Prometheus**: Scrapes and stores metrics from Spring Boot applications (Micrometer)
+- **Grafana**: Visualizes metrics in dashboards with automatic provisioning
+- **Metrics**: CPU, memory, heap usage, HTTP requests, garbage collection, and more
+
+### Running with Metrics
+
+To start the stack with Prometheus and Grafana along with simulated nodes for more comprehensive metrics:
+
+```bash
+docker compose --profile test up --build
+```
+
+### Accessing Prometheus
+
+Visit `http://localhost:9090` to access Prometheus:
+- **Targets**: Shows all monitored instances
+- **Graph**: Query and visualize metrics in real-time
+- **Status**: View Prometheus configuration and alerts
+
+### Accessing Grafana
+
+Visit `http://localhost:3000` to access Grafana:
+- Default login: **admin / admin** (change on first login)
+- **Data Source**: Prometheus is pre-configured at `http://prometheus:9090`
+- **Dashboard**: "Cluster Overview" dashboard is auto-loaded

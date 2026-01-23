@@ -16,7 +16,7 @@ import java.time.Duration;
 
 
 @Component
-@Profile("cluster_manager")
+@Profile("cluster_manager & !test")
 public class CMStartupSelfJoinService implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(CMStartupSelfJoinService.class);
 

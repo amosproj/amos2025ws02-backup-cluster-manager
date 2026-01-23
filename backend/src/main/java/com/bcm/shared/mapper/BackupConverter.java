@@ -2,9 +2,6 @@ package com.bcm.shared.mapper;
 
 import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.database.Backup;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 public final class BackupConverter {
 
@@ -19,13 +16,9 @@ public final class BackupConverter {
         dto.setName(backup.getMessage());
         dto.setState(backup.getState());
         dto.setSizeBytes(backup.getSizeBytes());
-        dto.setStartTime(toLdt(backup.getStartTime()));
-        dto.setStopTime(toLdt(backup.getStopTime()));
-        dto.setCreatedAt(toLdt(backup.getCreatedAt()));
+        dto.setStartTime(backup.getStartTime());
+        dto.setStopTime(backup.getStopTime());
+        dto.setCreatedAt(backup.getCreatedAt());
         return dto;
-    }
-
-    public static LocalDateTime toLdt(Instant instant) {
-        return instant == null ? null : LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }
 }

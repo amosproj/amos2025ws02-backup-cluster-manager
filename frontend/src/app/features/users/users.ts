@@ -4,6 +4,8 @@ import { DataTable } from '../../shared/components/data-table/data-table';
 import { UsersService } from './users.service';
 import { AuthService } from '../../core/services/auth.service';
 import UserPermissionsEnum from '../../shared/types/Permissions';
+import {map} from 'rxjs';
+import {formatDateFields} from '../../shared/utils/date_utils';
 
 @Component({
   selector: 'app-users',
@@ -57,7 +59,10 @@ export class Users {
   ]);
 
   fetchUsers = (page: number, itemsPerPage: number, filters: string, search: string, sortBy: string, sortOrder: string) => {
-    return this.usersService.getUsers(page, itemsPerPage, filters, search, sortBy, sortOrder);
+    return this.usersService.getUsers(page, itemsPerPage, filters, search, sortBy, sortOrder)
+      .pipe(
+        map(response => formatDateFields(response, ['createdAt', 'updatedAt']))
+      );
   }
   protected readonly UserPermissionsEnum = UserPermissionsEnum;
 }

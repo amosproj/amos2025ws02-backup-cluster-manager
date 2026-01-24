@@ -7,19 +7,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import com.bcm.test.AbstractBnDbTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,41 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * This focuses on validating the `findById` method, which retrieves a backup by its ID.
  */
 @SpringBootTest
-@Testcontainers
 @ActiveProfiles("test")
-class BackupMapperTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-            .withDatabaseName("postgres")
-            .withUsername("appuser")
-            .withPassword("apppassword");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        try (Connection conn = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
-             Statement stmt = conn.createStatement()) {
-            try {
-                stmt.executeUpdate("CREATE DATABASE bcm_node0 OWNER " + postgres.getUsername());
-            } catch (Exception e) {
-                if (!e.getMessage().contains("already exists")) throw new RuntimeException("Failed to create bcm_node0", e);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Database creation failed", e);
-        }
-
-        String h = postgres.getHost();
-        int p = postgres.getFirstMappedPort();
-        String u = postgres.getUsername();
-        String pw = postgres.getPassword();
-
-        registry.add("spring.datasource.hikari.jdbc-url", () -> String.format("jdbc:postgresql://%s:%d/bcm_node0", h, p));
-        registry.add("spring.datasource.hikari.username", () -> u);
-        registry.add("spring.datasource.hikari.password", () -> pw);
-        registry.add("spring.r2dbc.bn.url", () -> String.format("r2dbc:postgresql://%s:%d/bcm_node0", h, p));
-        registry.add("spring.r2dbc.bn.username", () -> u);
-        registry.add("spring.r2dbc.bn.password", () -> pw);
-    }
+class BackupMapperTest extends AbstractBnDbTest {
 
     @Autowired
     private BackupMapper backupMapper;

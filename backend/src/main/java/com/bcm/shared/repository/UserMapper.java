@@ -15,7 +15,7 @@ public interface UserMapper extends ReactiveCrudRepository<User,Integer>, UserRe
     Mono<User> findByName(String name);
 
     @Query("""
-    SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt
+    SELECT id, name, password_hash, enabled, created_at, updated_at
     FROM users
     WHERE name ILIKE CONCAT('%', :name, '%')
   """)
@@ -24,7 +24,7 @@ public interface UserMapper extends ReactiveCrudRepository<User,Integer>, UserRe
     @Query("DELETE FROM users WHERE id = :id")
     Mono<Void> deleteUserById(Long id);
 
-    @Query("SELECT id, name, password_hash AS passwordHash, enabled, created_at AS createdAt, updated_at AS updatedAt FROM users WHERE id = :id")
+    @Query("SELECT id, name, password_hash, enabled, created_at, updated_at FROM users WHERE id = :id")
     Mono<User> findUserById(Long id);
 
     @Query("SELECT EXISTS(SELECT 1 FROM users WHERE id = :id)")

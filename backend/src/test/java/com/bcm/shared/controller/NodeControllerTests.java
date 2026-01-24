@@ -1,51 +1,82 @@
 package com.bcm.shared.controller;
 
+import com.bcm.shared.config.security.NoSecurityConfig;
+import com.bcm.shared.model.api.SyncDTO;
+import com.bcm.shared.model.database.User;
+import com.bcm.shared.service.NodeControlService;
+import com.bcm.shared.service.UserService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
-import org.junit.jupiter.api.Disabled;
-import org.springframework.boot.test.context.SpringBootTest;
+import java.util.List;
 
-@Disabled("Skipping Spring context startup for now")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@WebFluxTest(controllers = NodeController.class)
+@ActiveProfiles("test")
+@ContextConfiguration(classes = {NodeController.class, NoSecurityConfig.class})
 class NodeControllerTests {
-    /*
-    @Autowired
-    private TestRestTemplate restTemplate;
 
-    @MockBean
-    private LocalTablesService tables;
+    @Autowired
+    private WebTestClient webTestClient;
+
+    @MockitoBean
+    private UserService userService;
+
+    @MockitoBean
+    private NodeControlService nodeControlService;
 
     @Test
-    void testEndpointContainsString() {
-        String response = restTemplate.getForObject("/api/v1/example", String.class);
-        assert response.equals("Here is a string");
+    void exampleEndpoint_returnsString() {
+        webTestClient.get()
+                .uri("/api/v1/example")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .isEqualTo("Here is a string");
     }
 
     @Test
     void pingEndpoint_returnsPong() {
-        String response = restTemplate.getForObject("/api/v1/ping", String.class);
-        assert response.equals("pong");
+        webTestClient.get()
+                .uri("/api/v1/ping")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .isEqualTo("pong");
     }
 
     @Test
-    void syncEndpoint_callsReplaceAllOnLocalTablesService() {
-        ClusterTablesDTO dto = new ClusterTablesDTO();
-        dto.setActive(List.of(new NodeDTO(1L, "Node A","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(1)),
-                new NodeDTO(2L, "Node B","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(1))));
-        dto.setInactive(List.of(new NodeDTO(3L, "Node C","10.100.179.80:9300", com.bcm.shared.model.api.NodeStatus.INACTIVE, NodeMode.NODE, LocalDateTime.now().minusDays(1))));
+    void syncEndpoint_callsReplaceUsers() {
+        SyncDTO dto = new SyncDTO(List.of(new User(), new User()));
 
-        HttpEntity<ClusterTablesDTO> request = new HttpEntity<>(dto);
+        webTestClient.post()
+                .uri("/api/v1/sync")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(dto)
+                .exchange()
+                .expectStatus().isOk();
 
-        ResponseEntity<Void> response = restTemplate.postForEntity("/api/v1/sync", request, Void.class);
-
-        assertThat(response.getStatusCode()).isIn(HttpStatus.OK, HttpStatus.NO_CONTENT);
-
-        verify(tables, times(1)).replaceAll(
-                anyList(),
-                anyList()
-        );
+        verify(userService).replaceUsersWithCMUsers(anyList());
     }
 
+    @Test
+    void statusEndpoint_returnsManagedMode() {
+        when(nodeControlService.isManagedMode()).thenReturn(true);
 
-
-     */
+        webTestClient.get()
+                .uri("/api/v1/status")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.managedMode").isEqualTo(true);
+    }
 }

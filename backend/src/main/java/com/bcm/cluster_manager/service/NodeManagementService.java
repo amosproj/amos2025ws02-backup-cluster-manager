@@ -14,6 +14,7 @@ import com.bcm.shared.service.NodeHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,6 +29,9 @@ import java.util.Optional;
 public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeManagementService.class);
+
+    @Value("${application.cm.public-address:localhost:8080}")
+    private String cmPublicAddress;
 
     @Autowired
     private NodeHttpClient nodeHttpClient;
@@ -131,7 +135,7 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     public Mono<Void> registerNode(RegisterRequest req) {
         JoinDTO dto = new JoinDTO();
-        dto.setCmURL("http://cluster-manager:8080");
+        dto.setCmURL("http://" + cmPublicAddress);
         String url = "http://" + req.getAddress() + "/api/v1/bn/join";
 
         return webClient.post()

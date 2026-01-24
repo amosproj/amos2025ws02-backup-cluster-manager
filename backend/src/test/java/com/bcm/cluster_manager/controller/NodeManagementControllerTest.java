@@ -43,7 +43,7 @@ class NodeManagementControllerTest {
 
     @Test
     void register_shouldReturnJsonStatusOk() throws Exception {
-        RegisterRequest request = new RegisterRequest("node1:8081", NodeMode.NODE);
+        RegisterRequest request = new RegisterRequest("node1:8081", NodeMode.NODE, false);
 
         doNothing().when(nodeManagementService).registerNode(any(RegisterRequest.class));
 
@@ -59,7 +59,7 @@ class NodeManagementControllerTest {
         org.mockito.Mockito.doThrow(new RuntimeException("Something wrong"))
                 .when(nodeManagementService).registerNode(any());
 
-        RegisterRequest request = new RegisterRequest("bad-node", NodeMode.NODE);
+        RegisterRequest request = new RegisterRequest("bad-node", NodeMode.NODE, false);
 
         mockMvc.perform(post("/api/v1/cm/register")
                         .contentType(MediaType.APPLICATION_JSON)

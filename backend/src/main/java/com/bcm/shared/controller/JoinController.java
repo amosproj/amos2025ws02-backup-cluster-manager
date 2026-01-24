@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/v1/bn")
 public class JoinController {
-    private boolean hasJoined = false;
+    public static boolean hasJoined = false;
     private String cmURL;
 
     @PostMapping("/join")

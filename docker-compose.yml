@@ -26,6 +26,7 @@ services:
       #- APPLICATION_PORT=8080
       - NODE_ADDRESS=cluster-manager:8080
       - SPRING_PROFILES_ACTIVE=cluster_manager
+      - SELF_REGISTERATION=true
     ports:
       - "8080:8080"
     networks:
@@ -48,6 +49,7 @@ services:
       - APPLICATION_PORT=8081
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node1:8081
+      - SELF_REGISTERATION=true
     ports:
       - "8081:8081"
     networks:
@@ -70,6 +72,7 @@ services:
       - APPLICATION_PORT=8082
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node2:8082
+      - SELF_REGISTERATION=true
     ports:
       - "8082:8082"
     networks:

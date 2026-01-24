@@ -37,6 +37,8 @@ server:
   port: ${APPLICATION_PORT:8080}
 
 application:
+  feature:
+    self-registration: ${SELF_REGISTERATION:false}
   cors:
     allowed-origin: ${ALLOWED_ORIGINS:http://localhost:4200}
   cm:

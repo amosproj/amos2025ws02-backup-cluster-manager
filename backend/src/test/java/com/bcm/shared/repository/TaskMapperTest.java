@@ -3,20 +3,62 @@ package com.bcm.shared.repository;
 import com.bcm.shared.model.database.Client;
 import com.bcm.shared.model.database.Task;
 import com.bcm.shared.model.database.TaskFrequency;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 
 import static org.assertj.core.api.Assertions.*;
 
-@DataR2dbcTest
-@Disabled("Skipping Spring context startup for now")
+@SpringBootTest
+@Testcontainers
+@ActiveProfiles("test")
 class TaskMapperTest {
+
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+            .withDatabaseName("postgres")
+            .withUsername("appuser")
+            .withPassword("apppassword");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        try (Connection conn = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+             Statement stmt = conn.createStatement()) {
+            try {
+                stmt.executeUpdate("CREATE DATABASE bcm_node0 OWNER " + postgres.getUsername());
+            } catch (Exception e) {
+                if (!e.getMessage().contains("already exists")) throw new RuntimeException("Failed to create bcm_node0", e);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Database creation failed", e);
+        }
+
+        String h = postgres.getHost();
+        int p = postgres.getFirstMappedPort();
+        String u = postgres.getUsername();
+        String pw = postgres.getPassword();
+
+        registry.add("spring.datasource.hikari.jdbc-url", () -> String.format("jdbc:postgresql://%s:%d/bcm_node0", h, p));
+        registry.add("spring.datasource.hikari.username", () -> u);
+        registry.add("spring.datasource.hikari.password", () -> pw);
+        registry.add("spring.r2dbc.bn.url", () -> String.format("r2dbc:postgresql://%s:%d/bcm_node0", h, p));
+        registry.add("spring.r2dbc.bn.username", () -> u);
+        registry.add("spring.r2dbc.bn.password", () -> pw);
+    }
 
 
     @Autowired
@@ -30,7 +72,7 @@ class TaskMapperTest {
         t.setEnabled(true);
         t.setInterval(TaskFrequency.DAILY);
 
-        // Falls dein Task andere Zeittypen nutzt (z.B. Instant/OffsetDateTime), bitte anpassen:
+
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         t.setCreatedAt(now);
         t.setUpdatedAt(now);
@@ -51,6 +93,17 @@ class TaskMapperTest {
         return clientMapper.save(c);
     }
 
+    private Mono<Task> insertTask(Task task) {
+        return taskMapper.insertAndReturnId(
+                        task.getName(),
+                        task.getClientId(),
+                        task.getSource(),
+                        task.isEnabled(),
+                        task.getInterval().name()
+                )
+                .flatMap(taskMapper::findById);
+    }
+
 
     @Test
     void insertAndFindById_shouldPersistAndLoadTask() {
@@ -58,8 +111,7 @@ class TaskMapperTest {
                 createTestClient()
                         .flatMap(client -> {
                             Task task = createTestTask(client.getId());
-                            return taskMapper.save(task)
-                                    .flatMap(saved -> taskMapper.findById(saved.getId()));
+                            return insertTask(task);
                         });
 
         StepVerifier.create(flow)
@@ -82,8 +134,8 @@ class TaskMapperTest {
                     Task t2 = createTestTask(clientId);
                     t2.setName("Second Task");
 
-                    return taskMapper.save(t1)
-                            .then(taskMapper.save(t2))
+                    return insertTask(t1)
+                            .then(insertTask(t2))
                             .thenMany(taskMapper.findByClient(clientId))
                             .collectList();
                 });
@@ -101,7 +153,7 @@ class TaskMapperTest {
     void update_shouldModifyExistingTask() {
         Mono<Task> flow =
                 createTestClient()
-                        .flatMap(client -> taskMapper.save(createTestTask(client.getId())))
+                        .flatMap(client -> insertTask(createTestTask(client.getId())))
                         .flatMap(saved ->
                                 taskMapper.findById(saved.getId())
                                         .flatMap(before -> {
@@ -126,7 +178,7 @@ class TaskMapperTest {
     void delete_shouldRemoveTask() {
         Mono<Void> flow =
                 createTestClient()
-                        .flatMap(client -> taskMapper.save(createTestTask(client.getId())))
+                        .flatMap(client -> insertTask(createTestTask(client.getId())))
                         .flatMap(saved -> taskMapper.deleteById(saved.getId()).then())
                         .then(); // just complete if delete succeeded
 

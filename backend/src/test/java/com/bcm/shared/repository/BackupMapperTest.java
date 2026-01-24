@@ -1,11 +1,14 @@
 package com.bcm.shared.repository;
 
 import com.bcm.shared.model.database.*;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -14,6 +17,9 @@ import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,15 +29,47 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @Testcontainers
-@Disabled("Skipping Spring context startup for now")
+@ActiveProfiles("test")
 class BackupMapperTest {
 
     @Container
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+            .withDatabaseName("postgres")
+            .withUsername("appuser")
+            .withPassword("apppassword");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        try (Connection conn = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+             Statement stmt = conn.createStatement()) {
+            try {
+                stmt.executeUpdate("CREATE DATABASE bcm_node0 OWNER " + postgres.getUsername());
+            } catch (Exception e) {
+                if (!e.getMessage().contains("already exists")) throw new RuntimeException("Failed to create bcm_node0", e);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Database creation failed", e);
+        }
+
+        String h = postgres.getHost();
+        int p = postgres.getFirstMappedPort();
+        String u = postgres.getUsername();
+        String pw = postgres.getPassword();
+
+        registry.add("spring.datasource.hikari.jdbc-url", () -> String.format("jdbc:postgresql://%s:%d/bcm_node0", h, p));
+        registry.add("spring.datasource.hikari.username", () -> u);
+        registry.add("spring.datasource.hikari.password", () -> pw);
+        registry.add("spring.r2dbc.bn.url", () -> String.format("r2dbc:postgresql://%s:%d/bcm_node0", h, p));
+        registry.add("spring.r2dbc.bn.username", () -> u);
+        registry.add("spring.r2dbc.bn.password", () -> pw);
+    }
 
     @Autowired
     private BackupMapper backupMapper;
+
+    @Autowired
+    @Qualifier("bnTemplate")
+    private R2dbcEntityTemplate bnTemplate;
 
     /**
      * Creates and persists a new test backup instance.
@@ -50,7 +88,7 @@ class BackupMapperTest {
         backup.setState(BackupState.COMPLETED);
         backup.setMessage("Test backup message");
         backup.setCreatedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
-        return backupMapper.save(backup);
+        return insertBackup(backup).flatMap(backupMapper::findById);
     }
 
     @Autowired
@@ -92,11 +130,37 @@ class BackupMapperTest {
         task.setEnabled(true);
         task.setInterval(TaskFrequency.DAILY);
 
-        // Falls dein Task andere Zeittypen nutzt (z.B. Instant/OffsetDateTime), bitte anpassen:
         Instant now = Instant.now();
         task.setCreatedAt(now);
         task.setUpdatedAt(now);
-        return taskMapper.save(task);
+
+        return taskMapper.insertAndReturnId(
+                        task.getName(),
+                        task.getClientId(),
+                        task.getSource(),
+                        task.isEnabled(),
+                        task.getInterval().name()
+                )
+                .flatMap(taskMapper::findById);
+    }
+
+    private Mono<Long> insertBackup(Backup backup) {
+        return bnTemplate.getDatabaseClient()
+                .sql("""
+                        INSERT INTO backups (client_id, task_id, start_time, stop_time, size_bytes, state, message, created_at)
+                        VALUES (:clientId, :taskId, :startTime, :stopTime, :sizeBytes, :state::backup_state, :message, :createdAt)
+                        RETURNING id
+                        """)
+                .bind("clientId", backup.getClientId())
+                .bind("taskId", backup.getTaskId())
+                .bind("startTime", backup.getStartTime())
+                .bind("stopTime", backup.getStopTime())
+                .bind("sizeBytes", backup.getSizeBytes())
+                .bind("state", backup.getState().name())
+                .bind("message", backup.getMessage())
+                .bind("createdAt", backup.getCreatedAt())
+                .map((row, metadata) -> row.get("id", Long.class))
+                .one();
     }
 
     @Test
@@ -147,21 +211,21 @@ class BackupMapperTest {
                                     backup.setMessage("insert integration test");
                                     backup.setCreatedAt(now);
 
-                                    return backupMapper.save(backup)
-                                            .flatMap(saved -> backupMapper.findById(saved.getId())
-                                                    .doOnNext(persisted -> {
-                                                        assertThat(persisted).isNotNull();
-                                                        assertThat(persisted.getId()).isNotNull();
-                                                        assertThat(persisted.getClientId()).isEqualTo(client.getId());
-                                                        assertThat(persisted.getTaskId()).isEqualTo(task.getId());
-                                                        assertThat(persisted.getStartTime()).isEqualTo(backup.getStartTime());
-                                                        assertThat(persisted.getStopTime()).isEqualTo(backup.getStopTime());
-                                                        assertThat(persisted.getSizeBytes()).isEqualTo(backup.getSizeBytes());
-                                                        assertThat(persisted.getState()).isEqualTo(BackupState.COMPLETED);
-                                                        assertThat(persisted.getMessage()).isEqualTo(backup.getMessage());
-                                                        assertThat(persisted.getCreatedAt()).isEqualTo(backup.getCreatedAt());
-                                                    })
-                                            );
+                                    return insertBackup(backup)
+                                            .flatMap(backupMapper::findById)
+                                            .doOnNext(persisted -> {
+                                                assertThat(persisted).isNotNull();
+                                                assertThat(persisted.getId()).isNotNull();
+                                                assertThat(persisted.getClientId()).isEqualTo(client.getId());
+                                                assertThat(persisted.getTaskId()).isEqualTo(task.getId());
+                                                assertThat(persisted.getStartTime()).isEqualTo(backup.getStartTime());
+                                                assertThat(persisted.getStopTime()).isEqualTo(backup.getStopTime());
+                                                assertThat(persisted.getSizeBytes()).isEqualTo(backup.getSizeBytes());
+                                                assertThat(persisted.getState()).isEqualTo(BackupState.COMPLETED);
+                                                assertThat(persisted.getMessage()).isEqualTo(backup.getMessage());
+                                                assertThat(persisted.getCreatedAt()).isEqualTo(backup.getCreatedAt());
+                                            })
+                                            ;
                                 })
                         )
         ).expectNextCount(1).verifyComplete();

@@ -1,0 +1,31 @@
+[
+  {
+    "targets": ["cluster-manager:8080"],
+    "labels": {"job": "cluster-manager", "service": "cluster-manager"}
+  },
+  {
+    "targets": ["node1:8081"],
+    "labels": {"job": "node1", "service": "node1"}
+  },
+  {
+    "targets": ["node2:8082"],
+    "labels": {"job": "node2", "service": "node2"}
+  },
+  {
+    "targets": ["node3:8083"],
+    "labels": {"job": "node3", "service": "node3"}
+  },
+  {
+    "targets": ["node4:8084"],
+    "labels": {"job": "node4", "service": "node4"}
+  },
+  {
+    "targets": ["node5:8085"],
+    "labels": {"job": "node5", "service": "node5"}
+  },
+  {
+    "targets": ["node6:8086"],
+    "labels": {"job": "node6", "service": "node6"}
+  }
+]
+

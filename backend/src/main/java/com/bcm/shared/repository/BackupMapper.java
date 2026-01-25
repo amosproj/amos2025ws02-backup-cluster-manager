@@ -22,17 +22,23 @@ public interface BackupMapper extends ReactiveCrudRepository<Backup,Long> {
 
     Flux<Backup> findByStartTimeBetweenOrderByStartTimeDesc(Instant from, Instant to);
 
-
-
-    @Modifying
     @Query("""
-    UPDATE backups SET client_id = :#{#backup.clientId}, task_id = :#{#backup.taskId}, 
-           start_time = :#{#backup.startTime}, stop_time = :#{#backup.stopTime}, 
-           size_bytes = :#{#backup.sizeBytes}, state = :#{#backup.state.name()}::backup_state,
-           message = :#{#backup.message}
-    WHERE id = :#{#backup.id}
-    RETURNING *
-    """)
-    Mono<Integer> update(Backup b);
+        INSERT INTO backups (client_id, task_id, start_time, size_bytes, state, created_at, message, stop_time) 
+        VALUES (:#{#backup.clientId}, :#{#backup.taskId}, :#{#backup.startTime}, 
+                :#{#backup.sizeBytes}, :#{#backup.state.name()}::backup_state, 
+                :#{#backup.createdAt}, :#{#backup.message}, :#{#backup.stopTime})
+        RETURNING *
+        """)
+    Mono<Backup> insert(Backup backup);
+
+    @Query("""
+        UPDATE backups SET client_id = :#{#backup.clientId}, task_id = :#{#backup.taskId}, 
+               start_time = :#{#backup.startTime}, stop_time = :#{#backup.stopTime}, 
+               size_bytes = :#{#backup.sizeBytes}, state = :#{#backup.state.name()}::backup_state,
+               message = :#{#backup.message}
+        WHERE id = :#{#backup.id}
+        RETURNING *
+        """)
+    Mono<Backup> update(Backup backup);
 
 }

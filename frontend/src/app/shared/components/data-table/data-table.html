@@ -73,7 +73,7 @@
             <img src="chevron-down.svg" class="w-6 h-6"/>
           </button>
           <!-- Dropdown menu -->
-          <div [id]="'filterDropdown-' + uniqueId" class="z-10 hidden w-48 p-3 rounded-lg bg-primary-2 text-primary">
+          <div [id]="'filterDropdown-' + uniqueId" class="z-50 hidden w-48 p-3 rounded-lg bg-primary-2 text-primary">
             <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
               @for (filter of tableFilters(); track filter.label) {
                 <li class="flex items-center">

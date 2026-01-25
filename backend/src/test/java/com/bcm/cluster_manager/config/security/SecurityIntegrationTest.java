@@ -29,7 +29,8 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.time.Instant;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "CM_ADDRESS=http://localhost:8080")
 @ActiveProfiles({"test", "cluster_manager"})
 @Testcontainers
 class SecurityIntegrationTest {

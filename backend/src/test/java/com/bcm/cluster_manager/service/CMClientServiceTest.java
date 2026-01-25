@@ -50,6 +50,92 @@ class CMClientServiceTest {
         field.setAccessible(true);
         field.set(service, registryService);
     }
+    @Test
+    void shouldReturnEmptyListWhenNoNodes() {
+        when(registryService.getActiveAndManagedNodes()).thenReturn(List.of());
+
+        StepVerifier.create(service.getAllClients())
+                .expectNext(List.of())
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldHandleNodeFailureGracefully() {
+        NodeDTO node1 = new NodeDTO();
+        node1.setAddress("node1:8080");
+        NodeDTO node2 = new NodeDTO();
+        node2.setAddress("node2:8080");
+
+        when(registryService.getActiveAndManagedNodes()).thenReturn(List.of(node1, node2));
+        when(webClient.get()).thenReturn(uriSpec);
+        when(uriSpec.uri(anyString())).thenReturn(headersSpec);
+        when(headersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToFlux(BigClientDTO.class))
+                .thenReturn(Flux.error(new RuntimeException("Connection failed")))
+                .thenReturn(Flux.just(client(1L)));
+
+        StepVerifier.create(service.getAllClients())
+                .assertNext(result -> assertThat(result).hasSize(1))
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldFetchAndMergeClientsFromMultipleNodes() {
+        NodeDTO node1 = new NodeDTO();
+        node1.setAddress("node1:8080");
+        node1.setName("Node 1");
+
+        NodeDTO node2 = new NodeDTO();
+        node2.setAddress("node2:8080");
+        node2.setName("Node 2");
+
+        // Clients from node1
+        BigClientDTO client1 = new BigClientDTO();
+        client1.setId(1L);
+        client1.setNameOrIp("Client from Node1");
+        client1.setEnabled(true);
+
+        // Clients from node2
+        BigClientDTO client2 = new BigClientDTO();
+        client2.setId(2L);
+        client2.setNameOrIp("Client from Node2");
+        client2.setEnabled(false);
+
+        when(registryService.getActiveAndManagedNodes()).thenReturn(List.of(node1, node2));
+        when(webClient.get()).thenReturn(uriSpec);
+        when(uriSpec.uri(anyString())).thenReturn(headersSpec);
+        when(headersSpec.retrieve()).thenReturn(responseSpec);
+
+        // First call returns clients from node1, second call returns clients from node2
+        when(responseSpec.bodyToFlux(BigClientDTO.class))
+                .thenReturn(Flux.just(client1))
+                .thenReturn(Flux.just(client2));
+
+        StepVerifier.create(service.getAllClients())
+                .assertNext(result -> {
+                    assertThat(result).hasSize(2);
+
+                    // Verify client 1 has node1
+                    BigClientDTO mappedClient1 = result.stream()
+                            .filter(c -> c.getId().equals(1L))
+                            .findFirst()
+                            .orElseThrow();
+                    assertThat(mappedClient1.getNodeDTO()).isEqualTo(node1);
+                    assertThat(mappedClient1.getNameOrIp()).isEqualTo("Client from Node1");
+
+                    // Verify client 2 has node2
+                    BigClientDTO mappedClient2 = result.stream()
+                            .filter(c -> c.getId().equals(2L))
+                            .findFirst()
+                            .orElseThrow();
+                    assertThat(mappedClient2.getNodeDTO()).isEqualTo(node2);
+                    assertThat(mappedClient2.getNameOrIp()).isEqualTo("Client from Node2");
+                })
+                .verifyComplete();
+
+        verify(uriSpec).uri("http://node1:8080/api/v1/bn/clients");
+        verify(uriSpec).uri("http://node2:8080/api/v1/bn/clients");
+    }
 
     @Test
     void shouldCachePageResults() {

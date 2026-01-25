@@ -1,7 +1,6 @@
 import {Component, signal, ViewChild, OnInit, OnDestroy} from '@angular/core';
 import {ApiService} from '../../core/services/api.service';
 import {BackupsService} from './backups.service';
-import {AsyncPipe} from '@angular/common';
 import {DataTable} from '../../shared/components/data-table/data-table';
 import {SortOrder} from '../../shared/types/SortTypes';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
@@ -20,7 +19,6 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'app-backups',
   imports: [
-    AsyncPipe,
     DataTable,
     ReactiveFormsModule,
     UsersModal
@@ -32,6 +30,8 @@ export class Backups implements OnInit, OnDestroy {
   @ViewChild(DataTable) dataTable!: DataTable;
   private refreshSub?: Subscription;
 
+  defaultSortBy = 'startTime';
+  defaultSortOrder: SortOrder = SortOrder.DESC;
 
   tableColumns = signal([
     { field: 'id', header: 'ID' },
@@ -55,8 +55,10 @@ export class Backups implements OnInit, OnDestroy {
     this.isAddBackupModalOpen = true;
   }
   onModalClosed() {
-    this.isAddBackupModalOpen = false;
-    this.refreshTrigger.update(value => value + 1);
+    setTimeout(() => {
+      this.isAddBackupModalOpen = false;
+      this.refreshTrigger.update(value => value + 1);
+    }, 0);
   }
 
   selectedBackups: any[] = [];
@@ -109,7 +111,7 @@ export class Backups implements OnInit, OnDestroy {
       active: false,
     }
   ]);
-  loading$;
+  loading = signal(false);
 
   showAddModal = signal(false);
   addForm!: FormGroup;
@@ -122,9 +124,8 @@ export class Backups implements OnInit, OnDestroy {
     private fb: FormBuilder,
     public authService: AuthService,
     private autoRefreshService: AutoRefreshService,
-    public toast: ToastService
-  ) {
-    this.loading$ = this.apiService.loading$;
+    public toast: ToastService,
+) {
 
     this.addForm = this.fb.group({
       clientId: ['', Validators.required],

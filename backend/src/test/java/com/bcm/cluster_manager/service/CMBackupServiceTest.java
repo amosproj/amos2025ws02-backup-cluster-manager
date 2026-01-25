@@ -216,8 +216,8 @@ class CMBackupServiceTest {
         b.setName("Backup " + id);
         b.setState(state);
         b.setSizeBytes(1000L);
-        b.setStartTime(LocalDateTime.now());
-        b.setCreatedAt(LocalDateTime.now());
+        b.setStartTime(Instant.now());
+        b.setCreatedAt(Instant.now());
         return b;
     }
 

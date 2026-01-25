@@ -23,8 +23,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.bcm.shared.mapper.BackupConverter.toLdt;
-
 @Service
 public class CMBackupService implements PaginationProvider<BigBackupDTO> {
 
@@ -184,7 +182,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
         backupDTO.setName("Backup for task " + request.getTaskId());
         backupDTO.setState(BackupState.QUEUED);
         backupDTO.setSizeBytes(request.getSizeBytes());
-        backupDTO.setCreatedAt(toLdt(Instant.now()));
+        backupDTO.setCreatedAt(Instant.now());
 
         String targetAddress = request.getNodeDTO().getAddress();
 

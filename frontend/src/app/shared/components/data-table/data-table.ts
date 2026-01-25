@@ -54,6 +54,8 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
   @Input() addButtonTemplate: TemplateRef<unknown> | null = null;
   @Input() editButtonTemplate: TemplateRef<unknown> | null = null;
   @Input() refreshTrigger: number = 0;
+  @Input() defaultSortBy?: string;
+  @Input() defaultSortOrder?: SortOrder;
 
   @Output() add = new EventEmitter<void>();
   @Output() edit = new EventEmitter<void>();
@@ -88,6 +90,13 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
   private currentSearchQuery: string = '';
 
   ngOnInit() {
+    if (this.defaultSortBy) {
+      this.currentSortBy.set(this.defaultSortBy);
+    }
+    if (this.defaultSortOrder) {
+      this.currentSortOrder.set(this.defaultSortOrder);
+    }
+
     this.loadData();
   }
 

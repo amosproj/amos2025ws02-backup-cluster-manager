@@ -179,10 +179,17 @@ export class UsersModal implements OnChanges, OnInit {
   }
 
   onCreateSubmit() {
-    // Create user payload
-    this.user = this.formData;
-    console.log(this.user);
-    const payload = { ...this.user };
+    if (this.formData.groupId == null) {
+      this.toast.show('Please select a group.', ToastTypeEnum.ERROR);
+      return;
+    }
+
+    const payload = {
+      name: this.formData.name,
+      passwordHash: this.formData.passwordHash,
+      enabled: this.formData.enabled,
+    };
+
     this.api.post(`users/${this.formData.groupId}`, payload).subscribe({
       next: () => {
         this.toast.show('User created successfully!', ToastTypeEnum.SUCCESS);

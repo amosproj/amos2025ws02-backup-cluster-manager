@@ -1,10 +1,12 @@
 package com.bcm.cluster_manager.config.security;
 
+import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.database.User;
 import com.bcm.shared.model.database.UserGroupRelation;
 import com.bcm.shared.repository.GroupMapper;
 import com.bcm.shared.repository.UserGroupRelationMapper;
 import com.bcm.shared.repository.UserMapper;
+import com.bcm.shared.service.NodeHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -70,6 +73,11 @@ class SecurityIntegrationTest {
         registry.add("spring.r2dbc.cm.username", () -> u);
         registry.add("spring.r2dbc.cm.password", () -> pw);
     }
+    @MockitoBean
+    private NodeHttpClient nodeHttpClient;
+
+    @MockitoBean
+    private SyncService syncService;
 
     @Autowired
     WebTestClient webTestClient;

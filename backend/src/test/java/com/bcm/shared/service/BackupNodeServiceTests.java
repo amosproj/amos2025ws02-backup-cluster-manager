@@ -1,5 +1,6 @@
 package com.bcm.shared.service;
 
+import com.bcm.shared.model.api.BackupDTO;
 import com.bcm.shared.model.api.CacheInvalidationType;
 import com.bcm.shared.model.api.ExecuteBackupRequest;
 import com.bcm.shared.model.database.Backup;
@@ -53,6 +54,119 @@ class BackupNodeServiceTests extends AbstractBnDbTest {
     void setup() {
         // Clean up backups before each test
         backupMapper.deleteAll().block();
+    }
+
+    @Test
+    void store_shouldCreateBackupAndRecordEvent() {
+
+        StepVerifier.create(
+                createTestClient()
+                        .flatMap(client -> createTestTask(client.getId())
+                                .flatMap(task -> {
+
+                                    return backupService.store(client.getId(), task.getId(), 5000L)
+                                            .doOnNext(created -> {
+
+                                                assertThat(created).isNotNull();
+                                                assertThat(created.getId()).isNotNull();
+                                                assertThat(created.getClientId()).isEqualTo(client.getId());
+                                                assertThat(created.getTaskId()).isEqualTo(task.getId());
+                                                assertThat(created.getSizeBytes()).isEqualTo(5000L);
+                                                assertThat(created.getState()).isEqualTo(BackupState.QUEUED);
+                                                assertThat(created.getStartTime()).isNotNull();
+
+
+                                                var events = eventStore.getAllUnprocessedEvents();
+                                                assertThat(events).anyMatch(e ->
+                                                        e.getType() == CacheInvalidationType.BACKUP_CREATED &&
+                                                                e.getEntityId().equals(created.getId())
+                                                );
+                                            });
+                                })
+                        )
+        ).expectNextCount(1).verifyComplete();
+    }
+
+    @Test
+    void findBackupById_shouldReturnBackup() {
+
+        StepVerifier.create(
+                createTestClient()
+                        .flatMap(client -> createTestTask(client.getId())
+                                .flatMap(task -> createTestBackup(client.getId(), task.getId(), BackupState.COMPLETED))
+                                .flatMap(backup -> {
+
+                                    return backupService.findBackupById(backup.getId())
+                                            .doOnNext(found -> {
+
+                                                assertThat(found).isNotNull();
+                                                assertThat(found.getId()).isEqualTo(backup.getId());
+                                                assertThat(found.getClientId()).isEqualTo(backup.getClientId());
+                                                assertThat(found.getTaskId()).isEqualTo(backup.getTaskId());
+                                                assertThat(found.getState()).isEqualTo(BackupState.COMPLETED);
+                                            });
+                                })
+                        )
+        ).expectNextCount(1).verifyComplete();
+    }
+
+    @Test
+    void getAllBackups_shouldReturnAllBackups() {
+
+        StepVerifier.create(
+                createTestClient()
+                        .flatMap(client -> createTestTask(client.getId())
+                                .flatMap(task ->
+                                        Mono.zip(
+                                                createTestBackup(client.getId(), task.getId(), BackupState.COMPLETED),
+                                                createTestBackup(client.getId(), task.getId(), BackupState.FAILED),
+                                                createTestBackup(client.getId(), task.getId(), BackupState.QUEUED)
+                                        )
+                                )
+                                .flatMap(tuple -> {
+
+                                    return backupService.getAllBackups()
+                                            .doOnNext(backups -> {
+
+                                                assertThat(backups).hasSize(3);
+                                                assertThat(backups).extracting(BackupDTO::getState)
+                                                        .containsExactlyInAnyOrder(
+                                                                BackupState.COMPLETED,
+                                                                BackupState.FAILED,
+                                                                BackupState.QUEUED
+                                                        );
+                                            });
+                                })
+                        )
+        ).expectNextCount(1).verifyComplete();
+    }
+
+    @Test
+    void deleteBackup_shouldRemoveBackupAndRecordEvent() {
+
+        StepVerifier.create(
+                createTestClient()
+                        .flatMap(client -> createTestTask(client.getId())
+                                .flatMap(task -> createTestBackup(client.getId(), task.getId(), BackupState.COMPLETED))
+                                .flatMap(backup -> {
+                                    Long backupId = backup.getId();
+
+                                    return backupService.deleteBackup(backupId)
+                                            .then(backupMapper.findById(backupId))
+                                            .defaultIfEmpty(new Backup())
+                                            .doOnNext(deleted -> {
+
+                                                assertThat(deleted.getId()).isNull();
+
+                                                var events = eventStore.getAllUnprocessedEvents();
+                                                assertThat(events).anyMatch(e ->
+                                                        e.getType() == CacheInvalidationType.BACKUP_DELETED &&
+                                                                e.getEntityId().equals(backupId)
+                                                );
+                                            });
+                                })
+                        )
+        ).expectNextCount(1).verifyComplete();
     }
 
     @Test

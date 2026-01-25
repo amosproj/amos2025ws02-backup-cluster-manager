@@ -1,5 +1,6 @@
 package com.bcm.cluster_manager.service;
 
+import com.bcm.cluster_manager.model.api.BigBackupDTO;
 import com.bcm.shared.model.api.*;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.pagination.filter.Filter;
@@ -13,6 +14,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Instant;
@@ -20,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import static org.mockito.ArgumentMatchers.contains;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -34,6 +36,14 @@ class CMBackupServiceTest {
     @Mock private WebClient.RequestHeadersSpec headersSpec;
     @Mock private WebClient.ResponseSpec responseSpec;
     @Mock private EventPollingService pollingService;
+    @Mock private WebClient.RequestBodyUriSpec postUriSpec;
+    @Mock private WebClient.RequestBodySpec postBodySpec;
+    @Mock private WebClient.RequestHeadersSpec postHeadersSpec;
+    @Mock private WebClient.ResponseSpec postResponseSpec;
+
+    @Mock private WebClient.RequestHeadersUriSpec deleteUriSpec;
+    @Mock private WebClient.RequestHeadersSpec<?> deleteHeadersSpec;
+    @Mock private WebClient.ResponseSpec deleteResponseSpec;
 
     private CacheManager cacheManager;
     private CMBackupService service;
@@ -47,6 +57,85 @@ class CMBackupServiceTest {
         WebClient.Builder webClientBuilder = mock(WebClient.Builder.class);
         when(webClientBuilder.build()).thenReturn(webClient);
         service = new CMBackupService(registryService, webClientBuilder, null, cacheManager);
+    }
+
+    @Test
+    void getAllBackups_shouldAggregateFromNodes_andIgnoreFailingNode() {
+        NodeDTO n1 = new NodeDTO(); n1.setAddress("node1:8081");
+        NodeDTO n2 = new NodeDTO(); n2.setAddress("node2:8082");
+        when(registryService.getActiveAndManagedNodes()).thenReturn(List.of(n1, n2));
+
+        // webClient.get() chain
+        when(webClient.get()).thenReturn(uriSpec);
+
+        // return different headersSpec based on URL
+        WebClient.RequestHeadersSpec<?> headers1 = mock(WebClient.RequestHeadersSpec.class);
+        WebClient.RequestHeadersSpec<?> headers2 = mock(WebClient.RequestHeadersSpec.class);
+
+        when(uriSpec.uri(contains("node1:8081"))).thenReturn(headers1);
+        when(uriSpec.uri(contains("node2:8082"))).thenReturn(headers2);
+
+        WebClient.ResponseSpec resp1 = mock(WebClient.ResponseSpec.class);
+        WebClient.ResponseSpec resp2 = mock(WebClient.ResponseSpec.class);
+        when(headers1.retrieve()).thenReturn(resp1);
+        when(headers2.retrieve()).thenReturn(resp2);
+
+        when(resp1.bodyToFlux(BackupDTO.class)).thenReturn(Flux.just(backup(1L), backup(2L)));
+        when(resp2.bodyToFlux(BackupDTO.class)).thenReturn(Flux.error(new RuntimeException("boom")));
+
+        StepVerifier.create(service.getAllBackups(filter()))
+                .assertNext(list -> {
+                    assertThat(list).hasSize(2);
+                    assertThat(list).allMatch(b -> b.getNodeDTO() != null);
+                    assertThat(list).allMatch(b -> b.getNodeDTO().getAddress().equals("node1:8081"));
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void createBackup_shouldPostToTargetNode_andReturnBigBackup() {
+        NodeDTO target = new NodeDTO(); target.setAddress("node1:8080");
+        when(registryService.getActiveAndManagedNodes()).thenReturn(List.of(target));
+
+        BackupDTO created = backup(99L, BackupState.QUEUED);
+
+        when(webClient.post()).thenReturn(postUriSpec);
+        when(postUriSpec.uri("http://node1:8080/api/v1/bn/backups/sync")).thenReturn(postBodySpec);
+        when(postBodySpec.bodyValue(any(BackupDTO.class))).thenReturn(postHeadersSpec);
+        when(postHeadersSpec.retrieve()).thenReturn(postResponseSpec);
+        when(postResponseSpec.bodyToMono(BackupDTO.class)).thenReturn(Flux.just(created).single());
+
+        BigBackupDTO req = new BigBackupDTO();
+        req.setNodeDTO(target);
+        req.setClientId(1L);
+        req.setTaskId(2L);
+        req.setSizeBytes(123L);
+
+        StepVerifier.create(service.createBackup(req))
+                .assertNext(b -> {
+                    assertThat(b.getId()).isEqualTo(99L);
+                    assertThat(b.getNodeDTO().getAddress()).isEqualTo("node1:8080");
+                    assertThat(b.getState()).isEqualTo(BackupState.QUEUED);
+                })
+                .verifyComplete();
+
+        verify(postBodySpec).bodyValue(any(BackupDTO.class));
+    }
+
+    @Test
+    void deleteBackup_shouldDeleteFromActiveNode() {
+        NodeDTO n1 = new NodeDTO(); n1.setAddress("node1:8080");
+        when(registryService.getActiveAndManagedNodes()).thenReturn(List.of(n1));
+
+        when(webClient.delete()).thenReturn(deleteUriSpec);
+        when(deleteUriSpec.uri("http://node1:8080/api/v1/bn/backups/7")).thenReturn(deleteHeadersSpec);
+        when(deleteHeadersSpec.retrieve()).thenReturn(deleteResponseSpec);
+        when(deleteResponseSpec.toBodilessEntity()).thenReturn(Mono.just(org.springframework.http.ResponseEntity.ok().build()));
+
+        StepVerifier.create(service.deleteBackup(7L, "node1:8080"))
+                .verifyComplete();
+
+        verify(webClient).delete();
     }
 
     @Test

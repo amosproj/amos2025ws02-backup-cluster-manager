@@ -1,0 +1,67 @@
+@startuml
+skinparam monochrome true
+skinparam responseMessageBelowArrow true
+skinparam shadowing false
+
+' Define the participants
+box "Load Generators (The Cluster)" #LightGray
+    participant "Node 1" as N1
+    participant "Node 2" as N2
+    participant "Node 3" as N3
+    participant "Nodes 4 - 100" as NX
+end box
+
+participant "Cluster Manager\n(SUT: System Under Test)" as CM
+
+note over CM: Status: IDLE\nCPU: 2% | RAM: 10%
+
+== Phase 1: Ramp Up (Normal Load) ==
+
+N1 -> CM: POST /api/v1/status
+activate CM
+CM --> N1: 200 OK (15ms)
+deactivate CM
+
+== Phase 2: Stress Test (Spike) ==
+
+note over N1, NX: Triggering mass connection attempt
+
+loop 1000 Requests / Second
+
+    par Simultaneous Inbound Traffic
+        N1 ->> CM: POST /api/v1/log-upload (Payload: 50MB)
+        activate CM
+
+    else
+        N2 ->> CM: POST /api/v1/log-upload (Payload: 50MB)
+        activate CM #DarkSalmon
+
+    else
+        N3 ->> CM: POST /api/v1/log-upload (Payload: 50MB)
+        activate CM #DarkSalmon
+
+    else Many others
+        NX ->> CM: POST /api/v1/log-upload (Payload: 50MB)
+        activate CM #Red
+    end
+
+    note right of CM: **RESOURCE SPIKE**\nThread Pool Exhausted\nCPU: 99% | DB Locks increasing
+
+    ' Simulating responses (some successful, some failing)
+    CM -->> N1: 200 OK (Slow: 1500ms)
+    deactivate CM
+
+    CM -->> N2: 200 OK (Slow: 1800ms)
+    deactivate CM
+
+    CM -->> N3: 503 Service Unavailable (Timeout)
+    deactivate CM
+
+    CM -->> NX: 504 Gateway Timeout
+    deactivate CM
+
+end
+
+note over CM: Status: RECOVERING\nCPU: 45% | Garbage Collection running
+
+@enduml

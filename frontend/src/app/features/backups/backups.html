@@ -8,8 +8,10 @@
   [fetchData]="fetchBackups"
   [columns]="tableColumns()"
   [filters]="tableFilters()"
-  [loading]="loading$ | async"
+  [loading]="loading()"
   [addButtonText]="'Add Backup'"
+  [defaultSortBy]="defaultSortBy"
+  [defaultSortOrder]="defaultSortOrder"
   (add)="openAddBackupModal('backups')"
   (selectionChange)="onSelectionChange($event)"
   (deleteSelection)="onDeleteSelection($event)"
@@ -17,7 +19,7 @@
   [showDeleteButton]="authService.hasPermission(UserPermissionsEnum.BackupDelete)"
   [refreshTrigger]="refreshTrigger()"
 />
-<!-- 
+<!--
 @if (showAddModal()){
   <div class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="fixed inset-0 bg-black opacity-50" (click)="closeAddModal()"></div>

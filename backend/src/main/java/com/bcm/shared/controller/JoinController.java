@@ -25,4 +25,20 @@ public class JoinController {
         this.cmURL = dto.getCmURL();
         return Mono.just(ResponseEntity.ok("Joined Cluster"));
     }
+
+    @PostMapping("/leave")
+    public Mono<ResponseEntity<String>> leave(@RequestBody JoinDTO dto) {
+        if (!hasJoined) {
+            return Mono.just(ResponseEntity.status(404).body("Not currently part of a cluster to leave"));
+        }
+
+        if (dto.getCmURL() == null || !dto.getCmURL().equals(this.cmURL)) {
+            return Mono.just(ResponseEntity.status(403).body("Sent CM URL does not match."));
+        }
+
+        System.out.println("Leaving Cluster: " + cmURL);
+        this.hasJoined = false;
+        this.cmURL = null;
+        return Mono.just(ResponseEntity.ok("Left Cluster"));
+    }
 }

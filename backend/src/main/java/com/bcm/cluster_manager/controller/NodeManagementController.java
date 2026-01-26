@@ -40,7 +40,7 @@ public class NodeManagementController {
     @PreAuthorize(Permission.Require.NODE_DELETE)
     @DeleteMapping("/node/{id}")
     public Mono<Void> deleteNode(@PathVariable Long id) {
-        return Mono.fromRunnable(() -> nodeManagementService.deleteNode(id));
+        return nodeManagementService.deleteNode(id);
     }
 
     @PreAuthorize(Permission.Require.NODE_READ)

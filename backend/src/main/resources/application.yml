@@ -103,8 +103,6 @@ spring:
 
 
 
-
-
 ---
 # Test profile (H2)
 spring:
@@ -113,3 +111,15 @@ spring:
       on-profile: test
   flyway:
     enabled: true
+
+---
+# Test runner profile
+spring:
+  config:
+    activate:
+      on-profile: test-runner
+
+application:
+  security:
+    # Hard override to false regardless of the environment variable
+    enabled: false

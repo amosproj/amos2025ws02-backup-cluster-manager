@@ -33,6 +33,21 @@ services:
     ports:
       - "4200:8080"
     build: ./frontend
+    
+  test-runner:
+    build: ./stress-test
+    image: stress-test:latest
+    container_name: test-runner
+    profiles: ["test-runner"]
+    networks:
+      - app-network
+    environment:
+      - ITERATIONS=3
+      - INITIAL_BACKUPS=10
+      - BACKUP_INCREMENT=50
+      - BASE_URL=http://cluster-manager:8080
+    volumes:
+      - ./stress-test/results:/stress-test/results
 
   cluster-manager:
     image: backend

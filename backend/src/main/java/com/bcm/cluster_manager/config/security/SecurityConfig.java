@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.config.security;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -25,9 +26,14 @@ import java.util.List;
 
 @Configuration
 @EnableWebFluxSecurity
-@EnableReactiveMethodSecurity
 @Profile("cluster_manager")
 public class SecurityConfig {
+
+    @Configuration
+    @EnableReactiveMethodSecurity
+    @ConditionalOnProperty(name = "application.security.enabled", havingValue = "true", matchIfMissing = false)
+    public static class MethodSecurityConfig {
+    }
 
     @Value("${application.cors.allowed-origin:http://localhost:4200}")
     private String allowedOrigin;
@@ -52,6 +58,17 @@ public class SecurityConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "application.security.enabled", havingValue = "false", matchIfMissing = true)
+    public SecurityWebFilterChain noSecurityFilterChain(ServerHttpSecurity http, CorsConfigurationSource corsConfigurationSource) {
+        return http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .authorizeExchange(auth -> auth.anyExchange().permitAll())
+                .build();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "application.security.enabled", havingValue = "true", matchIfMissing = false)
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http, ServerSecurityContextRepository securityContextRepository, CorsConfigurationSource corsConfigurationSource) {
         return http
                 .securityContextRepository(securityContextRepository)

@@ -1,0 +1,3 @@
+- Run test-runner with 'docker-compose --profile test-runner up --build'
+- Adjust number of backups, iterations in docker-compose.yml
+- Find the results in /results folder

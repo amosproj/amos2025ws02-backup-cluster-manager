@@ -3,6 +3,7 @@ package com.bcm.cluster_manager.controller;
 import com.bcm.cluster_manager.config.security.CustomUserDetails;
 import com.bcm.shared.config.permissions.Role;
 import com.bcm.shared.model.api.AuthMetadataDTO;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
@@ -25,6 +26,9 @@ import static org.springframework.security.web.context.HttpSessionSecurityContex
 
 @RestController
 @RequestMapping("/api/v1/cm/auth")
+@ConditionalOnProperty(name = "application.security.enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class AuthController {
 
 //    private final AuthenticationManager authenticationManager;

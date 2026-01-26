@@ -37,8 +37,13 @@ server:
   port: ${APPLICATION_PORT:8080}
 
 application:
+<<<<<<< Updated upstream
   feature:
     self-registration: ${SELF_REGISTERATION:false}
+=======
+  security:
+    enabled: false
+>>>>>>> Stashed changes
   cors:
     allowed-origin: ${ALLOWED_ORIGINS:http://localhost:4200}
   cm:

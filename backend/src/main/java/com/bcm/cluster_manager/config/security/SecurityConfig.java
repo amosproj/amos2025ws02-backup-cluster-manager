@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.config.security;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -26,7 +27,9 @@ import java.util.List;
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-@Profile("cluster_manager")
+@ConditionalOnProperty(name = "application.security.enabled",
+        havingValue = "true",
+        matchIfMissing = true)
 public class SecurityConfig {
 
     @Value("${application.cors.allowed-origin:http://localhost:4200}")

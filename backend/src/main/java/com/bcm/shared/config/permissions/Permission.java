@@ -23,7 +23,7 @@ public enum Permission {
     CLIENT_READ("client:read"),
     CLIENT_CREATE("client:create"),
     CLIENT_UPDATE("client:update"),
-    CLIENT_DELETE("client:delete"), 
+    CLIENT_DELETE("client:delete"),
 
     // Backups
     BACKUP_READ("backup:read"),
@@ -47,38 +47,41 @@ public enum Permission {
 
     // Static constants for use in Annotations
     public static class Require {
+
+        private static final String IS_DISABLED = "(@environment.getProperty('application.security.enabled', 'true') == 'false')";
+
         // Permissions
 
-        public static final String PERMISSION_READ = "hasAuthority('permission:read')";
+        public static final String PERMISSION_READ = IS_DISABLED + " or hasAuthority('permission:read')";
 
         // Users
-        public static final String USER_READ = "hasAuthority('user:read')";
-        public static final String USER_CREATE = "hasAuthority('user:create')";
-        public static final String USER_UPDATE = "hasAuthority('user:update')";
-        public static final String USER_DELETE = "hasAuthority('user:delete')";
+        public static final String USER_READ = IS_DISABLED + " or hasAuthority('user:read')";
+        public static final String USER_CREATE = IS_DISABLED + " or hasAuthority('user:create')";
+        public static final String USER_UPDATE = IS_DISABLED + " or hasAuthority('user:update')";
+        public static final String USER_DELETE = IS_DISABLED + " or hasAuthority('user:delete')";
 
         // Nodes
-        public static final String NODE_READ = "hasAuthority('node:read')";
-        public static final String NODE_CREATE = "hasAuthority('node:create')";
-        public static final String NODE_UPDATE = "hasAuthority('node:update')";
-        public static final String NODE_DELETE = "hasAuthority('node:delete')";
-        public static final String NODE_CONTROL = "hasAuthority('node:control')";
+        public static final String NODE_READ = IS_DISABLED + " or hasAuthority('node:read')";
+        public static final String NODE_CREATE = IS_DISABLED + " or hasAuthority('node:create')";
+        public static final String NODE_UPDATE = IS_DISABLED + " or hasAuthority('node:update')";
+        public static final String NODE_DELETE = IS_DISABLED + " or hasAuthority('node:delete')";
+        public static final String NODE_CONTROL = IS_DISABLED + " or hasAuthority('node:control')";
 
         // Clients
-        public static final String CLIENT_READ = "hasAuthority('client:read')";
-        public static final String CLIENT_CREATE = "hasAuthority('client:create')";
-        public static final String CLIENT_UPDATE = "hasAuthority('client:update')";
-        public static final String CLIENT_DELETE = "hasAuthority('client:delete')";
+        public static final String CLIENT_READ = IS_DISABLED + " or hasAuthority('client:read')";
+        public static final String CLIENT_CREATE = IS_DISABLED + " or hasAuthority('client:create')";
+        public static final String CLIENT_UPDATE = IS_DISABLED + " or hasAuthority('client:update')";
+        public static final String CLIENT_DELETE = IS_DISABLED + " or hasAuthority('client:delete')";
 
         // Backups
-        public static final String BACKUP_READ = "hasAuthority('backup:read')";
-        public static final String BACKUP_CREATE = "hasAuthority('backup:create')";
-        public static final String BACKUP_DELETE = "hasAuthority('backup:delete')";
+        public static final String BACKUP_READ = IS_DISABLED + " or hasAuthority('backup:read')";
+        public static final String BACKUP_CREATE = IS_DISABLED + " or hasAuthority('backup:create')";
+        public static final String BACKUP_DELETE = IS_DISABLED + " or hasAuthority('backup:delete')";
 
         // Tasks
-        public static final String TASK_READ = "hasAuthority('task:read')";
-        public static final String TASK_CREATE = "hasAuthority('task:create')";
-        public static final String TASK_DELETE = "hasAuthority('task:delete')";
+        public static final String TASK_READ = IS_DISABLED + " or hasAuthority('task:read')";
+        public static final String TASK_CREATE = IS_DISABLED + " or hasAuthority('task:create')";
+        public static final String TASK_DELETE = IS_DISABLED + " or hasAuthority('task:delete')";
 
     }
 }

@@ -24,7 +24,7 @@ class RegistryServiceTests {
     @Test
     void register_addsNodeToActiveAndRemovesFromInactive() {
         String addr = "10.0.0.1:9000";
-        RegisterRequest req = new RegisterRequest(addr, NodeMode.NODE);
+        RegisterRequest req = new RegisterRequest(addr, NodeMode.NODE, false);
         registry.register(req);
 
         Collection<NodeDTO> active = registry.getActiveNodes();
@@ -41,7 +41,7 @@ class RegistryServiceTests {
     @Test
     void markInactive_movesNodeToInactive() {
         String addr = "nodeA";
-        RegisterRequest req = new RegisterRequest(addr, NodeMode.NODE);
+        RegisterRequest req = new RegisterRequest(addr, NodeMode.NODE, false);
         registry.register(req);
 
         registry.markInactive(new NodeDTO(NodeIdGenerator.nextId(), addr, addr, com.bcm.shared.model.api.NodeStatus.ACTIVE, NodeMode.NODE, false, null));
@@ -82,7 +82,7 @@ class RegistryServiceTests {
 
     @Test
     void getAllNodes_returnsMergedActiveAndInactive() {
-        RegisterRequest req = new RegisterRequest("A", NodeMode.NODE);
+        RegisterRequest req = new RegisterRequest("A", NodeMode.NODE, false);
 
         registry.register(req);
         registry.markInactive(new NodeDTO(NodeIdGenerator.nextId(), "B", "B", com.bcm.shared.model.api.NodeStatus.PENDING, NodeMode.NODE, false, null));
@@ -97,7 +97,7 @@ class RegistryServiceTests {
     @Test
     void register_overwritesInactiveEntry() {
         registry.markInactive(new NodeDTO(NodeIdGenerator.nextId(), "nodeX", "nodeX", com.bcm.shared.model.api.NodeStatus.PENDING, NodeMode.NODE, false, null));
-        RegisterRequest req = new RegisterRequest("nodeX", NodeMode.NODE);
+        RegisterRequest req = new RegisterRequest("nodeX", NodeMode.NODE, false);
 
         registry.register(req);
 

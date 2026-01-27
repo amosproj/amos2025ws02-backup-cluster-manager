@@ -21,7 +21,7 @@ public class RegistryService {
     private final ConcurrentHashMap<String, NodeDTO> inactive = new ConcurrentHashMap<>();
 
     public void register(RegisterRequest req) {
-        NodeDTO newNode = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), req.getMode().equals(NodeMode.CLUSTER_MANAGER) /* sets isManaged flag to true for CM self-registration, false per default for all new nodes*/,
+        NodeDTO newNode = new NodeDTO( NodeIdGenerator.nextId(), req.getAddress(), req.getAddress(), NodeStatus.ACTIVE, req.getMode(), req.getMode().equals(NodeMode.CLUSTER_MANAGER) || req.getIsManaged() /* sets isManaged flag to true for CM self-registration, for normal nodes the provided value is chosen */,
                 LocalDateTime.now());
         markActive(newNode);
     }

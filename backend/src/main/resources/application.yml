@@ -37,12 +37,16 @@ server:
   port: ${APPLICATION_PORT:8080}
 
 application:
+  feature:
+    self-registration: ${SELF_REGISTERATION:false}
   cors:
     allowed-origin: ${ALLOWED_ORIGINS:http://localhost:4200}
   cm:
     public-address: ${CM_ADDRESS}
   node:
     public-address: ${NODE_ADDRESS}
+  security:
+    enabled: true
 
 management:
   endpoints:
@@ -101,8 +105,6 @@ spring:
 
 
 
-
-
 ---
 # Test profile (H2)
 spring:
@@ -111,3 +113,14 @@ spring:
       on-profile: test
   flyway:
     enabled: true
+
+---
+# Test runner profile
+spring:
+  config:
+    activate:
+      on-profile: test-runner
+application:
+  security:
+    # Hard override to false regardless of the environment variable
+    enabled: false

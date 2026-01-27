@@ -96,7 +96,7 @@ class NodeManagementControllerTest {
 
     @Test
     void register_shouldReturnJsonStatusOk() {
-        RegisterRequest request = new RegisterRequest("node1:8081", NodeMode.NODE);
+        RegisterRequest request = new RegisterRequest("node1:8081", NodeMode.NODE, false);
 
         when(nodeManagementService.registerNode(any(RegisterRequest.class)))
                 .thenReturn(Mono.empty());
@@ -119,7 +119,7 @@ class NodeManagementControllerTest {
         when(nodeManagementService.registerNode(any(RegisterRequest.class)))
                 .thenReturn(Mono.error(new RuntimeException(errorMessage)));
 
-        RegisterRequest request = new RegisterRequest("bad-node", NodeMode.NODE);
+        RegisterRequest request = new RegisterRequest("bad-node", NodeMode.NODE, false);
 
         authenticatedClient().post()
                 .uri("/api/v1/cm/register")

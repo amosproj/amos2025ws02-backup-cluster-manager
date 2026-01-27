@@ -76,7 +76,7 @@ class NodeManagementServiceTest {
 
         Long nodeId = NodeIdGenerator.nextId();
         NodeDTO node = new NodeDTO(nodeId, "TestNode", "", NodeStatus.ACTIVE, NodeMode.NODE, false, null);
-        RegisterRequest registerRequest = new RegisterRequest("", NodeMode.NODE);
+        RegisterRequest registerRequest = new RegisterRequest("", NodeMode.NODE, false);
 
         // this is supposed to be final, so it is an array to be able to set the value anyway
         final boolean[] hasJoined = {false};

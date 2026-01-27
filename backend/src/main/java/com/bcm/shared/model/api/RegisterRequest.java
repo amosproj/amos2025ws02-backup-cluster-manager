@@ -13,4 +13,5 @@ import lombok.Setter;
 public class RegisterRequest {
     private String address;
     private NodeMode mode;
+    private Boolean isManaged;
 }

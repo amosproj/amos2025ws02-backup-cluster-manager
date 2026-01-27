@@ -30,6 +30,9 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeManagementService.class);
 
+    @Value("${application.cm.public-address:localhost:8080}")
+    private String cmPublicAddress;
+
     @Autowired
     private NodeHttpClient nodeHttpClient;
 
@@ -38,9 +41,6 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     @Autowired
     private SyncService syncService;
-
-    @Value("${CM_ADDRESS}")
-    private String cmPublicAddress;
 
     private final WebClient webClient;
 
@@ -169,7 +169,7 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     public Mono<Void> registerNode(RegisterRequest req) {
         JoinDTO dto = new JoinDTO();
-        dto.setCmURL(cmPublicAddress);
+        dto.setCmURL("http://" + cmPublicAddress);
         String url = "http://" + req.getAddress() + "/api/v1/bn/join";
 
         return webClient.post()

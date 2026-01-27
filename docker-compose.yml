@@ -33,6 +33,21 @@ services:
     ports:
       - "4200:8080"
     build: ./frontend
+    
+  test-runner:
+    build: ./stress-test
+    image: stress-test:latest
+    container_name: test-runner
+    profiles: ["test-runner"]
+    networks:
+      - app-network
+    environment:
+      - ITERATIONS=3
+      - INITIAL_BACKUPS=10
+      - BACKUP_INCREMENT=50
+      - BASE_URL=http://cluster-manager:8080
+    volumes:
+      - ./stress-test/results:/stress-test/results
 
   cluster-manager:
     image: backend
@@ -51,6 +66,7 @@ services:
       #- APPLICATION_PORT=8080
       - NODE_ADDRESS=cluster-manager:8080
       - SPRING_PROFILES_ACTIVE=cluster_manager
+      - SELF_REGISTERATION=true
     ports:
       - "8080:8080"
     networks:
@@ -73,6 +89,7 @@ services:
       - APPLICATION_PORT=8081
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node1:8081
+      - SELF_REGISTERATION=true
     ports:
       - "8081:8081"
     networks:
@@ -95,6 +112,7 @@ services:
       - APPLICATION_PORT=8082
       - CM_ADDRESS=cluster-manager:8080
       - NODE_ADDRESS=node2:8082
+      - SELF_REGISTERATION=true
     ports:
       - "8082:8082"
     networks:

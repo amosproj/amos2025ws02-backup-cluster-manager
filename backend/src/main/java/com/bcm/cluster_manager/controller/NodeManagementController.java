@@ -51,9 +51,11 @@ public class NodeManagementController {
                         .orElse(ResponseEntity.notFound().build()));
     }
 
-    @PreAuthorize(Permission.Require.NODE_CREATE)
     @PostMapping("/register")
     public Mono<ResponseEntity<Map<String, String>>> register(@RequestBody RegisterRequest req) {
+        if (req.getIsManaged() == null){
+            req.setIsManaged(false);
+        }
         return nodeManagementService.registerNode(req)
                 .thenReturn(ResponseEntity.ok(Collections.singletonMap("status", "OK")))
                 .onErrorResume(e ->

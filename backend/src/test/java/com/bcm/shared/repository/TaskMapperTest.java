@@ -3,9 +3,11 @@ package com.bcm.shared.repository;
 import com.bcm.shared.model.database.Client;
 import com.bcm.shared.model.database.Task;
 import com.bcm.shared.model.database.TaskFrequency;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import com.bcm.test.AbstractBnDbTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -14,9 +16,9 @@ import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.*;
 
-@DataR2dbcTest
-@Disabled("Skipping Spring context startup for now")
-class TaskMapperTest {
+@SpringBootTest
+@ActiveProfiles("test")
+class TaskMapperTest extends AbstractBnDbTest {
 
 
     @Autowired
@@ -30,7 +32,7 @@ class TaskMapperTest {
         t.setEnabled(true);
         t.setInterval(TaskFrequency.DAILY);
 
-        // Falls dein Task andere Zeittypen nutzt (z.B. Instant/OffsetDateTime), bitte anpassen:
+
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         t.setCreatedAt(now);
         t.setUpdatedAt(now);
@@ -51,6 +53,17 @@ class TaskMapperTest {
         return clientMapper.save(c);
     }
 
+    private Mono<Task> insertTask(Task task) {
+        return taskMapper.insertAndReturnId(
+                        task.getName(),
+                        task.getClientId(),
+                        task.getSource(),
+                        task.isEnabled(),
+                        task.getInterval().name()
+                )
+                .flatMap(taskMapper::findById);
+    }
+
 
     @Test
     void insertAndFindById_shouldPersistAndLoadTask() {
@@ -58,8 +71,7 @@ class TaskMapperTest {
                 createTestClient()
                         .flatMap(client -> {
                             Task task = createTestTask(client.getId());
-                            return taskMapper.save(task)
-                                    .flatMap(saved -> taskMapper.findById(saved.getId()));
+                            return insertTask(task);
                         });
 
         StepVerifier.create(flow)
@@ -82,8 +94,8 @@ class TaskMapperTest {
                     Task t2 = createTestTask(clientId);
                     t2.setName("Second Task");
 
-                    return taskMapper.save(t1)
-                            .then(taskMapper.save(t2))
+                    return insertTask(t1)
+                            .then(insertTask(t2))
                             .thenMany(taskMapper.findByClient(clientId))
                             .collectList();
                 });
@@ -91,7 +103,7 @@ class TaskMapperTest {
         StepVerifier.create(flow)
                 .assertNext(tasks -> {
                     assertThat(tasks).isNotEmpty();
-                    assertThat(tasks).extracting(Task::getClientId).containsOnly(tasks.get(0).getClientId());
+                    assertThat(tasks).extracting(Task::getClientId).containsOnly(tasks.getFirst().getClientId());
                     assertThat(tasks).extracting(Task::getName).contains("Test Task", "Second Task");
                 })
                 .verifyComplete();
@@ -101,7 +113,7 @@ class TaskMapperTest {
     void update_shouldModifyExistingTask() {
         Mono<Task> flow =
                 createTestClient()
-                        .flatMap(client -> taskMapper.save(createTestTask(client.getId())))
+                        .flatMap(client -> insertTask(createTestTask(client.getId())))
                         .flatMap(saved ->
                                 taskMapper.findById(saved.getId())
                                         .flatMap(before -> {
@@ -126,7 +138,7 @@ class TaskMapperTest {
     void delete_shouldRemoveTask() {
         Mono<Void> flow =
                 createTestClient()
-                        .flatMap(client -> taskMapper.save(createTestTask(client.getId())))
+                        .flatMap(client -> insertTask(createTestTask(client.getId())))
                         .flatMap(saved -> taskMapper.deleteById(saved.getId()).then())
                         .then(); // just complete if delete succeeded
 

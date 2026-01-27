@@ -6,42 +6,25 @@ import com.bcm.shared.model.database.UserGroupRelation;
 import com.bcm.shared.repository.GroupMapper;
 import com.bcm.shared.repository.UserGroupRelationMapper;
 import com.bcm.shared.repository.UserMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import com.bcm.test.AbstractBnDbTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@AutoConfigureTestDatabase(replace = Replace.ANY) // Use in-memory DB for tests
-@Disabled("Skipping Spring context startup for now")
-class UserGroupRelationMapperTest {
+@ActiveProfiles("test")
+class UserGroupRelationMapperTest extends AbstractBnDbTest {
 
-    @Qualifier("userGroupRelationMapperBN")
     @Autowired
     private UserGroupRelationMapper userGroupRelationMapper;
-
-    private UserGroupRelation createTestUserGroupRelation(Long userId, Long groupId) {
-        UserGroupRelation ugr = new UserGroupRelation();
-        ugr.setUserId(userId);
-        ugr.setGroupId(groupId);
-        ugr.setAddedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
-
-        userGroupRelationMapper.insert(ugr);
-
-        return ugr;
-    }
 
     @Autowired
     private UserMapper userMapper;
@@ -71,7 +54,7 @@ class UserGroupRelationMapperTest {
      */
     private Mono<Group> createTestGroup() {
         Group group = new Group();
-        group.setName("Superuser_" + System.currentTimeMillis());
+        group.setName("Superuser");
         group.setEnabled(true);
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         group.setCreatedAt(now);
@@ -90,13 +73,8 @@ class UserGroupRelationMapperTest {
                             User user = tuple.getT1();
                             Group group = tuple.getT2();
 
-                            return Mono.fromSupplier(() ->
-                                    userGroupRelationMapper.insert(
-                                            createUgr(user.getId(), group.getId())
-                                    )
-                            ).then(
-                                    userGroupRelationMapper.exists(user.getId(), group.getId())
-                            );
+                            return userGroupRelationMapper.insert(createUgr(user.getId(), group.getId()))
+                                    .then(userGroupRelationMapper.exists(user.getId(), group.getId()));
                         });
 
         StepVerifier.create(flow)

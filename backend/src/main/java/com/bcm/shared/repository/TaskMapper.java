@@ -26,7 +26,6 @@ public interface TaskMapper extends ReactiveCrudRepository<Task, Long> {
     """)
     Flux<Task> findAllTasks();
 
-    @Modifying
     @Query("""
     INSERT INTO tasks (name, client_id, source, enabled, "interval")
     VALUES (:name, :clientId, :source, :enabled, :interval::frequency_enum)

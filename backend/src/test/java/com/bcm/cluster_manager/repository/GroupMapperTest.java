@@ -2,15 +2,11 @@ package com.bcm.cluster_manager.repository;
 
 import com.bcm.shared.model.database.Group;
 import com.bcm.shared.repository.GroupMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ActiveProfiles;
+import com.bcm.test.AbstractBnDbTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -24,10 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * These tests focus on validating the `findById` method, which retrieves a group by its ID.
  */
 @SpringBootTest
-@Disabled("Skipping Spring context startup for now")
-class GroupMapperTest {
+@ActiveProfiles("test")
+class GroupMapperTest extends AbstractBnDbTest {
 
-    @Qualifier("groupMapperBN")
     @Autowired
     private GroupMapper groupMapper;
 

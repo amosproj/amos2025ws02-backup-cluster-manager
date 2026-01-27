@@ -1,15 +1,11 @@
 package com.bcm.shared.repository;
 
 import com.bcm.shared.model.database.Client;
-import com.bcm.shared.repository.ClientMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ActiveProfiles;
+import com.bcm.test.AbstractBnDbTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -23,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * This focuses on validating the `findById` method, which retrieves a client by its ID.
  */
 @SpringBootTest
-@Disabled("Skipping Spring context startup for now")
-class ClientMapperTest {
+@ActiveProfiles("test")
+class ClientMapperTest extends AbstractBnDbTest {
 
     @Autowired
     private ClientMapper clientMapper;
@@ -36,7 +32,7 @@ class ClientMapperTest {
      *
      * @return the created and persisted test client instance
      */
-private Mono<Client> createTestClient() {
+    private Mono<Client> createTestClient() {
         Client client = new Client();
         client.setNameOrIp("test-client-" + System.currentTimeMillis());
         client.setEnabled(true);
@@ -48,16 +44,16 @@ private Mono<Client> createTestClient() {
 
     @Test
     void findById_shouldReturnClientForValidId() {
-            Mono<Client> testClient = createTestClient()
-                    .flatMap(savedClient -> clientMapper.findById(savedClient.getId()));
-            StepVerifier.create(testClient)
-                    .assertNext(foundClient -> {
-                        assertThat(foundClient).isNotNull();
-                        assertThat(foundClient.getId()).isNotNull();
-                        assertThat(foundClient.isEnabled()).isTrue();
-                        assertThat(foundClient.getCreatedAt()).isNotNull();
-                        assertThat(foundClient.getUpdatedAt()).isNotNull();
-                    }).verifyComplete();
+        Mono<Client> testClient = createTestClient()
+                .flatMap(savedClient -> clientMapper.findById(savedClient.getId()));
+        StepVerifier.create(testClient)
+                .assertNext(foundClient -> {
+                    assertThat(foundClient).isNotNull();
+                    assertThat(foundClient.getId()).isNotNull();
+                    assertThat(foundClient.isEnabled()).isTrue();
+                    assertThat(foundClient.getCreatedAt()).isNotNull();
+                    assertThat(foundClient.getUpdatedAt()).isNotNull();
+                }).verifyComplete();
     }
     @Test
     void findById_shouldReturnNullForInvalidId() {

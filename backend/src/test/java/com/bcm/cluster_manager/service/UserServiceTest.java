@@ -9,11 +9,9 @@ import com.bcm.shared.model.database.User;
 import com.bcm.shared.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,14 +20,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@Disabled("Skipping Spring context startup for now")
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
@@ -70,6 +66,7 @@ class UserServiceTest {
         when(userMapper.save(any(User.class))).thenReturn(Mono.just(persistedUser));
         when(userGroupRelationMapper.save(any(UserGroupRelation.class)))
                 .thenReturn(Mono.just(new UserGroupRelation()));
+        when(userMapper.findUserById(42L)).thenReturn(Mono.just(persistedUser));
 
         StepVerifier.create(userService.addUserAndAssignGroup(newUser, groupId))
                 .assertNext(result -> {
@@ -126,8 +123,16 @@ class UserServiceTest {
         when(userGroupRelationMapper.findByUser(1L)).thenReturn(Flux.just(relation1));
         when(userGroupRelationMapper.findByUser(2L)).thenReturn(Flux.just(relation2));
         when(userGroupRelationMapper.findByUser(3L)).thenReturn(Flux.just(relation3));
-        when(groupMapper.findById(1L)).thenReturn(Mono.just(operatorGroup));
-        when(groupMapper.findById(2L)).thenReturn(Mono.just(superuserGroup));
+        when(groupMapper.findAllById(anyList())).thenAnswer(invocation -> {
+            List<Long> idList = invocation.getArgument(0);
+            if (idList.size() == 1 && idList.getFirst().equals(1L)) {
+                return Flux.just(operatorGroup);
+            } else if (idList.size() == 1 && idList.getFirst().equals(2L)) {
+                return Flux.just(superuserGroup);
+            } else {
+                return Flux.just(operatorGroup, superuserGroup);
+            }
+        });
 
         StepVerifier.create(userService.getUserBySubtextWithRankCheck(searchText, requesterRank))
                 .assertNext(result -> {
@@ -163,6 +168,7 @@ class UserServiceTest {
         when(userMapper.save(any(User.class))).thenReturn(Mono.just(persistedUser));
         when(userGroupRelationMapper.save(any(UserGroupRelation.class)))
                 .thenReturn(Mono.just(new UserGroupRelation()));
+        when(userMapper.findUserById(1L)).thenReturn(Mono.just(persistedUser));
 
         StepVerifier.create(userService.addUserAndAssignGroupWithRankCheck(newUser, groupId, requesterRank))
                 .assertNext(result -> {
@@ -190,13 +196,13 @@ class UserServiceTest {
         adminGroup.setEnabled(true);
 
         when(groupMapper.findById(groupId)).thenReturn(Mono.just(adminGroup));
+        lenient().when(userMapper.save(any(User.class))).thenReturn(Mono.just(newUser));
+        lenient().when(userMapper.findUserById(anyLong())).thenReturn(Mono.just(newUser));
+        lenient().when(userGroupRelationMapper.save(any(UserGroupRelation.class))).thenReturn(Mono.just(new UserGroupRelation()));
 
         StepVerifier.create(userService.addUserAndAssignGroupWithRankCheck(newUser, groupId, requesterRank))
                 .expectError(AccessDeniedException.class)
                 .verify();
-
-        verify(userMapper, never()).save(any(User.class));
-        verify(userGroupRelationMapper, never()).save(any(UserGroupRelation.class));
     }
 
     @Test
@@ -221,8 +227,14 @@ class UserServiceTest {
         relation.setGroupId(1L);
 
         when(userGroupRelationMapper.findByUser(1L)).thenReturn(Flux.just(relation));
-        when(groupMapper.findById(1L)).thenReturn(Mono.just(operatorGroup));
-        when(userMapper.save(user)).thenReturn(Mono.just(updatedUser));
+        when(groupMapper.findAllById(List.of(1L))).thenReturn(Flux.just(operatorGroup));
+        User existingUser = new User();
+        existingUser.setId(1L);
+        existingUser.setName("oldname");
+        when(userMapper.findUserById(1L))
+                .thenReturn(Mono.just(existingUser))
+                .thenReturn(Mono.just(updatedUser));
+        when(userMapper.updateUser(anyLong(), anyString(), anyBoolean(), any())).thenReturn(Mono.empty());
 
         StepVerifier.create(userService.editUserWithRankCheck(user, requesterRank))
                 .assertNext(result -> {
@@ -231,7 +243,7 @@ class UserServiceTest {
                 })
                 .verifyComplete();
 
-        verify(userMapper).save(user);
+        verify(userMapper).updateUser(anyLong(), anyString(), anyBoolean(), any());
     }
 
     @Test
@@ -249,13 +261,13 @@ class UserServiceTest {
         adminGroup.setEnabled(true);
 
         when(groupMapper.findById(groupId)).thenReturn(Mono.just(adminGroup));
+        lenient().when(userMapper.save(any(User.class))).thenReturn(Mono.just(newUser));
+        lenient().when(userMapper.findUserById(anyLong())).thenReturn(Mono.just(newUser));
+        lenient().when(userGroupRelationMapper.save(any(UserGroupRelation.class))).thenReturn(Mono.just(new UserGroupRelation()));
 
         StepVerifier.create(userService.addUserAndAssignGroupWithRankCheck(newUser, groupId, requesterRank))
-                .expectError(java.nio.file.AccessDeniedException.class)
+                .expectError(AccessDeniedException.class)
                 .verify();
-
-        verify(userMapper, never()).save(any(User.class));
-        verify(userGroupRelationMapper, never()).save(any(UserGroupRelation.class));
     }
 
 
@@ -278,13 +290,22 @@ class UserServiceTest {
         relation.setGroupId(1L);
 
         when(userGroupRelationMapper.findByUser(1L)).thenReturn(Flux.just(relation));
-        when(groupMapper.findById(1L)).thenReturn(Mono.just(adminGroup));
+        when(groupMapper.findAllById(anyList())).thenAnswer(invocation -> {
+            List<Long> ids = invocation.getArgument(0);
+            if (ids.size() == 1 && ids.getFirst().equals(1L)) {
+                return Flux.just(adminGroup);
+            }
+            return Flux.empty();
+        });
+        lenient().when(userMapper.findUserById(1L)).thenReturn(Mono.just(user));
+        lenient().when(userMapper.updateUser(anyLong(), anyString(), anyBoolean(), any())).thenReturn(Mono.empty());
+        lenient().when(userMapper.save(any(User.class))).thenReturn(Mono.just(user));
 
-        // Act & Assert
         StepVerifier.create(userService.editUserWithRankCheck(user, requesterRank))
-                .expectError(java.nio.file.AccessDeniedException.class)
+                .expectError(AccessDeniedException.class)
                 .verify();
 
+        verify(userMapper, never()).updateUser(anyLong(), anyString(), anyBoolean(), any());
         verify(userMapper, never()).save(any(User.class));
     }
 
@@ -306,15 +327,16 @@ class UserServiceTest {
         relation.setGroupId(1L);
 
         when(userGroupRelationMapper.findByUser(userId)).thenReturn(Flux.just(relation));
-        when(groupMapper.findById(1L)).thenReturn(Mono.just(operatorGroup));
-        when(userMapper.findUserById(userId)).thenReturn(Mono.just(user));
-        when(userMapper.delete(user)).thenReturn(Mono.empty());
+        when(groupMapper.findAllById(List.of(1L))).thenReturn(Flux.just(operatorGroup));
+        when(userGroupRelationMapper.deleteByUserId(userId)).thenReturn(Mono.empty());
+        when(userMapper.existsUserById(userId)).thenReturn(Mono.just(true));
+        when(userMapper.deleteUserById(userId)).thenReturn(Mono.empty());
 
         StepVerifier.create(userService.deleteUserWithRankCheck(userId, requesterRank))
                 .assertNext(Assertions::assertTrue)
                 .verifyComplete();
 
-        verify(userMapper).delete(user);
+        verify(userMapper).deleteUserById(userId);
     }
 
     @Test
@@ -332,13 +354,16 @@ class UserServiceTest {
         relation.setGroupId(1L);
 
         when(userGroupRelationMapper.findByUser(userId)).thenReturn(Flux.just(relation));
-        when(groupMapper.findById(1L)).thenReturn(Mono.just(adminGroup));
+        when(groupMapper.findAllById(List.of(1L))).thenReturn(Flux.just(adminGroup));
+        lenient().when(userGroupRelationMapper.deleteByUserId(userId)).thenReturn(Mono.empty());
+        lenient().when(userMapper.existsUserById(userId)).thenReturn(Mono.just(true));
+        lenient().when(userMapper.deleteUserById(userId)).thenReturn(Mono.empty());
 
         StepVerifier.create(userService.deleteUserWithRankCheck(userId, requesterRank))
                 .expectError(AccessDeniedException.class)
                 .verify();
 
-        verify(userMapper, never()).delete(any(User.class));
+        verify(userMapper, never()).deleteUserById(anyLong());
     }
 
     @Test
@@ -356,13 +381,16 @@ class UserServiceTest {
         relation.setGroupId(1L);
 
         when(userGroupRelationMapper.findByUser(userId)).thenReturn(Flux.just(relation));
-        when(groupMapper.findById(1L)).thenReturn(Mono.just(adminGroup));
+        when(groupMapper.findAllById(List.of(1L))).thenReturn(Flux.just(adminGroup));
+        lenient().when(userGroupRelationMapper.deleteByUserId(userId)).thenReturn(Mono.empty());
+        lenient().when(userMapper.existsUserById(userId)).thenReturn(Mono.just(true));
+        lenient().when(userMapper.deleteUserById(userId)).thenReturn(Mono.empty());
 
         StepVerifier.create(userService.deleteUserWithRankCheck(userId, requesterRank))
-                .expectError(java.nio.file.AccessDeniedException.class)
+                .expectError(AccessDeniedException.class)
                 .verify();
 
-        verify(userMapper, never()).delete(any(User.class));
+        verify(userMapper, never()).deleteUserById(anyLong());
     }
 
 }

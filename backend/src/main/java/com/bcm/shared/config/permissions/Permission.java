@@ -23,7 +23,7 @@ public enum Permission {
     CLIENT_READ("client:read"),
     CLIENT_CREATE("client:create"),
     CLIENT_UPDATE("client:update"),
-    CLIENT_DELETE("client:delete"), 
+    CLIENT_DELETE("client:delete"),
 
     // Backups
     BACKUP_READ("backup:read"),
@@ -48,7 +48,7 @@ public enum Permission {
     // Static constants for use in Annotations
     public static class Require {
 
-        private static final String IS_DISABLED = "(@environment.getProperty('application.security.enabled', 'false') == 'false')";
+        private static final String IS_DISABLED = "(@environment.getProperty('application.security.enabled', 'true') == 'false')";
 
         // Permissions
 

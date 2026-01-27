@@ -45,6 +45,8 @@ application:
     public-address: ${CM_ADDRESS}
   node:
     public-address: ${NODE_ADDRESS}
+  security:
+    enabled: true
 
 management:
   endpoints:
@@ -118,7 +120,6 @@ spring:
   config:
     activate:
       on-profile: test-runner
-
 application:
   security:
     # Hard override to false regardless of the environment variable

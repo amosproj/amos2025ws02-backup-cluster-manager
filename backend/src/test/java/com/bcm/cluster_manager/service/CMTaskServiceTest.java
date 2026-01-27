@@ -31,6 +31,10 @@ class CMTaskServiceTest {
     @Mock private WebClient.RequestHeadersUriSpec uriSpec;
     @Mock private WebClient.RequestHeadersSpec headersSpec;
     @Mock private WebClient.ResponseSpec responseSpec;
+    @Mock private WebClient.RequestBodyUriSpec postUriSpec;
+    @Mock private WebClient.RequestBodySpec postBodySpec;
+    @Mock private WebClient.RequestHeadersSpec postHeadersSpec;
+    @Mock private WebClient.ResponseSpec postResponseSpec;
 
     private CacheManager cacheManager;
     private CMTaskService service;
@@ -48,6 +52,59 @@ class CMTaskServiceTest {
         var field = CMTaskService.class.getDeclaredField("registryService");
         field.setAccessible(true);
         field.set(service, registryService);
+    }
+
+    @Test
+    void getAllTasks_shouldAggregateFromMultipleNodes() {
+        NodeDTO n1 = new NodeDTO(); n1.setAddress("node1:8081");
+        NodeDTO n2 = new NodeDTO(); n2.setAddress("node2:8082");
+        when(registryService.getActiveAndManagedNodes()).thenReturn(List.of(n1, n2));
+
+        when(webClient.get()).thenReturn(uriSpec);
+
+        WebClient.RequestHeadersSpec<?> headers1 = mock(WebClient.RequestHeadersSpec.class);
+        WebClient.RequestHeadersSpec<?> headers2 = mock(WebClient.RequestHeadersSpec.class);
+        when(uriSpec.uri(contains("node1"))).thenReturn(headers1);
+        when(uriSpec.uri(contains("node2"))).thenReturn(headers2);
+
+        WebClient.ResponseSpec resp1 = mock(WebClient.ResponseSpec.class);
+        WebClient.ResponseSpec resp2 = mock(WebClient.ResponseSpec.class);
+        when(headers1.retrieve()).thenReturn(resp1);
+        when(headers2.retrieve()).thenReturn(resp2);
+
+        when(resp1.bodyToMono(TaskDTO[].class)).thenReturn(Mono.just(new TaskDTO[]{task(1L), task(2L)}));
+        when(resp2.bodyToMono(TaskDTO[].class)).thenReturn(Mono.just(new TaskDTO[]{task(3L)}));
+
+        StepVerifier.create(service.getAllTasksReactive())
+                .assertNext(list -> assertThat(list).hasSize(3))
+                .verifyComplete();
+    }
+
+    @Test
+    void addTask_shouldPostToTargetNode_andReturnBigTask() {
+        NodeDTO target = new NodeDTO();
+        target.setId(1L);
+        target.setAddress("node1:8081");
+        when(registryService.getActiveAndManagedNodes()).thenReturn(List.of(target));
+
+        TaskDTO created = task(99L);
+        when(webClient.post()).thenReturn(postUriSpec);
+        when(postUriSpec.uri("http://node1:8081/api/v1/bn/task")).thenReturn(postBodySpec);
+        when(postBodySpec.bodyValue(any(TaskDTO.class))).thenReturn(postHeadersSpec);
+        when(postHeadersSpec.retrieve()).thenReturn(postResponseSpec);
+        when(postResponseSpec.bodyToMono(TaskDTO.class)).thenReturn(Mono.just(created));
+
+        BigTaskDTO req = new BigTaskDTO();
+        req.setNodeDTO(target);
+        req.setName("New Task");
+        req.setClientId(1L);
+
+        StepVerifier.create(service.addTaskReactive(req))
+                .assertNext(t -> {
+                    assertThat(t.getId()).isEqualTo(99L);
+                    assertThat(t.getNodeDTO().getAddress()).isEqualTo("node1:8081");
+                })
+                .verifyComplete();
     }
 
     @Test

@@ -1,25 +1,22 @@
 package com.bcm.cluster_manager.config.security;
 
-import com.bcm.shared.model.database.Group;
+import com.bcm.cluster_manager.service.SyncService;
 import com.bcm.shared.model.database.User;
 import com.bcm.shared.model.database.UserGroupRelation;
 import com.bcm.shared.repository.GroupMapper;
 import com.bcm.shared.repository.UserGroupRelationMapper;
 import com.bcm.shared.repository.UserMapper;
+import com.bcm.shared.service.NodeHttpClient;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -27,39 +24,61 @@ import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.time.Instant;
 
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "CM_ADDRESS=http://localhost:8080")
+@ActiveProfiles({"test", "cluster_manager"})
 @Testcontainers
-@Disabled("Skipping Spring context startup for now")
 class SecurityIntegrationTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16-alpine")
-                    .withDatabaseName("bcm_test")
-                    .withUsername("bcm")
-                    .withPassword("bcm");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+            .withDatabaseName("postgres")
+            .withUsername("appuser")
+            .withPassword("apppassword");
 
     @DynamicPropertySource
     static void registerProps(DynamicPropertyRegistry registry) {
-        registry.add("spring.r2dbc.url",
-                () -> "r2dbc:postgresql://" + postgres.getHost() + ":" + postgres.getFirstMappedPort() + "/" + postgres.getDatabaseName());
-        registry.add("spring.r2dbc.username", postgres::getUsername);
-        registry.add("spring.r2dbc.password", postgres::getPassword);
+        try (Connection conn = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+             Statement stmt = conn.createStatement()) {
+            for (String db : new String[]{"bcm_node0", "bcm"}) {
+                try {
+                    stmt.executeUpdate("CREATE DATABASE " + db + " OWNER " + postgres.getUsername());
+                } catch (Exception e) {
+                    if (!e.getMessage().contains("already exists")) throw new RuntimeException("Failed to create " + db, e);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Database creation failed", e);
+        }
 
-        registry.add("spring.flyway.url", postgres::getJdbcUrl);
-        registry.add("spring.flyway.user", postgres::getUsername);
-        registry.add("spring.flyway.password", postgres::getPassword);
-        registry.add("spring.flyway.enabled", () -> true);
+        String h = postgres.getHost();
+        int p = postgres.getFirstMappedPort();
+        String u = postgres.getUsername();
+        String pw = postgres.getPassword();
+
+        registry.add("spring.datasource.hikari.jdbc-url", () -> String.format("jdbc:postgresql://%s:%d/bcm_node0", h, p));
+        registry.add("spring.datasource.hikari.username", () -> u);
+        registry.add("spring.datasource.hikari.password", () -> pw);
+        registry.add("spring.cm-datasource.hikari.jdbc-url", () -> String.format("jdbc:postgresql://%s:%d/bcm", h, p));
+        registry.add("spring.cm-datasource.hikari.username", () -> u);
+        registry.add("spring.cm-datasource.hikari.password", () -> pw);
+        registry.add("spring.r2dbc.bn.url", () -> String.format("r2dbc:postgresql://%s:%d/bcm_node0", h, p));
+        registry.add("spring.r2dbc.bn.username", () -> u);
+        registry.add("spring.r2dbc.bn.password", () -> pw);
+        registry.add("spring.r2dbc.cm.url", () -> String.format("r2dbc:postgresql://%s:%d/bcm", h, p));
+        registry.add("spring.r2dbc.cm.username", () -> u);
+        registry.add("spring.r2dbc.cm.password", () -> pw);
     }
+    @MockitoBean
+    private NodeHttpClient nodeHttpClient;
+
+    @MockitoBean
+    private SyncService syncService;
 
     @Autowired
     WebTestClient webTestClient;
@@ -67,15 +86,12 @@ class SecurityIntegrationTest {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @Qualifier("userMapperBN")
     @Autowired
     UserMapper userRepository;
 
-    @Qualifier("groupMapperBN")
     @Autowired
     GroupMapper groupRepository;
 
-    @Qualifier("userGroupRelationMapperBN")
     @Autowired
     UserGroupRelationMapper userGroupRelationRepository;
 
@@ -85,7 +101,7 @@ class SecurityIntegrationTest {
                 Mono.defer(() -> {
                     User user = new User();
                     user.setName("testuser");
-                    user.setPasswordHash("secret");
+                    user.setPasswordHash(passwordEncoder.encode("secret"));
                     user.setEnabled(true);
                     user.setCreatedAt(Instant.now());
                     user.setUpdatedAt(Instant.now());

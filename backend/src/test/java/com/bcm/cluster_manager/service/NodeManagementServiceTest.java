@@ -148,4 +148,48 @@ class NodeManagementServiceTest {
         // Verify second registration succeeded
         verify(registry, times(2)).register(registerRequest);
     }
+
+    @Test
+    void shutdownAndRestart_shouldHandleGuardsAndFailures() {
+
+        NodeDTO cm   = new NodeDTO(10L, "cm",   "cm:8080",   NodeStatus.ACTIVE, NodeMode.CLUSTER_MANAGER, false, null);
+        NodeDTO node = new NodeDTO(11L, "node", "n1:8080",   NodeStatus.ACTIVE, NodeMode.NODE,            false, null);
+
+        when(registry.findById(10L)).thenReturn(Optional.of(cm));
+        when(registry.findById(11L)).thenReturn(Optional.of(node));
+
+        // shutdown should reject CM and not call client
+        StepVerifier.create(service.shutdownNode(10L))
+                .expectNext(false)
+                .verifyComplete();
+        verifyNoInteractions(nodeHttpClient);
+
+        // shutdown success should mark shutting down, mark inactive, and sync
+        when(nodeHttpClient.postNodeNoResponse("n1:8080", "/api/v1/shutdown")).thenReturn(Mono.just(true));
+        when(syncService.syncNodes()).thenReturn(Mono.empty());
+
+        StepVerifier.create(service.shutdownNode(11L))
+                .expectNext(true)
+                .verifyComplete();
+
+        verify(registry).markShuttingDown("n1:8080");
+        verify(registry).markInactive(node);
+        verify(syncService).syncNodes();
+
+        // restart failure should mark restarting + mark inactive, but no sync call in this method
+        when(nodeHttpClient.postNodeNoResponse("n1:8080", "/api/v1/restart")).thenReturn(Mono.just(false));
+
+        StepVerifier.create(service.restartNode(11L))
+                .expectNext(false)
+                .verifyComplete();
+
+        verify(registry).markRestarting("n1:8080");
+        verify(registry, times(2)).markInactive(node);
+
+        service.updateNodeManagedMode(node);
+        verify(registry).updateIsManaged(node);
+
+        when(registry.findByAddress("n1:8080")).thenReturn(Optional.of(node));
+        assertThat(service.getNodeByAddress("n1:8080")).contains(node);
+    }
 }

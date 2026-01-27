@@ -82,13 +82,6 @@ public class StartupSelfJoinService {
                 .timeout(Duration.ofSeconds(10))
                 .doOnSuccess(resp ->
                         log.info("Sent request for self-register"))
-                .retryWhen(
-                        Retry.fixedDelay(5, Duration.ofSeconds(5))
-                                .doBeforeRetry(r ->
-                                        log.warn("Retrying self-registration (attempt {})",
-                                                r.totalRetries() + 1)
-                                )
-                )
                 .doOnError(e ->
                         log.error("Error registering node", e))
                 .then();

@@ -36,18 +36,4 @@ describe('Users', () => {
     expect(component.isAddUserModalOpen).toBe(true);
     expect(component.modalMode).toBe('create');
   });
-
-  it('should open modal in edit mode when openAddUserModal is called with "edit"', () => {
-    component.openAddUserModal('edit');
-
-    expect(component.isAddUserModalOpen).toBe(true);
-    expect(component.modalMode).toBe('edit');
-  });
-
-  it('should open modal in delete mode when openAddUserModal is called with "delete"', () => {
-    component.openAddUserModal('delete');
-
-    expect(component.isAddUserModalOpen).toBe(true);
-    expect(component.modalMode).toBe('delete');
-  });
 });

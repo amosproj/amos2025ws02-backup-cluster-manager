@@ -169,7 +169,7 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     public Mono<Void> registerNode(RegisterRequest req) {
         JoinDTO dto = new JoinDTO();
-        dto.setCmURL("http://" + cmPublicAddress);
+        dto.setCmURL(cmPublicAddress);
         String url = "http://" + req.getAddress() + "/api/v1/bn/join";
 
         return webClient.post()

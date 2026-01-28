@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.util.NodeUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Flux;
@@ -51,7 +52,7 @@ public class HeartbeatService {
     }
 
     public Mono<Void> pingNode(NodeDTO node) {
-        String url = "http://" + node.getAddress() + "/api/v1/ping";
+        String url = NodeUtils.buildNodeUrl(node.getAddress(), "/api/v1/ping");
 
         return webClient.get()
                 .uri(url)

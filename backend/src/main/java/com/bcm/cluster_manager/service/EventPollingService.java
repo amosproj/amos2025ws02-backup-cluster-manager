@@ -3,6 +3,7 @@ package com.bcm.cluster_manager.service;
 import com.bcm.shared.model.api.CacheEventDTO;
 import com.bcm.shared.model.api.CacheInvalidationType;
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.util.NodeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +55,8 @@ public class EventPollingService {
     }
 
     private void fetchAndProcessEvents(String nodeAddress, Instant since) {
-        String url = "http://" + nodeAddress + "/api/v1/bn/events/cache-invalidations/since?since="
-                + since.toString();
+        String url = NodeUtils.buildNodeUrl(nodeAddress,
+                "/api/v1/bn/events/cache-invalidations/since?since=" + since.toString());
 
         webClient.get()
                 .uri(url)
@@ -97,7 +98,8 @@ public class EventPollingService {
                 .map(CacheEventDTO::getId)
                 .toList();
 
-        String url = "http://" + nodeAddress + "/api/v1/bn/events/cache-invalidations/acknowledge";
+        String url = NodeUtils.buildNodeUrl(nodeAddress,
+                "/api/v1/bn/events/cache-invalidations/acknowledge");
 
         webClient.post()
                 .uri(url)

@@ -1,6 +1,7 @@
 package com.bcm.shared.service;
 
 import com.bcm.shared.model.api.NodeMode;
+import com.bcm.shared.util.NodeUtils;
 import com.bcm.shared.model.api.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,7 +71,7 @@ public class StartupSelfJoinService {
         NodeMode nodeType = isClusterManagerActive() ? NodeMode.CLUSTER_MANAGER : NodeMode.NODE;
         RegisterRequest registerRequest = new RegisterRequest(nodePublicAddress, nodeType, true);
 
-        String url = "http://" + cmPublicAddress + "/api/v1/cm/register";
+        String url = NodeUtils.buildNodeUrl(cmPublicAddress, "/api/v1/cm/register");
 
         log.info("Initiating self-registration for {}...", nodeType);
 

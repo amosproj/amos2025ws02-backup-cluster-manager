@@ -6,6 +6,7 @@ import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.filter.Filter;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.util.NodeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class CMClientService implements PaginationProvider<BigClientDTO> {
     }
 
     private Flux<BigClientDTO> fetchClientsFromNode(NodeDTO node) {
-        String url = "http://" + node.getAddress() + "/api/v1/bn/clients";
+        String url = NodeUtils.buildNodeUrl(node.getAddress(), "/api/v1/bn/clients");
         return webClient.get()
                 .uri(url)
                 .retrieve()

@@ -68,6 +68,45 @@ class NodeManagementServiceTest {
     }
 
     @Test
+    void registerAndDelete_shouldSendSameClusterManagerUrl() {
+        String cmUrl = "http://cm.example:8080";
+        ReflectionTestUtils.setField(service, "cmPublicAddress", cmUrl);
+
+        Long nodeId = NodeIdGenerator.nextId();
+        NodeDTO node = new NodeDTO(nodeId, "TestNode", "node1:8081", NodeStatus.ACTIVE, NodeMode.NODE, false, null);
+        RegisterRequest registerRequest = new RegisterRequest("node1:8081", NodeMode.NODE, false);
+
+        // Capture all JoinDTOs sent to the node (join + leave)
+        List<JoinDTO> sentDtos = new ArrayList<>();
+
+        when(registry.findById(nodeId)).thenReturn(Optional.of(node));
+        doNothing().when(registry).removeNode(nodeId);
+        doNothing().when(registry).register(registerRequest);
+        when(syncService.syncNodes()).thenReturn(Mono.empty());
+
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.bodyValue(any(JoinDTO.class))).thenAnswer(invocation -> {
+            JoinDTO dto = invocation.getArgument(0);
+            sentDtos.add(dto);
+            return requestBodySpec;
+        });
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.toBodilessEntity()).thenReturn(Mono.just(ResponseEntity.ok().build()));
+
+        // Add node (join)
+        StepVerifier.create(service.registerNode(registerRequest)).verifyComplete();
+
+        // Delete node (leave)
+        StepVerifier.create(service.deleteNode(nodeId)).verifyComplete();
+
+        assertThat(sentDtos).hasSize(2);
+        assertThat(sentDtos.get(0).getCmURL())
+                .isEqualTo(sentDtos.get(1).getCmURL())
+                .isEqualTo(cmUrl);
+    }
+
+    @Test
     void deleteNodeAndReRegister_shouldAllowReRegistrationAfterNotification() {
         // 1. node is added to the cluster
         // 2. node is deleted from the cluster

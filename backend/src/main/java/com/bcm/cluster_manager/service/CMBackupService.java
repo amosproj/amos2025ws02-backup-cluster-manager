@@ -3,6 +3,7 @@ package com.bcm.cluster_manager.service;
 import com.bcm.cluster_manager.model.api.BigBackupDTO;
 import com.bcm.cluster_manager.service.pagination.shared.BigBackupComparators;
 import com.bcm.shared.model.api.*;
+import com.bcm.shared.util.NodeUtils;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.service.NodeHttpClient;
 import com.bcm.shared.pagination.filter.Filter;
@@ -98,7 +99,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
 
         return Flux.fromIterable(nodes)
                 .flatMap(node ->{
-                    String url = "http://" + node.getAddress() + BACKUPS_ENDPOINT;
+                    String url = NodeUtils.buildNodeUrl(node.getAddress(), BACKUPS_ENDPOINT);
 
                     return webClient.get()
                             .uri(url)
@@ -200,7 +201,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
             return Mono.empty();
         }
 
-        String url = "http://" + targetNode.getAddress() + "/api/v1/bn/backups/sync";
+        String url = NodeUtils.buildNodeUrl(targetNode.getAddress(), "/api/v1/bn/backups/sync");
 
         return webClient.post()
                 .uri(url)
@@ -249,7 +250,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
             return Mono.error(new IllegalArgumentException("Node not active or not found: " + nodeAddress));
         }
 
-        String url = "http://" + nodeAddress + "/api/v1/bn/backups/" + id;
+        String url = NodeUtils.buildNodeUrl(nodeAddress, "/api/v1/bn/backups/" + id);
 
         return webClient.delete()
                 .uri(url)

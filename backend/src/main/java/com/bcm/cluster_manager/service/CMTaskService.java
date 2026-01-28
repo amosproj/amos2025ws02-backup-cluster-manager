@@ -3,6 +3,7 @@ package com.bcm.cluster_manager.service;
 import com.bcm.cluster_manager.model.api.BigTaskDTO;
 import com.bcm.cluster_manager.service.pagination.shared.BigTaskComparators;
 import com.bcm.shared.model.api.NodeDTO;
+import com.bcm.shared.util.NodeUtils;
 import com.bcm.shared.model.api.TaskDTO;
 import com.bcm.shared.model.database.Task;
 import com.bcm.shared.model.database.TaskFrequency;
@@ -97,7 +98,7 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
     }
 
     private Flux<BigTaskDTO> fetchTasksFromNode(NodeDTO node) {
-        String url = "http://" + node.getAddress() + TASKS_ENDPOINT;
+        String url = NodeUtils.buildNodeUrl(node.getAddress(), TASKS_ENDPOINT);
 
         return webClient.get()
                 .uri(url)
@@ -205,7 +206,7 @@ public class CMTaskService implements PaginationProvider<BigTaskDTO> {
         }
 
         NodeDTO node = targetNode.get();
-        String url = "http://" + node.getAddress() + TASK_ENDPOINT;
+        String url = NodeUtils.buildNodeUrl(node.getAddress(), TASK_ENDPOINT);
 
         return webClient.post()
                 .uri(url)

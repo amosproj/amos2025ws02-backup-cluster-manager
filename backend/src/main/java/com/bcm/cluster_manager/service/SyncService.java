@@ -1,6 +1,7 @@
 package com.bcm.cluster_manager.service;
 
 import com.bcm.shared.model.api.SyncDTO;
+import com.bcm.shared.util.NodeUtils;
 import com.bcm.shared.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class SyncService {
     }
 
     private Mono<Void> pushToNode(String address, SyncDTO dto) {
-        String url = "http://" + address + "/api/v1/sync";
+        String url = NodeUtils.buildNodeUrl(address, "/api/v1/sync");
 
         return webClient.post()
                 .uri(url)

@@ -7,7 +7,7 @@
 BASE_URL=${BASE_URL:-"http://cluster-manager:8080"}
 RESULTS_FILE=${RESULTS_FILE:-"stress-test-results.json"}
 
-RESULTS_DIR="/stress-test/create-test/results"
+RESULTS_DIR="/stress-test/results"
 mkdir -p "$RESULTS_DIR"
 
 # Initialize results array

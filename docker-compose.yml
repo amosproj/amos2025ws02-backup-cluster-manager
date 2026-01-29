@@ -34,11 +34,11 @@ services:
       - "4200:8080"
     build: ./frontend
     
-  test-runner:
-    build: ./stress-test
-    image: stress-test:latest
-    container_name: test-runner
-    profiles: ["test-runner"]
+  test-backup-volume-read:
+    build: stress-test/test-backup-volume-read
+    image: stress-test/test-backup-volume-read:latest
+    container_name: test-backup-volume-read
+    profiles: ["test-backup-volume-read"]
     networks:
       - app-network
     environment:
@@ -47,7 +47,7 @@ services:
       - BACKUP_INCREMENT=50
       - BASE_URL=http://cluster-manager:8080
     volumes:
-      - ./stress-test/results:/stress-test/results
+      - ./stress-test/test-backup-volume-read/results:/stress-test/results
 
   cluster-manager:
     image: backend

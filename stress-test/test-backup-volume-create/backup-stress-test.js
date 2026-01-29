@@ -6,19 +6,21 @@ import { Rate, Trend } from 'k6/metrics';
 const errorRate = new Rate('errors');
 const createBackupDuration = new Trend('backup_create_duration');
 
-const nodes = ['{"id":"132390923902390","name":"cluster-manager:8080","address":"cluster-manager:8080","status":"active","mode":"cluster_manager","isManaged":true}',
+const nodes = [
+    '{"id":"132390923902390","name":"cluster-manager:8080","address":"cluster-manager:8080","status":"active","mode":"cluster_manager","isManaged":true}',
     '{"id":"132390923902390","name":"node1:8081","address":"node1:8081","status":"active","mode":"node","isManaged":true}',
     '{"id":"132390923902390","name":"node2:8082","address":"node2:8082","status":"active","mode":"node","isManaged":true}',
     '{"id":"132390923902390","name":"node3:8083","address":"node3:8083","status":"active","mode":"node","isManaged":true}',
     '{"id":"132390923902390","name":"node4:8084","address":"node4:8084","status":"active","mode":"node","isManaged":true}',
     '{"id":"132390923902390","name":"node5:8085","address":"node5:8085","status":"active","mode":"node","isManaged":true}',
-    '{"id":"132390923902390","name":"node6:8086","address":"node6:8086","status":"active","mode":"node","isManaged":true}']
+    '{"id":"132390923902390","name":"node6:8086","address":"node6:8086","status":"active","mode":"node","isManaged":true}'
+];
 
 // Test configuration with 5 stages
 export const options = {
     stages: [
         { duration: '5s', target: 1 },        // Stage 1: Warm-up with 1 VU
-        { duration: '20s', target: 100 },   // Stage 2: Ramp up to 100 concurrent users - can't go higher than 100, postgres concurrency limit
+        { duration: '20s', target: 300 },   // Stage 2: Ramp up to 100 concurrent users - can't go higher than 100, postgres concurrency limit
         { duration: '5s', target: 0 },        // Cool-down
     ],
     thresholds: {
@@ -51,12 +53,12 @@ export default function () {
         }
     );
 
-    const success = check(listResponse, {
-        'list backups status is 200': (r) => r.status === 200,
-        'list backups response time < 5000ms': (r) => r.timings.duration < 5000,
+    const success = check(res, {
+        'backup status is 200': (r) => r.status === 200,
+        'backup response time < 5000ms': (r) => r.timings.duration < 5000,
     });
 
-    errorRate.add(!listSuccess);
+    errorRate.add(!success);
     createBackupDuration.add(res.timings.duration);
 
     sleep(0.1); // Small pause between requests

@@ -11,6 +11,7 @@ import com.bcm.shared.pagination.sort.SortProvider;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -197,7 +198,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
 
         if (targetNode == null) {
             logger.error("Target node for new Backup not found. targetAddress={}", targetAddress);
-            return Mono.empty();
+            return Mono.error(new IllegalArgumentException("Target node not found: " + targetAddress));
         }
 
         String url = "http://" + targetNode.getAddress() + "/api/v1/bn/backups/sync";

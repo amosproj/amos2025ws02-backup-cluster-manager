@@ -49,6 +49,18 @@ services:
     volumes:
       - ./stress-test/test-backup-volume-read/results:/stress-test/results
 
+  test-backup-volume-create:
+    build: stress-test/test-backup-volume-create
+    image: stress-test/test-backup-volume-create:latest
+    container_name: test-backup-volume-create
+    profiles: [ "test-backup-volume-create" ]
+    networks:
+      - app-network
+    environment:
+      - BASE_URL=http://cluster-manager:8080
+    volumes:
+      - ./stress-test/test-backup-volume-create/results:/stress-test/results
+
   cluster-manager:
     image: backend
     container_name: cluster-manager
@@ -76,7 +88,7 @@ services:
     build: ./backend
 
   node1:
-    profiles: ['test']
+    profiles: ['test', "test-backup-volume-create"]
     image: backend
     container_name: node1
     restart: on-failure
@@ -99,7 +111,7 @@ services:
     build: ./backend
 
   node2:
-    profiles: ['test']
+    profiles: ['test', "test-backup-volume-create"]
     image: backend
     container_name: node2
     restart: on-failure
@@ -122,7 +134,7 @@ services:
     build: ./backend
 
   node3:
-    profiles: [ 'test' ]
+    profiles: [ 'test', "test-backup-volume-create" ]
     image: backend
     container_name: node3
     restart: on-failure
@@ -144,7 +156,7 @@ services:
     build: ./backend
 
   node4:
-    profiles: [ 'test' ]
+    profiles: [ 'test', "test-backup-volume-create" ]
     image: backend
     container_name: node4
     restart: on-failure
@@ -166,7 +178,7 @@ services:
     build: ./backend
 
   node5:
-    profiles: [ 'test' ]
+    profiles: [ 'test', "test-backup-volume-create" ]
     image: backend
     container_name: node5
     restart: on-failure
@@ -188,7 +200,7 @@ services:
     build: ./backend
 
   node6:
-    profiles: [ 'test' ]
+    profiles: [ 'test', "test-backup-volume-create" ]
     image: backend
     container_name: node6
     environment:

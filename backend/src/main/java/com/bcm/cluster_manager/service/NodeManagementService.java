@@ -11,10 +11,12 @@ import com.bcm.shared.model.api.NodeStatus;
 import com.bcm.shared.pagination.PaginationProvider;
 import com.bcm.shared.pagination.sort.SortProvider;
 import com.bcm.shared.service.NodeHttpClient;
+import com.bcm.shared.util.NodeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -151,9 +153,8 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
         NodeDTO node = nodeOpt.get();
         String nodeAddress = node.getAddress();
-        JoinDTO dto = new JoinDTO();
-        dto.setCmURL(cmPublicAddress);
-        String url = "http://" + nodeAddress + "/api/v1/bn/leave";
+        JoinDTO dto = createCMJoinDTO();
+        String url = NodeUtils.buildNodeUrl(nodeAddress, "/api/v1/bn/leave");
 
         return webClient.post()
                 .uri(url)
@@ -168,9 +169,8 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
     }
 
     public Mono<Void> registerNode(RegisterRequest req) {
-        JoinDTO dto = new JoinDTO();
-        dto.setCmURL(cmPublicAddress);
-        String url = "http://" + req.getAddress() + "/api/v1/bn/join";
+        JoinDTO dto = createCMJoinDTO();
+        String url = NodeUtils.buildNodeUrl(req.getAddress(), "/api/v1/bn/join");
 
         return webClient.post()
                 .uri(url)
@@ -246,5 +246,12 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
                         registry.markInactive(node);
                     }
                 });
+    }
+
+    @NonNull
+    private JoinDTO createCMJoinDTO() {
+        JoinDTO dto = new JoinDTO();
+        dto.setCmURL(cmPublicAddress);
+        return dto;
     }
 }

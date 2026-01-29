@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import com.bcm.shared.util.NodeUtils;
+
 import java.time.Duration;
 import java.util.Objects;
 
@@ -21,20 +23,9 @@ public class NodeHttpClient {
         this.webClient = webClientBuilder.build();
     }
 
-    public String buildNodeUrl(String nodeAddress, String endpoint) {
-        Objects.requireNonNull(nodeAddress, "Node address cannot be null");
-        Objects.requireNonNull(endpoint, "Endpoint cannot be null");
-
-        if (!endpoint.startsWith("/")) {
-            endpoint = "/" + endpoint;
-        }
-
-        return "http://" + nodeAddress + endpoint;
-    }
-
     public <T> Mono<T> callNode(String nodeAddress, String endpoint, Class<T> responseType) {
         Objects.requireNonNull(responseType, "Response type cannot be null");
-        String url = buildNodeUrl(nodeAddress, endpoint);
+        String url = NodeUtils.buildNodeUrl(nodeAddress, endpoint);
 
         return webClient.get()
                 .uri(url)
@@ -50,7 +41,7 @@ public class NodeHttpClient {
     }
 
     public <T> Mono<T> postNode(String nodeAddress, String endpoint, Object body, Class<T> responseType) {
-        String url = buildNodeUrl(nodeAddress, endpoint);
+        String url = NodeUtils.buildNodeUrl(nodeAddress, endpoint);
 
         return webClient.post()
                 .uri(url)
@@ -67,7 +58,7 @@ public class NodeHttpClient {
     }
 
     public Mono<Boolean> postNodeNoResponse(String nodeAddress, String endpoint) {
-        String url = buildNodeUrl(nodeAddress, endpoint);
+        String url = NodeUtils.buildNodeUrl(nodeAddress, endpoint);
 
         return webClient.post()
                 .uri(url)

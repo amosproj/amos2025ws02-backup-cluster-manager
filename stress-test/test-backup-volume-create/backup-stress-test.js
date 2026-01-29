@@ -16,12 +16,14 @@ const nodes = [
     {"id":"132390923902390","name":"node6-self-register:8086","address":"node6-self-register:8086","status":"active","mode":"node","isManaged":true}
 ];
 
-// Test configuration with 5 stages
 export const options = {
     stages: [
-        { duration: '5s', target: 1 },        // Stage 1: Warm-up with 1 VU
-        { duration: '20s', target: 100 },   // Stage 2: Ramp up to 100 concurrent users - can't go higher than 100, postgres concurrency limit
-        { duration: '5s', target: 0 },        // Cool-down
+        { duration: '5s', target: 1 },
+        { duration: '10s', target: 20 },
+        { duration: '10s', target: 20 },
+        { duration: '20s', target: 100 },
+        { duration: '10s', target: 150 },
+        { duration: '5s', target: 0 },
     ],
     thresholds: {
         http_req_duration: ['p(95)<5000'], // 95% of requests should be below 5s
@@ -54,7 +56,7 @@ export default function () {
     );
 
     const success = check(res, {
-        'backup status is 200': (r) => r.status === 200,
+        'backup status is 201': (r) => r.status === 201,
         'backup response time < 5000ms': (r) => r.timings.duration < 5000,
     });
 

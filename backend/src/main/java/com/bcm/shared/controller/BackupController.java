@@ -58,7 +58,7 @@ public class BackupController {
         return backupNodeService.store(dto.getClientId(), dto.getTaskId(), dto.getSizeBytes())
                 .map(ResponseEntity::ok)
                 .onErrorResume(e ->{
-                        logger.error("Error in sync for client {}: {}", dto.getClientId(), e.getMessage(), e);
+                        logger.error("Error in sync for client {}: {}", dto.getClientId(), e.getMessage());
                         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
                         }
                 );

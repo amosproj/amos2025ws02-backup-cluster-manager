@@ -189,8 +189,6 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
 
         Collection<NodeDTO> nodes = registryService.getActiveAndManagedNodes();
 
-        nodes.forEach(n -> logger.info("Active node: id={}, address={}", n.getId(), n.getAddress()));
-
         NodeDTO targetNode = nodes.stream()
                 .filter(n -> n.getAddress().equals(targetAddress))
                 .findFirst()
@@ -222,7 +220,7 @@ public class CMBackupService implements PaginationProvider<BigBackupDTO> {
                     big.setNodeDTO(targetNode);
                     return big;
                 })
-                .doOnError(e -> logger.error("Fehler beim Hinzufügen von Backup an Node {}", targetNode.getAddress(), e));
+                .doOnError(e -> logger.error("Fehler beim Hinzufügen von Backup an Node {}", targetNode.getAddress()));
     }
 
     private static BigBackupDTO getBigBackupDTO(ResponseEntity<BackupDTO> response) {

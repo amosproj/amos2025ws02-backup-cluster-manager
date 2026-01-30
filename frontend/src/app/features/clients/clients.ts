@@ -12,6 +12,9 @@ import { SortOrder } from '../../shared/types/SortTypes';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AsyncPipe } from '@angular/common';
 
+/**
+ * Clients feature: paginated client list with auto-refresh.
+ */
 @Component({
   selector: 'app-clients',
   imports: [AsyncPipe, DataTable, ReactiveFormsModule],

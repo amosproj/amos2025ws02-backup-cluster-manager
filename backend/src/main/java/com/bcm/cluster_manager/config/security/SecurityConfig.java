@@ -24,11 +24,15 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Security configuration for the cluster manager profile: CORS, security filter chain, and authentication.
+ */
 @Configuration
 @EnableWebFluxSecurity
 @Profile("cluster_manager")
 public class SecurityConfig {
 
+    /** Enables method-level security when application.security.enabled is true. */
     @Configuration
     @EnableReactiveMethodSecurity
     @ConditionalOnProperty(name = "application.security.enabled", havingValue = "true", matchIfMissing = false)
@@ -38,11 +42,21 @@ public class SecurityConfig {
     @Value("${application.cors.allowed-origin:http://localhost:4200}")
     private String allowedOrigin;
 
+    /**
+     * Provides the security context repository (web session–backed).
+     *
+     * @return the server security context repository
+     */
     @Bean
     public ServerSecurityContextRepository securityContextRepository() {
         return new WebSessionServerSecurityContextRepository();
     }
 
+    /**
+     * Configures CORS to allow the configured frontend origin and common HTTP methods.
+     *
+     * @return the CORS configuration source
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -57,6 +71,13 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Filter chain when security is disabled: CORS only, all paths permitted.
+     *
+     * @param http                    server HTTP security
+     * @param corsConfigurationSource CORS configuration
+     * @return the security web filter chain
+     */
     @Bean
     @ConditionalOnProperty(name = "application.security.enabled", havingValue = "false", matchIfMissing = true)
     public SecurityWebFilterChain noSecurityFilterChain(ServerHttpSecurity http, CorsConfigurationSource corsConfigurationSource) {
@@ -67,6 +88,14 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Filter chain when security is enabled: auth required except for login, logout, actuator, and BN endpoints.
+     *
+     * @param http                       server HTTP security
+     * @param securityContextRepository  security context repository
+     * @param corsConfigurationSource    CORS configuration
+     * @return the security web filter chain
+     */
     @Bean
     @ConditionalOnProperty(name = "application.security.enabled", havingValue = "true", matchIfMissing = false)
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http, ServerSecurityContextRepository securityContextRepository, CorsConfigurationSource corsConfigurationSource) {
@@ -96,6 +125,13 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Reactive authentication manager using the user details service and password encoder.
+     *
+     * @param userDetailsService user details service
+     * @param passwordEncoder    password encoder
+     * @return the reactive authentication manager
+     */
     @Bean
     public ReactiveAuthenticationManager authenticationManager(
             ReactiveUserDetailsService userDetailsService,

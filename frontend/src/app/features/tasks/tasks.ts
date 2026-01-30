@@ -12,6 +12,9 @@ import { AuthService } from '../../core/services/auth.service';
 import UserPermissionsEnum from '../../shared/types/Permissions';
 import { UsersModal } from '../../shared/components/users-modal/users-modal';
 
+/**
+ * Tasks feature: paginated task list, add task via modal.
+ */
 @Component({
   selector: 'app-tasks',
   imports: [

@@ -35,6 +35,9 @@ type User = {
   updatedAt?: string;
 };
 
+/**
+ * Modal for user create/edit/delete and for backup/task creation (mode-driven).
+ */
 @Component({
   selector: 'app-users-modal',
   standalone: true,
@@ -42,6 +45,7 @@ type User = {
   templateUrl: './users-modal.html',
 })
 export class UsersModal implements OnChanges, OnInit {
+  /** Whether the modal is visible. */
   @Input() open: boolean = false;
   @Input() mode: 'create' | 'edit' | 'delete' | 'node' | 'backups' | 'tasks' = 'create';
   @Input() user: any | null = null;

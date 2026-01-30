@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * User roles with rank and associated permissions (for authorization).
+ */
 public enum Role {
     SUPERUSER(100, Set.of(
             PERMISSION_READ,
@@ -50,10 +53,12 @@ public enum Role {
         this.permissions = permissions;
     }
 
+    /** Returns the role rank (higher = more privileged). */
     public int getRank() {
         return rank;
     }
 
+    /** Returns the permissions granted by this role. */
     public Set<Permission> getPermissions() {
         return permissions;
     }

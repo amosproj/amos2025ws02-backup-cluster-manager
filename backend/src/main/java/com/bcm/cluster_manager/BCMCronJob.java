@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+/**
+ * Scheduled job that triggers heartbeat checks for all registered nodes every minute.
+ */
 @Service
 public class BCMCronJob {
 
@@ -16,6 +19,9 @@ public class BCMCronJob {
     private HeartbeatService heartbeatService;
 
 
+    /**
+     * Runs every minute; sends heartbeats to all nodes and updates their status.
+     */
     @Scheduled(cron = "0 * * * * *") // every minute at second 0
     public void sendHeartBeatsEveryMinute() {
         System.out.println("CRON triggered every minute.");

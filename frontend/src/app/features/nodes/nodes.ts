@@ -14,6 +14,7 @@ import { UsersModal } from '../../shared/components/users-modal/users-modal';
 import {Subscription} from 'rxjs/internal/Subscription';
 import {AutoRefreshService} from '../../services/dynamic-page';
 
+/** Display model for a node row. */
 export interface NodeItem {
   id: string;
   name: string;
@@ -23,6 +24,9 @@ export interface NodeItem {
   createdAt: string;
 }
 
+/**
+ * Nodes feature: paginated node list, add/update/delete, shutdown/restart, managed toggle.
+ */
 @Component({
   selector: 'app-nodes',
   imports: [

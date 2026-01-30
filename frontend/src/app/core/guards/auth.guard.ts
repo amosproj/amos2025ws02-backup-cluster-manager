@@ -3,6 +3,10 @@ import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { map, take } from 'rxjs';
 
+/**
+ * Route guard: allows access only if the user is authenticated (cached + backend validation).
+ * Redirects to login with returnUrl when not authenticated.
+ */
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);

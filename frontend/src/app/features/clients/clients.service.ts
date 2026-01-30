@@ -5,6 +5,7 @@ import { PaginatedResponse } from '../../shared/types/PaginationTypes';
 import { SortOrder } from '../../shared/types/SortTypes';
 
 
+/** Client DTO with node and enabled flag. */
 export interface ClientDTO {
    nodeDTO: NodeDTO;
    id: number;
@@ -14,6 +15,7 @@ export interface ClientDTO {
 
 }
 
+/** Node DTO (id, name, address, status, mode, managed). */
 export interface NodeDTO {
   id: string ;
   name : string;
@@ -24,12 +26,26 @@ export interface NodeDTO {
   isManaged: boolean;
 }
 
+/**
+ * Service for clients API: paginated list and full list.
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class ClientsService {
   constructor(private apiService: ApiService) {
   }
+
+  /**
+   * Fetches a page of clients with filters, search, sort.
+   * @param page - Page number
+   * @param itemsPerPage - Page size
+   * @param filters - Filter string
+   * @param search - Search string
+   * @param sortBy - Sort field
+   * @param sortOrder - Sort direction
+   * @returns Observable of paginated response
+   */
   getClients(page: number = 1, itemsPerPage: number = 15,filters:string="", search:string="", sortBy:string="", sortOrder:SortOrder=SortOrder.ASC): Observable<PaginatedResponse> {
     const params = {
       page: page.toString(),
@@ -41,6 +57,8 @@ export class ClientsService {
     }
     return this.apiService.get<PaginatedResponse>('clients', {params});
   }
+
+  /** Fetches all clients (no pagination). */
   getClientList(): Observable<any[]> {
     return this.apiService.get<any[]>('clientsList');
   }

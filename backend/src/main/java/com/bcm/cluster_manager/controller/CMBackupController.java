@@ -12,6 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+/**
+ * REST controller for cluster manager backups: list, create, delete backups across nodes.
+ */
 @RestController()
 @RequestMapping("/api/v1/cm")
 public class CMBackupController {
@@ -21,6 +24,13 @@ public class CMBackupController {
     private CMBackupService CMBackupService;
 
 
+    /**
+     * Deletes a backup on the given node by id.
+     *
+     * @param id           backup id
+     * @param nodeAddress  node address where the backup resides
+     * @return 204 on success, 500 on error
+     */
     @PreAuthorize(Permission.Require.BACKUP_DELETE)
     @DeleteMapping("/backups/{id}")
     public Mono<ResponseEntity<Void>> deleteBackup(@PathVariable Long id, @RequestParam("nodeAddress") String nodeAddress) {
@@ -32,12 +42,24 @@ public class CMBackupController {
                 });
     }
 
+    /**
+     * Returns a paginated list of backups across all nodes.
+     *
+     * @param pagination pagination and filter parameters
+     * @return paginated response of backup DTOs
+     */
     @PreAuthorize(Permission.Require.BACKUP_READ)
     @GetMapping("/backups")
     public Mono<PaginationResponse<BigBackupDTO>> getBackups(PaginationRequest pagination) {
         return CMBackupService.getPaginatedItems(pagination);
     }
 
+    /**
+     * Creates a new backup on the target node.
+     *
+     * @param request backup DTO with node and backup details
+     * @return 201 with created backup, 500 on error
+     */
     @PreAuthorize(Permission.Require.BACKUP_CREATE)
     @PostMapping("/backups")
     public Mono<ResponseEntity<BigBackupDTO>> createBackup(@RequestBody BigBackupDTO request) {

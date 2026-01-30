@@ -8,6 +8,9 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * Spring Security user details implementation holding user id, username, password, roles, and authorities.
+ */
 public class CustomUserDetails implements UserDetails {
     private final Long id;
     private final String username;
@@ -38,7 +41,9 @@ public class CustomUserDetails implements UserDetails {
         this.roles = roles;
     }
 
+    /** Returns the user id. */
     public Long getId() { return id; }
+    /** Returns the user's roles. */
     public Set<Role> getRoles() { return roles; }
 
     @Override public Collection<? extends GrantedAuthority> getAuthorities() { return authorities; }

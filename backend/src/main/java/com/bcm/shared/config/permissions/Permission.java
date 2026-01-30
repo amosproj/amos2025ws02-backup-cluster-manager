@@ -1,5 +1,8 @@
 package com.bcm.shared.config.permissions;
 
+/**
+ * Permission identifiers used for method security (e.g. PreAuthorize).
+ */
 public enum Permission {
 
     // Permissions
@@ -41,6 +44,7 @@ public enum Permission {
         this.permission = permission;
     }
 
+    /** Returns the permission string (e.g. "user:read"). */
     public String getPermission() {
         return permission;
     }

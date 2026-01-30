@@ -12,6 +12,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * REST controller for backup node tasks: list and create tasks.
+ */
 @RestController()
 @RequestMapping("/api/v1/bn")
 public class TaskController {
@@ -19,11 +22,23 @@ public class TaskController {
     @Autowired
     TaskService taskService;
 
+    /**
+     * Returns all tasks as DTOs.
+     *
+     * @param pagination pagination parameters (may be unused)
+     * @return list of task DTOs
+     */
     @GetMapping("/tasks")
     public Mono<List<TaskDTO>> getTasks(PaginationRequest pagination) {
         return taskService.getAllTasks();
     }
 
+    /**
+     * Creates a new task.
+     *
+     * @param taskDTO task data; clientId must not be null
+     * @return the created task DTO
+     */
     @PostMapping("/task")
     public Mono<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) {
         Task task = toEntity(taskDTO);

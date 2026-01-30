@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST controller for inspecting cluster manager caches (size, entries, stats).
+ */
 @RestController
 @RequestMapping("/api/v1/cm/cache")
 public class CacheInspectController {
@@ -20,6 +23,11 @@ public class CacheInspectController {
     @Autowired
     private CacheManager cacheManager;
 
+    /**
+     * Returns inspection data for all Caffeine caches (size, entries, hit/miss stats).
+     *
+     * @return map of cache name to inspection data
+     */
     @GetMapping("/inspect")
     public Map<String, Object> inspectCaches() {
         Map<String, Object> result = new HashMap<>();
@@ -52,6 +60,12 @@ public class CacheInspectController {
         return result;
     }
 
+    /**
+     * Returns inspection data for a single cache by name.
+     *
+     * @param cacheName cache name
+     * @return map with name, size, entries, stats, or error if not found
+     */
     @GetMapping("/{cacheName}")
     public Map<String, Object> inspectCache(@PathVariable String cacheName) {
         Cache cache = cacheManager.getCache(cacheName);

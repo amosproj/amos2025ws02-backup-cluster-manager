@@ -7,6 +7,9 @@ import UserPermissionsEnum from '../../shared/types/Permissions';
 import {map} from 'rxjs';
 import {formatDateFields} from '../../shared/utils/date_utils';
 
+/**
+ * Users feature: paginated user list, add/edit/delete via modal.
+ */
 @Component({
   selector: 'app-users',
   imports: [DataTable, UsersModal],

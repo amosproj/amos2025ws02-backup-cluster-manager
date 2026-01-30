@@ -4,16 +4,26 @@ import {Injectable} from '@angular/core';
 import {environment} from '../../../environments/environment';
 import JSONBig from 'json-bigint';
 
+/**
+ * Central HTTP API service: GET/POST/PUT/DELETE with loading state and JSON-BigInt parsing.
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
   private baseUrl = environment.apiEndpoint;
   private loadingSubject = new BehaviorSubject(false);
+  /** Observable of global loading state. */
   public loading$ = this.loadingSubject.asObservable();
 
   constructor(private http: HttpClient){}
 
+  /**
+   * Performs a GET request; response is parsed with JSON-BigInt for large numbers.
+   * @param endpoint - Path relative to API base (e.g. 'users/userlist')
+   * @param options - Optional params and headers
+   * @returns Observable of parsed response body
+   */
   get<T>(endpoint: string, options?: { params?: any; headers?: any }): Observable<T> {
     this.loadingSubject.next(true);
 
@@ -31,6 +41,13 @@ export class ApiService {
       );
   }
 
+  /**
+   * Performs a POST request.
+   * @param endpoint - Path relative to API base
+   * @param data - Request body
+   * @param options - Optional params and headers
+   * @returns Observable of response body
+   */
   post<T>(endpoint: string, data: any, options?: { params?: any; headers?: any }): Observable<T> {
     this.loadingSubject.next(true);
     return this.http.post<T>(`${this.baseUrl}/${endpoint}`, data, options).pipe(
@@ -47,6 +64,12 @@ export class ApiService {
     );
   }
 
+  /**
+   * Performs a DELETE request.
+   * @param endpoint - Path relative to API base
+   * @param options - Optional params and headers
+   * @returns Observable of response body
+   */
   delete<T>(endpoint: string, options?: { params?: any; headers?: any }): Observable<T> {
     this.loadingSubject.next(true);
     return this.http.delete<T>(`${this.baseUrl}/${endpoint}`, options).pipe(

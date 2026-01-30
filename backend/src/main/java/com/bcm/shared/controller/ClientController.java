@@ -11,6 +11,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * REST controller for backup node clients: list all clients.
+ */
 @RestController()
 @RequestMapping("/api/v1/bn")
 public class ClientController {
@@ -18,6 +21,11 @@ public class ClientController {
     @Autowired
     ClientService clientService;
 
+    /**
+     * Returns all clients as DTOs.
+     *
+     * @return list of client DTOs
+     */
     @GetMapping("/clients")
     public Mono<List<ClientDTO>> getClients() {
         return clientService.getAllClients()

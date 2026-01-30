@@ -12,6 +12,9 @@ interface PaginatedResponse {
   totalPages: number;
 }
 
+/**
+ * Reusable data table: pagination, sort, filter, search, selection, add/edit/delete actions.
+ */
 @Component({
   selector: 'app-data-table',
   imports: [
@@ -68,7 +71,7 @@ export class DataTable implements OnInit, OnChanges, AfterViewInit {
   @Input() showToggleButton = false;
   @Output() toggleChanged = new EventEmitter<any>();
 
-
+  /** Toggles managed state of an item and emits toggleChanged. */
   toggleManaged(item: any) {
     item.isManaged = !item?.isManaged;
     this.toggleChanged.emit(item);

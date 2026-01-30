@@ -3,6 +3,9 @@ import { Router } from '@angular/router';
 import { UsersModal } from '../../shared/components/users-modal/users-modal';
 
 
+/**
+ * Dashboard: overview stats (users, nodes, backups, etc.) and quick links.
+ */
 @Component({
   selector: 'app-dashboard',
   imports: [UsersModal],

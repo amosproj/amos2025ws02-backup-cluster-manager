@@ -6,11 +6,15 @@ import {SortOrder} from '../../shared/types/SortTypes';
 import {BackupDTO} from '../backups/backups.service';
 import {NodeDTO} from '../clients/clients.service';
 
+/** Response from node control (shutdown/restart). */
 export interface NodeControlResponse {
   success: boolean;
   message: string;
 }
 
+/**
+ * Service for nodes API: list, add, update, delete, shutdown, restart.
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -18,6 +22,16 @@ export class NodesService {
   constructor(private apiService: ApiService) {
   }
 
+  /**
+   * Fetches a page of nodes with filters, search, sort.
+   * @param page - Page number
+   * @param itemsPerPage - Page size
+   * @param filters - Filter string
+   * @param search - Search string
+   * @param sortBy - Sort field
+   * @param sortOrder - Sort direction
+   * @returns Observable of paginated response
+   */
   getNodes(page: number = 1, itemsPerPage: number = 15, filters: string = "", search: string = "", sortBy: string = "", sortOrder: SortOrder = SortOrder.ASC): Observable<PaginatedResponse> {
     const params = {
       page: page.toString(),
@@ -30,6 +44,7 @@ export class NodesService {
     return this.apiService.get<PaginatedResponse>('nodes', {params});
   }
 
+  /** Updates a node (e.g. managed mode). */
   updateNode(node: NodeDTO): Observable<any> {
     return this.apiService.put<any>('node', node);
   }
@@ -38,6 +53,7 @@ export class NodesService {
     return this.apiService.delete<any>(`node/${nodeId}`);
   }
 
+  /** Registers a new node by address. */
   addNode(address: string): Observable<any> {
     const payload = {address: address, mode: 'NODE'};
     return this.apiService.post<any>('register', payload);
@@ -47,6 +63,7 @@ export class NodesService {
     return this.apiService.post<NodeControlResponse>(`nodes/${nodeId}/shutdown`, {});
   }
 
+  /** Sends restart command to the given node. */
   restartNode(nodeId: string): Observable<NodeControlResponse> {
     return this.apiService.post<NodeControlResponse>(`nodes/${nodeId}/restart`, {});
   }

@@ -5,6 +5,9 @@ import {Observable, of, catchError, map} from 'rxjs';
 import {environment} from '../../../environments/environment';
 import {Router} from '@angular/router';
 import UserPermissionsEnum from '../../shared/types/Permissions';
+/**
+ * Manages authentication state: login, logout, session validation, permissions, and rank.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -27,6 +30,7 @@ export class AuthService {
     return this.permissionsSignal();
   }
 
+  /** Returns whether the current user has the given permission. */
   hasPermission(permission:UserPermissionsEnum): boolean {
     return this.permissionsSignal().includes(permission.toString());
   }
@@ -36,7 +40,10 @@ export class AuthService {
     return this.isAuthenticatedSignal();
   }
 
-  //method to check authentication status
+  /**
+   * Validates the session with the backend and updates auth state (permissions, rank, role, username).
+   * @returns Observable that emits true if session is valid, false otherwise
+   */
   checkAuthStatus(): Observable<boolean> {
     // TODO: Implement real API call to check session validity
     return this.http.get(`${this.baseUrl}/validate`, {observe: 'response'}).pipe(
@@ -101,7 +108,10 @@ export class AuthService {
     );
   }
 
-  // Logout method - Invalidate session on backend
+  /**
+   * Logs out: invalidates session on backend, clears auth state, and navigates to login.
+   * @returns Observable that emits true when logout request completes
+   */
   logout(): Observable<boolean> {
     console.log('Logging out...');
 

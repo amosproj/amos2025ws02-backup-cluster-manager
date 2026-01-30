@@ -6,6 +6,12 @@ import UserPermissionsEnum from '../../shared/types/Permissions';
 import {ToastService} from '../services/toast.service';
 import {ToastTypeEnum} from '../../shared/types/toast';
 
+/**
+ * Factory for a route guard that requires a specific permission.
+ * If the user lacks the permission, shows a toast and redirects to home.
+ * @param requiredPermission - Permission required to activate the route
+ * @returns CanActivateFn that checks permission after validating session
+ */
 export const permissionGuard = (requiredPermission: UserPermissionsEnum): CanActivateFn => {
   return (route: ActivatedRouteSnapshot) => {
     const authService = inject(AuthService);

@@ -5,6 +5,11 @@ import lombok.Getter;
 
 import java.util.List;
 
+/**
+ * Response for a paginated request: items, current page, total pages, total count.
+ *
+ * @param <T> type of item
+ */
 @Getter
 @AllArgsConstructor
 public class PaginationResponse<T> {

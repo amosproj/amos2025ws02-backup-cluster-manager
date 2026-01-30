@@ -16,6 +16,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * REST controller for backup node backups: list, delete, sync, and execute backups.
+ */
 @RestController
 @RequestMapping("/api/v1/bn")
 public class BackupController {
@@ -29,6 +32,12 @@ public class BackupController {
     private static final Logger logger = LoggerFactory.getLogger(BackupController.class);
 
 
+    /**
+     * Deletes a backup by id.
+     *
+     * @param id backup id
+     * @return 204 on success, 500 on error
+     */
     @DeleteMapping("/backups/{id}")
     public Mono<ResponseEntity<Void>> deleteBackup(@PathVariable Long id) {
         return backupNodeService.deleteBackup(id)
@@ -36,6 +45,11 @@ public class BackupController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
+    /**
+     * Returns all backups.
+     *
+     * @return 200 with list of backup DTOs, or 500 on error
+     */
     @GetMapping("/backups")
     public Mono<ResponseEntity<List<BackupDTO>>> getBackups() {
         return backupNodeService.getAllBackups()
@@ -43,11 +57,22 @@ public class BackupController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
+    /**
+     * Simple test endpoint for backup node.
+     *
+     * @return test message
+     */
     @GetMapping("/backups/test")
     public String test(){
         return "This is a backup node endpoint";
     }
 
+    /**
+     * Receives a backup sync from the cluster manager (store backup record).
+     *
+     * @param dto backup DTO with client id, task id, size
+     * @return 200 with stored backup, 400 if client not found, 500 on error
+     */
     @PostMapping("/backups/sync")
     public Mono<ResponseEntity<BackupDTO>> receiveBackup(@RequestBody BackupDTO dto) {
         // TODO:
@@ -65,6 +90,13 @@ public class BackupController {
     }
 
 
+    /**
+     * Triggers execution of a backup by id.
+     *
+     * @param id      backup id
+     * @param request execute backup request
+     * @return 200 on success, 500 on error
+     */
     @PostMapping("/backups/{id}/execute")
     public Mono<ResponseEntity<Void>> executeBackup(@PathVariable Long id,
                                                     @RequestBody ExecuteBackupRequest request) {

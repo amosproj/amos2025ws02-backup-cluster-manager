@@ -23,6 +23,9 @@ import java.util.Set;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
+/**
+ * REST controller for cluster manager authentication: login, logout, and session validation.
+ */
 @RestController
 @RequestMapping("/api/v1/cm/auth")
 public class AuthController {
@@ -33,17 +36,33 @@ public class AuthController {
     private final ReactiveAuthenticationManager authenticationManager;
     private final ServerSecurityContextRepository securityContextRepository;
 
+    /**
+     * Creates the auth controller with the given authentication manager and security context repository.
+     *
+     * @param authenticationManager      reactive authentication manager
+     * @param securityContextRepository repository for storing security context in the session
+     */
     public AuthController(ReactiveAuthenticationManager authenticationManager,
                           ServerSecurityContextRepository securityContextRepository) {
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
     }
 
+    /** Request body for login. */
     public static class LoginRequest {
+        /** Username. */
         public String username;
+        /** Password. */
         public String password;
     }
 
+    /**
+     * Authenticates the user and establishes a session.
+     *
+     * @param req     login credentials
+     * @param exchange the current server web exchange
+     * @return 200 on success, 401 on authentication failure
+     */
     @PostMapping("/login")
     public Mono<ResponseEntity<Void>> login(@RequestBody LoginRequest req, ServerWebExchange exchange) {
         UsernamePasswordAuthenticationToken token =
@@ -58,6 +77,12 @@ public class AuthController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
     }
 
+    /**
+     * Invalidates the current session (logout).
+     *
+     * @param exchange the current server web exchange
+     * @return 200 on success
+     */
     @PostMapping("/logout")
     public Mono<ResponseEntity<Void>> logout(ServerWebExchange exchange) {
         return exchange.getSession()
@@ -65,6 +90,11 @@ public class AuthController {
                 .thenReturn(ResponseEntity.ok().<Void>build());
     }
 
+    /**
+     * Validates the current session and returns the authenticated user's metadata (username, role, permissions).
+     *
+     * @return 200 with auth metadata if authenticated, 401 if not authenticated, 403 if no valid role
+     */
     @GetMapping("/validate")
     public Mono<ResponseEntity<AuthMetadataDTO>> validateSession() {
         return ReactiveSecurityContextHolder.getContext()

@@ -10,6 +10,9 @@ import {ToastService} from './core/services/toast.service';
 import UserPermissionsEnum from './shared/types/Permissions';
 import { AutoRefreshService } from './services/dynamic-page';
 
+/**
+ * Root app component: layout, navigation (permission-filtered), toast, auto-refresh, logout.
+ */
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, Toast, AsyncPipe],
@@ -98,7 +101,7 @@ export class App implements OnInit{
     this.autoRefreshService.toggle();
   }
 
-
+  /** Logs out and navigates to login; shows toast on success or error. */
   logout(): void {
     this.authService.logout().subscribe({
       next: () => {

@@ -9,6 +9,9 @@ import {AuthService} from '../../core/services/auth.service';
 import {ToastService} from '../../core/services/toast.service';
 import {PermissionsService} from './permissions.service';
 
+/**
+ * Permissions feature: paginated role-permission list.
+ */
 @Component({
   selector: 'app-permissions',
   imports: [

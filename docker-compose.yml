@@ -58,6 +58,8 @@ services:
       - app-network
     environment:
       - BASE_URL=http://cluster-manager:8080
+      - MAX_VUS=1000
+      - ITERATIONS=10
     volumes:
       - ./stress-test/test-backup-volume-create/results:/stress-test/results
 
@@ -358,7 +360,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: postgres
-    command: ["postgres", "-c", "max_connections=300"]
+    command: ["postgres", "-c", "max_connections=2000"]
     environment:
       POSTGRES_DB: bcm
       POSTGRES_USER: appuser

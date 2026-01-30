@@ -7,6 +7,9 @@
 BASE_URL=${BASE_URL:-"http://cluster-manager:8080"}
 RESULTS_FILE=${RESULTS_FILE:-"stress-test-results.json"}
 
+ITERATIONS=${ITERATIONS:-3}
+MAX_VUS=${MAX_VUS:-100}
+
 RESULTS_DIR="/stress-test/results"
 mkdir -p "$RESULTS_DIR"
 
@@ -57,7 +60,8 @@ run_k6_test() {
     echo "Running K6 stress test: create test"
     # Run K6 test
     export BASE_URL
-    local test_name="create-test"
+    export ITERATION_MAX_VUS=$2
+    local test_name=$1
     export TEST_NAME=${test_name}
     
     # We output summary to a fixed filename, then move it
@@ -109,7 +113,28 @@ fi
 # Ensure a client exists
 ensure_client_exists
 
-run_k6_test
+for iteration in $(seq 1 $ITERATIONS); do
+    echo ""
+    echo "========================================"
+    echo "  Iteration $iteration of $ITERATIONS"
+    echo "========================================"
+
+    # Run stress test
+    test_name="test_${iteration}_create_backups"
+
+    run_k6_test "$test_name" "$(( MAX_VUS * iteration / ITERATIONS))"
+
+    echo ""
+    echo "Iteration $iteration completed."
+    echo "Results saved to: $RESULTS_DIR/$RESULTS_FILE"
+
+    # Small pause between iterations
+    if [ $iteration -lt $ITERATIONS ]; then
+        echo ""
+        echo "Pausing 10 seconds before next iteration..."
+        sleep 10
+    fi
+done
 
 # Final summary
 echo ""

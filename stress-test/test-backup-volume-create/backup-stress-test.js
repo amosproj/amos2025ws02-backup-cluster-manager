@@ -6,6 +6,8 @@ import { Rate, Trend } from 'k6/metrics';
 const errorRate = new Rate('errors');
 const createBackupDuration = new Trend('backup_create_duration');
 
+const ITERATION_MAX_VUS = __ENV.ITERATION_MAX_VUS || 100;
+
 const nodes = [
     {"id":"132390923902390","name":"cluster-manager:8080","address":"cluster-manager:8080","status":"active","mode":"cluster_manager","isManaged":true},
     {"id":"132390923902390","name":"node1-self-register:8081","address":"node1-self-register:8081","status":"active","mode":"node","isManaged":true},
@@ -19,11 +21,9 @@ const nodes = [
 export const options = {
     stages: [
         { duration: '5s', target: 1 },
-        { duration: '10s', target: 20 },
-        { duration: '10s', target: 20 },
-        { duration: '20s', target: 100 },
-        { duration: '10s', target: 150 },
-        { duration: '5s', target: 0 },
+        { duration: '20s', target: ITERATION_MAX_VUS },
+        { duration: '20s', target: ITERATION_MAX_VUS },
+        { duration: '5s', target: 1 },
     ],
     thresholds: {
         http_req_duration: ['p(95)<5000'], // 95% of requests should be below 5s

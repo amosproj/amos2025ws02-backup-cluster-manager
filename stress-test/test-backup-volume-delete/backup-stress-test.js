@@ -73,8 +73,6 @@ export default function () {
     const backupId = createdBackup.id;
     const nodeAddress = createdBackup.nodeDTO.address;
 
-    console.log("CREATED BACKUP JSON OBJECT:", createdBackup);
-
     // 2. Delete the backup we just created
     const deleteRes = http.del(
         `${BASE_URL}/api/v1/cm/backups/${backupId}?nodeAddress=${encodeURIComponent(nodeAddress)}`,

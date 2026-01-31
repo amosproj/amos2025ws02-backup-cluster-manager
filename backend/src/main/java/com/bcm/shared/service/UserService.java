@@ -127,6 +127,13 @@ public class UserService implements PaginationProvider<UserDTO> {
         return userMapper.save(user).flatMap(u -> userMapper.findUserById(u.getId()));
     }
 
+    /**
+     * Replaces all local users with the given list from the cluster manager (sync).
+     * Uses a lock to prevent concurrent replacements.
+     *
+     * @param cmUsers list of users from the cluster manager
+     * @return completion when done
+     */
     @Transactional
     public Mono<Void> replaceUsersWithCMUsers(List<User> cmUsers) {
 
@@ -325,7 +332,11 @@ public class UserService implements PaginationProvider<UserDTO> {
     }
 
 
-    // Generate example user for testing purposes
+    /**
+     * Generates example users for testing (blocking; use with care).
+     *
+     * @param amount number of example users to create
+     */
     public void generateExampleUsers(long amount) {
         for (long i = 1; i <= amount; i++) {
             User user = new User();
@@ -338,14 +349,27 @@ public class UserService implements PaginationProvider<UserDTO> {
         }
     }
 
+    /**
+     * Returns the total count of users matching the filter and search.
+     *
+     * @param filter filter and search parameters
+     * @return total count
+     */
     @Override
     public Mono<Long> getTotalItemsCount(Filter filter) {
-        // Add SQL query with filter to get the actual count
         Boolean isUserEnabled = getUserFilter(filter);
         return userMapper.getTotalCount(filter.getSearch(), isUserEnabled);
 
     }
 
+    /**
+     * Returns a page of user DTOs after filtering, search, and sorting.
+     *
+     * @param page         page number (1-based)
+     * @param itemsPerPage page size
+     * @param filter       filter, search, and sort parameters
+     * @return list of user DTOs for the page
+     */
     public Mono<List<UserDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
         Boolean enabled = getUserFilter(filter);
 

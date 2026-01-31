@@ -15,6 +15,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * REST controller for cluster manager clients: list clients across nodes.
+ */
 @RestController()
 @RequestMapping("/api/v1/cm")
 public class CMClientController {
@@ -22,12 +25,23 @@ public class CMClientController {
     @Autowired
     CMClientService CMclientService;
 
+    /**
+     * Returns a paginated list of clients across all nodes.
+     *
+     * @param pagination pagination and filter parameters
+     * @return paginated response of client DTOs
+     */
     @PreAuthorize(Permission.Require.CLIENT_READ)
     @GetMapping("/clients")
     public Mono<PaginationResponse<BigClientDTO>> getClients(PaginationRequest pagination) {
         return CMclientService.getPaginatedItems(pagination);
     }
 
+    /**
+     * Returns all clients as a list (no pagination).
+     *
+     * @return list of client DTOs
+     */
     @PreAuthorize(Permission.Require.CLIENT_READ)
     @GetMapping("/clientsList")
     public Mono<List<BigClientDTO>> getClientsList() {

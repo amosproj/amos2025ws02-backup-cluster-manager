@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service for managing backup nodes: registration, pagination, shutdown/restart, and sync with BN join/leave.
+ */
 @Service
 public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
@@ -46,10 +49,21 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
 
     private final WebClient webClient;
 
+    /**
+     * Creates the node management service with the given WebClient builder.
+     *
+     * @param webClientBuilder WebClient builder for HTTP calls to nodes
+     */
     public NodeManagementService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();
     }
 
+    /**
+     * Returns the total count of nodes after applying filters and search.
+     *
+     * @param filter filter and search parameters
+     * @return total count
+     */
     @Override
     public Mono<Long> getTotalItemsCount(Filter filter) {
         // Add SQL query with filter to get the actual count
@@ -60,6 +74,14 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
             return (long) filtered.size();
         });    }
 
+    /**
+     * Returns a page of nodes after filtering, search, and sorting.
+     *
+     * @param page         page number (1-based)
+     * @param itemsPerPage page size
+     * @param filter       filter, search, and sort parameters
+     * @return list of node DTOs for the page
+     */
     @Override
     public Mono<List<NodeDTO>> getDBItems(long page, long itemsPerPage, Filter filter) {
         // Add SQL query with filter and pagination to get the actual items
@@ -127,10 +149,21 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
         return nodes;
     }
 
+    /**
+     * Updates a node's managed mode in the registry.
+     *
+     * @param nodeDTO node DTO with id and managed flag
+     */
     public void updateNodeManagedMode(NodeDTO nodeDTO) {
         registry.updateIsManaged(nodeDTO);
     }
 
+    /**
+     * Removes a node from the registry and notifies the node to leave the cluster.
+     *
+     * @param id node id
+     * @return completion when done (or error if node not found)
+     */
     public Mono<Void> deleteNode(Long id) {
 
         // get node before deletion
@@ -168,6 +201,12 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
                 .onErrorResume(e -> Mono.empty());
     }
 
+    /**
+     * Registers a backup node: notifies the node to join, then adds to registry and syncs.
+     *
+     * @param req registration request (address, managed flag)
+     * @return completion when done
+     */
     public Mono<Void> registerNode(RegisterRequest req) {
         JoinDTO dto = createCMJoinDTO();
         String url = NodeUtils.buildNodeUrl(req.getAddress(), "/api/v1/bn/join");
@@ -183,14 +222,32 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
                 .doOnError(e -> logger.error("Error registering node: {}", e.getMessage()));
     }
 
+    /**
+     * Returns a node by id from the registry.
+     *
+     * @param id node id
+     * @return optional node DTO
+     */
     public Optional<NodeDTO> getNodeById(Long id) {
         return registry.findById(id);
     }
 
+    /**
+     * Returns a node by address from the registry.
+     *
+     * @param address node address
+     * @return optional node DTO
+     */
     public Optional<NodeDTO> getNodeByAddress(String address) {
         return registry.findByAddress(address);
     }
 
+    /**
+     * Sends a shutdown command to the given node (BN only; not CM).
+     *
+     * @param nodeId node id
+     * @return true if command was sent successfully
+     */
     public Mono<Boolean> shutdownNode(Long nodeId) {
         Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
         if (nodeOpt.isEmpty()) {
@@ -220,6 +277,12 @@ public class NodeManagementService implements PaginationProvider<NodeDTO> {
                 .flatMap(success -> success ? syncService.syncNodes().thenReturn(true) : Mono.just(false));
     }
 
+    /**
+     * Sends a restart command to the given node (BN only; not CM).
+     *
+     * @param nodeId node id
+     * @return true if command was sent successfully
+     */
     public Mono<Boolean> restartNode(Long nodeId) {
         Optional<NodeDTO> nodeOpt = registry.findById(nodeId);
         if (nodeOpt.isEmpty()) {

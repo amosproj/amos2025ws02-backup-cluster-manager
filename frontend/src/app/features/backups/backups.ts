@@ -16,6 +16,9 @@ import { UsersModal } from '../../shared/components/users-modal/users-modal';
 import { ToastTypeEnum } from '../../shared/types/toast';
 import { ToastService } from '../../core/services/toast.service';
 
+/**
+ * Backups feature: paginated backup list, add/delete backups, node and client/task filters.
+ */
 @Component({
   selector: 'app-backups',
   imports: [

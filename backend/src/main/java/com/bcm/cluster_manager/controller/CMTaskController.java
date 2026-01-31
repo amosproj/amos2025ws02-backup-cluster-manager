@@ -15,6 +15,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * REST controller for cluster manager tasks: list and create tasks across nodes.
+ */
 @RestController()
 @RequestMapping("/api/v1/cm")
 public class CMTaskController {
@@ -22,17 +25,34 @@ public class CMTaskController {
     @Autowired
     CMTaskService CMTaskService;
 
+    /**
+     * Returns a paginated list of tasks across all nodes.
+     *
+     * @param pagination pagination and filter parameters
+     * @return paginated response of task DTOs
+     */
     @PreAuthorize(Permission.Require.TASK_READ)
     @GetMapping("/tasks")
     public Mono<PaginationResponse<BigTaskDTO>> getTasks(PaginationRequest pagination) {
         return CMTaskService.getPaginatedItems(pagination);
     }
 
+    /**
+     * Returns all tasks as a list (no pagination).
+     *
+     * @return list of task DTOs
+     */
     @GetMapping("/tasks/list")
     public Mono<List<BigTaskDTO>> getTasksList() {
         return CMTaskService.getAllTasksReactive();
     }
 
+    /**
+     * Creates a new task on the target node.
+     *
+     * @param taskDTO task DTO with node and task details
+     * @return the created task DTO
+     */
     @PreAuthorize(Permission.Require.TASK_CREATE)
     @PostMapping("/task")
     public Mono<BigTaskDTO> createTask(@RequestBody BigTaskDTO taskDTO) {

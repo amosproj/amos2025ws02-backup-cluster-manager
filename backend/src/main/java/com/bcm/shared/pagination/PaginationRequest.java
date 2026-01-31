@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import com.bcm.shared.pagination.filter.Filter;
 
+/**
+ * Request for paginated data: page, size, search, filters, and sort.
+ */
 @Setter
 @Getter
 public class PaginationRequest extends Filter {
@@ -11,10 +14,12 @@ public class PaginationRequest extends Filter {
     private long page = 1;
     private long itemsPerPage = 20;
 
+    /** Sets page (clamped to at least 1). */
     public void setPage(long page) {
         this.page = (page <= 0) ? 1 : page;
     }
 
+    /** Sets items per page (clamped to at least 20). */
     public void setItemsPerPage(long itemsPerPage) {
         this.itemsPerPage = (itemsPerPage <= 0) ? 20 : itemsPerPage;
     }

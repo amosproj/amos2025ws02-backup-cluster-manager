@@ -7,6 +7,7 @@ import {NodeDTO} from '../clients/clients.service';
 
 
 
+/** DTO for creating a backup (client, task, size, node). */
 export interface BackupDTO {
   clientId: number;
   taskId: number;
@@ -14,6 +15,9 @@ export interface BackupDTO {
   nodeDTO: NodeDTO;
 }
 
+/**
+ * Service for backups API: list (paginated), create, delete.
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -21,6 +25,16 @@ export class BackupsService {
   constructor(private apiService: ApiService) {
   }
 
+  /**
+   * Fetches a page of backups with filters, search, and sort.
+   * @param page - Page number
+   * @param itemsPerPage - Page size
+   * @param filters - Filter string
+   * @param search - Search string
+   * @param sortBy - Sort field
+   * @param sortOrder - Sort direction
+   * @returns Observable of paginated response
+   */
   getBackups(page: number = 1, itemsPerPage: number = 15,filters:string="", search:string="", sortBy:string="", sortOrder:SortOrder=SortOrder.ASC): Observable<PaginatedResponse> {
     const params = {
       page: page.toString(),
@@ -37,6 +51,7 @@ export class BackupsService {
     return this.apiService.post<any>('backups', request);
   }
 
+  /** Deletes a backup by id on the given node. */
   deleteBackup(backupId: number, nodeAddress: string): Observable<any> {
     return this.apiService.delete<any>(`backups/${backupId}`, {
       params: { nodeAddress }

@@ -8,12 +8,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+/**
+ * REST controller for backup nodes to join or leave a cluster (register CM URL).
+ */
 @RestController
 @RequestMapping("/api/v1/bn")
 public class JoinController {
+    /** Whether this node has already joined a cluster. */
     public static boolean hasJoined = false;
     private String cmURL;
 
+    /**
+     * Registers this backup node with the cluster manager at the given URL.
+     *
+     * @param dto join request containing the cluster manager URL
+     * @return 200 with success message, or 409 if already joined
+     */
     @PostMapping("/join")
     public Mono<ResponseEntity<String>> join(@RequestBody JoinDTO dto) {
         if (hasJoined) {
@@ -26,6 +36,12 @@ public class JoinController {
         return Mono.just(ResponseEntity.ok("Joined Cluster"));
     }
 
+    /**
+     * Unregisters this backup node from the cluster (leave cluster).
+     *
+     * @param dto leave request; CM URL must match the one used when joining
+     * @return 200 on success, 403 if CM URL does not match, 404 if not currently joined
+     */
     @PostMapping("/leave")
     public Mono<ResponseEntity<String>> leave(@RequestBody JoinDTO dto) {
         if (!hasJoined) {

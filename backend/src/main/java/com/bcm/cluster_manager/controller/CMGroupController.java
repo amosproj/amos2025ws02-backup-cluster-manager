@@ -14,12 +14,20 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * REST controller for cluster manager groups: list groups filtered by requester rank.
+ */
 @RestController()
 @RequestMapping("/api/v1/cm")
 public class CMGroupController {
 
     private final GroupService groupService;
 
+    /**
+     * Creates the CM group controller with the CM-specific group service.
+     *
+     * @param groupService group service qualified for cluster manager
+     */
     public CMGroupController(@Qualifier("groupServiceCM") GroupService groupService) {
         this.groupService = groupService;
     }
@@ -44,6 +52,11 @@ public class CMGroupController {
                 .defaultIfEmpty(0);
     }
 
+    /**
+     * Returns all groups visible to the current user (filtered by rank).
+     *
+     * @return list of groups
+     */
     @GetMapping("/groups")
     public Mono<List<Group>> getGroups() {
         return getCurrentUserRank()

@@ -3,6 +3,9 @@ import {CommonModule} from '@angular/common';
 import {ToastService} from '../../../core/services/toast.service';
 import {ToastTypeEnum} from '../../types/toast';
 
+/**
+ * Toast component: subscribes to ToastService and displays messages with auto-hide.
+ */
 @Component({
   selector: 'app-toast',
   imports: [CommonModule],
@@ -18,6 +21,7 @@ export class Toast implements OnInit {
   constructor(private toastService: ToastService) {
   }
 
+  /** Subscribes to toast$ and shows/hides messages. */
   ngOnInit() {
     this.toastService.toast$.subscribe(toast => {
       if (!toast) return;

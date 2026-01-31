@@ -11,11 +11,19 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for group CRUD and rank-filtered list (for CM).
+ */
 @Service
 public class GroupService {
 
     private final GroupMapper groupMapper;
 
+    /**
+     * Creates the group service with the given group mapper.
+     *
+     * @param groupMapper group mapper
+     */
     public GroupService( GroupMapper groupMapper) {
         this.groupMapper = groupMapper;
     }
@@ -25,6 +33,11 @@ public class GroupService {
         return groupMapper.findById(id);
     }
 
+    /**
+     * Returns all groups.
+     *
+     * @return list of groups
+     */
     @Transactional
     public Mono<List<Group>> getAllGroups() {
         return groupMapper.findAllGroups().collectList();
@@ -64,10 +77,22 @@ public class GroupService {
         return groupMapper.save(group);
     }
 
+    /**
+     * Updates an existing group.
+     *
+     * @param group group with updated data
+     * @return the saved group
+     */
     public Mono<Group> editGroup(Group group) {
         return groupMapper.save(group);
     }
 
+    /**
+     * Deletes a group by id.
+     *
+     * @param id group id
+     * @return true when deleted
+     */
     public Mono<Boolean> deleteGroup(Long id) {
         return groupMapper.deleteById(id).thenReturn(true);
 

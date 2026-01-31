@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Loads user details by username for Spring Security (cluster manager); resolves roles from groups.
+ */
 @Service
 public class CustomUserDetailsService implements ReactiveUserDetailsService {
 
@@ -25,6 +28,13 @@ public class CustomUserDetailsService implements ReactiveUserDetailsService {
     private final UserGroupRelationMapper userGroupRelationMapper;
     private final GroupMapper groupMapper;
 
+    /**
+     * Creates the user details service with the given mappers.
+     *
+     * @param userMapper                 user mapper
+     * @param userGroupRelationMapper   user-group relation mapper
+     * @param groupMapper               group mapper
+     */
     public CustomUserDetailsService(UserMapper userMapper,
                                      UserGroupRelationMapper userGroupRelationMapper,
                                      GroupMapper groupMapper) {
@@ -33,6 +43,12 @@ public class CustomUserDetailsService implements ReactiveUserDetailsService {
         this.groupMapper = groupMapper;
     }
 
+    /**
+     * Loads user details by username; returns enabled user with roles and authorities from groups.
+     *
+     * @param username username
+     * @return user details, or error if not found or disabled
+     */
     @Override
     public Mono<UserDetails> findByUsername(String username) {
         return userMapper.findByName(username)              // Mono<User>

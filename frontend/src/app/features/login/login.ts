@@ -5,6 +5,9 @@ import {ToastService} from '../../core/services/toast.service';
 import {ToastTypeEnum} from '../../shared/types/toast';
 import {Router} from '@angular/router';
 
+/**
+ * Login page: form submit calls login service and navigates on success.
+ */
 @Component({
   selector: 'app-login',
   imports: [
@@ -20,6 +23,7 @@ export class Login {
     private router: Router
   ){}
 
+  /** Submits login form; on success navigates to home and shows toast. */
   login(form: NgForm){
     if (form.valid) {
       const { username, password } = form.value;

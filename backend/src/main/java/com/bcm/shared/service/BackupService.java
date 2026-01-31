@@ -1,9 +1,12 @@
 package com.bcm.shared.service;
 
+import com.bcm.cluster_manager.service.CMBackupService;
 import com.bcm.shared.model.api.*;
 import com.bcm.shared.model.database.Backup;
 import com.bcm.shared.model.database.BackupState;
 import com.bcm.shared.repository.BackupMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,9 @@ public class BackupService {
 
     private final BackupMapper backupMapper;
     private final CacheEventStore eventStore;
+
+    private static final Logger logger = LoggerFactory.getLogger(BackupService.class);
+
 
     public BackupService( BackupMapper backupMapper, CacheEventStore eventStore) {
 
@@ -100,7 +106,9 @@ public class BackupService {
                                 CacheInvalidationType.BACKUP_CREATED,
                                 saved.getId()
                         )
-                )
+                ).doOnError(e -> {
+                    logger.info("Error storing backup for client {}", clientId);
+                })
                 .map(BackupConverter::toDTO);
     }
 

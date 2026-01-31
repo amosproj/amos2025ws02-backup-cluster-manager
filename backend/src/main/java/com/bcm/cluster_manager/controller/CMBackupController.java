@@ -66,7 +66,6 @@ public class CMBackupController {
         return CMBackupService.createBackup(request)
                 .map(result -> ResponseEntity.status(HttpStatus.CREATED).body(result))
                 .onErrorResume(e -> {;
-                    e.printStackTrace();
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
                 });
     }

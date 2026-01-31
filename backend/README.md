@@ -9,30 +9,60 @@ backend/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/bcm/
-│   │   │   ├── BackendApplication.java
-│   │   │   ├── config/
-│   │   │   │   └── CorsConfig.java
-│   │   │   ├── exception/
-│   │   │   │   └── GlobalExceptionHandler.java
-│   │   │   ├── dto/
-│   │   │   │   └── ApiResponse.java
-│   │   │   ├── clusters/
-│   │   │   │   ├── ClusterController.java
-│   │   │   │   └── ClusterService.java
-│   │   │   └── nodes/
-│   │   │       └── NodeService.java
+│   │   │   ├── Application.java
+│   │   │   │
+│   │   │   ├── shared/              # shared functionality across all node types
+│   │   │   │   ├── config/          # security, CORS, web configuration
+│   │   │   │   ├── controller/      # shared REST endpoints
+│   │   │   │   ├── model/           # shared data models
+│   │   │   │   ├── pagination/      # pagination helpers
+│   │   │   │   ├── mapper/          # entity-DTO mappers
+│   │   │   │   ├── repository/      # data access layer
+│   │   │   │   ├── service/         # shared business logic
+│   │   │   │   └── util/            # utility classes
+│   │   │   │
+│   │   │   └── cluster_manager/     # cluster manager specific code
+│   │   │       ├── config/
+│   │   │       ├── controller/      # REST endpoints
+│   │   │       ├── model/
+│   │   │       ├── repository/
+│   │   │       ├── service/
+│   │   │       └── BCMCronJob.java    # cron job for heartbeat checks
+│   │   │
 │   │   └── resources/
-│   │       └── application.yml
-│   └── test/java/com/bcm/
-│       └── BackendApplicationTests.java
-├── pom.xml
+│   │       ├── application.yml      # main configuration
+│   │       └── db/
+│   │           └── migration/       # Flyway database migrations
+│   │
+│   └── test/
+│       ├── java/com/bcm/
+│       │   ├── ApplicationTests.java
+│       │   ├── cluster_manager/     # cluster manager tests
+│       │   └── shared/              # shared component tests
+│       └── resources/
+│           └── application.yml      # test configuration
+│
+├── pom.xml                          # Maven configuration
+├── Dockerfile                       # multi-stage Docker build
+├── mvnw                             # Maven wrapper (Unix)
+├── mvnw.cmd                         # Maven wrapper (Windows)
 └── README.md
 ```
 
 ## Prerequisites
-Java 21+
-Maven 3.8+
-Docker Desktop (for local development)
+- Java 21+
+- Maven 3.8+
+- Docker Desktop (for local development)
+- PostgreSQL 15+ (or via Docker)
+
+## Tech Stack
+- **Spring Boot 3.x** - Application framework
+- **Spring WebFlux** - Reactive web framework
+- **R2DBC** - Reactive database connectivity
+- **PostgreSQL** - Primary database
+- **Flyway** - Database migrations
+- **MyBatis** - SQL mapping (for complex queries)
+- **H2** - In-memory database for testing
 
 ## Build & Run
 ```bash
@@ -57,9 +87,9 @@ The application runs with default functionality stored in the *.shared-package.
 To extend the functionality of the application and let the app run with different roles or configure for prod/dev:
 
 ```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=backup_manager,dev
+mvn spring-boot:run -Dspring-boot.run.profiles=cluster_manager,dev
 ```
-Profiles: backup_manager,cluster_manager,backup_node,dev,prod
+Profiles: cluster_manager,dev,prod,test
 
 Dev and Prod profiles can be used in the future to configure the nodes independently of the node roles to configure e.g. datasources, etc.
 
@@ -73,8 +103,47 @@ Spring Application Profile -> Active profiles -> cluster_manager,dev ...
 For running a multi-node setup locally you can configure each role for every runtime on start-command.
 For this to work, you need unique ports:
 - IntelliJ: Modify Options -> Program arguments -> --APPLICATION_PORT=...
-- Maven: mvn spring-boot:run -Dspring-boot.run.profiles=backup_manager,dev -Dspring-boot.run.arguments="--APPLICATION_PORT=8089"
+- Maven: mvn spring-boot:run -Dspring-boot.run.profiles=cluster_manager,dev -Dspring-boot.run.arguments="--APPLICATION_PORT=8089"
 - Docker/Docker Compose: Change service port mapping to "XXXX:8080" with XXXX being a unique Port. Changing the port of the app won't make much a difference since the port exposed by the container matters.
+
+### Database Configuration
+
+The application uses **R2DBC** for reactive database access:
+
+**Cluster Manager** uses two databases:
+- **CM Database** (`bcm`): Cluster management data (users, groups, etc.)
+- **BN Database** (`bcm_node0`): Backup node data
+
+**Backup Node** uses one database:
+- **BN Database** (`bcm_nodeX`): Node-specific backup data
+
+**Reactive Data Access**:
+- R2DBC repositories with reactive types (`Mono`, `Flux`)
+- Non-blocking operations with Spring WebFlux
+- 
+### Caching
+
+The application uses **Caffeine Cache** for performance optimization:
+
+**Cached Data** (5 min TTL, 100 entries max):
+- **Backup Pages**: Backup metadata and pagination
+- **Client Pages**: Client information and pagination
+- **Task Pages**: Backup task data and pagination
+
+**Cache Invalidation**:
+- Backup Nodes emit events on data changes
+- Cluster Manager polls nodes every 5 seconds
+- Events are acknowledged and caches cleared automatically
+
+Configuration in `CacheConfig.java`, invalidation logic in `EventPollingService.java`.
+
+### Database Migrations
+
+Flyway manages database migrations in two locations:
+- `db/migration/base/`: Shared migrations for all nodes
+- `db/migration/cluster_manager/`: Cluster manager specific migrations (only applied when `cluster_manager` profile is active)
+
+Migrations run automatically on application startup.
 
 ## API Endpoints
 curl http://localhost:8080/example
@@ -144,7 +213,7 @@ docker compose --profile test up --build
 - port of the backup node where the task is executed
 
 ```bash
-curl -X POST   http://localhost:8080/api/v1/cm/backups/{id}/execute
+curl -X POST   http://localhost:8080/api/v1/bn/backups/{id}/execute
    -H "Content-Type: application/json"
       -H "Accept: application/json"
          -d '{"duration":20000,"shouldSucceed":true}'

@@ -1,4 +1,5 @@
 # Frontend
+[![CI Build](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions/workflows/build-frontend.yml)
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.6.
 

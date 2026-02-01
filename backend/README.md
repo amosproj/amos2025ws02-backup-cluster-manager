@@ -1,5 +1,5 @@
 # Backend
-[![CI Build](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions/workflows/ci-build-backend.yml/badge.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions)
+[![CI Build](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions/workflows/build-backend.yml/badge.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions/workflows/build-backend.yml)
 [![Coverage](.github/badges/jacoco.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions)
 [![Branches](.github/badges/branches.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions)
 

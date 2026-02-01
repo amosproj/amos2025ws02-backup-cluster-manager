@@ -2,69 +2,44 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.6.
 
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Angular 20.3.6 |
+| Server | Nginx (production) |
+| Testing | Karma (unit), e2e (configurable) |
 
 ## Example Project Structure
 ```bash
-frontend/
-├── src/
-│   ├── app/
-│   │   ├── core/                   # singleton services, interceptors, guards
-│   │   │   ├── services/
-│   │   │   │   ├── api.service.ts
-│   │   │   │   ├── auth.service.ts
-│   │   │   │   └── auth.service.spec.ts
-│   │   │   ├── interceptors/
-│   │   │   │   ├── auth.interceptor.ts
-│   │   │   │   └── auth.interceptor.spec.ts
-│   │   │   └── guards/
-│   │   │       ├── auth.guard.ts
-│   │   │       ├── auth.guard.spec.ts
-│   │   │       └── permission.guard.ts
-│   │   │
-│   │   ├── shared/                 # reusable UI components, pipes, directives
-│   │   │   ├── components/
-│   │   │   ├── types/
-│   │   │   └── utils/
-│   │   │
-│   │   ├── features/               # feature modules
-│   │   │   ├── backups/
-│   │   │   ├── clients/
-│   │   │   ├── clusters/
-│   │   │   ├── dashboard/
-│   │   │   ├── example-route/
-│   │   │   ├── login/
-│   │   │   ├── nodes/
-│   │   │   ├── permissions/
-│   │   │   ├── tasks/
-│   │   │   └── users/
-│   │   │
-│   │   ├── services/
-│   │   │   └── dynamic-page.ts
-│   │   │
-│   │   ├── app.config.ts
-│   │   ├── app.routes.ts
-│   │   ├── app.ts
-│   │   ├── app.html
-│   │   ├── app.css
-│   │   └── app.spec.ts
+frontend/src/
+├── app/
+│   ├── core/                # Singletons: services, interceptors, guards
+│   │   ├── services/        # api.service, auth.service
+│   │   ├── interceptors/    # auth.interceptor
+│   │   └── guards/          # auth.guard, permission.guard
 │   │
-│   ├── environments/
-│   │   └── environment.ts
+│   ├── shared/              # Reusable components, pipes, directives
+│   │   ├── components/
+│   │   ├── types/
+│   │   └── utils/
 │   │
-│   ├── main.ts
-│   ├── index.html
-│   └── styles.css
+│   ├── features/            # Feature modules
+│   │   ├── dashboard/
+│   │   ├── backups/
+│   │   ├── clients/
+│   │   ├── clusters/
+│   │   ├── nodes/
+│   │   ├── tasks/
+│   │   ├── users/
+│   │   ├── permissions/
+│   │   └── login/
+│   │
+│   ├── app.config.ts        # App configuration
+│   └── app.routes.ts        # Route definitions
 │
-├── public/                         # static assets (SVG icons)
-│
-├── angular.json
-├── package.json
-├── tsconfig.json
-├── tsconfig.app.json
-├── tsconfig.spec.json
-├── nginx.conf
-├── Dockerfile
-└── README.md
+├── environments/            # Environment configs
+└── public/                  # Static assets (SVG icons)
 ```
 
 

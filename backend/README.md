@@ -3,50 +3,23 @@
 [![Coverage](.github/badges/jacoco.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions)
 [![Branches](.github/badges/branches.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions)
 
+Spring Boot application for distributed backup cluster management with reactive data access.
+
 ## Example Project Structure
 ```bash
 backend/
-├── src/
-│   ├── main/
-│   │   ├── java/com/bcm/
-│   │   │   ├── Application.java
-│   │   │   │
-│   │   │   ├── shared/              # shared functionality across all node types
-│   │   │   │   ├── config/          # security, CORS, web configuration
-│   │   │   │   ├── controller/      # shared REST endpoints
-│   │   │   │   ├── model/           # shared data models
-│   │   │   │   ├── pagination/      # pagination helpers
-│   │   │   │   ├── mapper/          # entity-DTO mappers
-│   │   │   │   ├── repository/      # data access layer
-│   │   │   │   ├── service/         # shared business logic
-│   │   │   │   └── util/            # utility classes
-│   │   │   │
-│   │   │   └── cluster_manager/     # cluster manager specific code
-│   │   │       ├── config/
-│   │   │       ├── controller/      # REST endpoints
-│   │   │       ├── model/
-│   │   │       ├── repository/
-│   │   │       ├── service/
-│   │   │       └── BCMCronJob.java    # cron job for heartbeat checks
-│   │   │
-│   │   └── resources/
-│   │       ├── application.yml      # main configuration
-│   │       └── db/
-│   │           └── migration/       # Flyway database migrations
-│   │
-│   └── test/
-│       ├── java/com/bcm/
-│       │   ├── ApplicationTests.java
-│       │   ├── cluster_manager/     # cluster manager tests
-│       │   └── shared/              # shared component tests
-│       └── resources/
-│           └── application.yml      # test configuration
-│
-├── pom.xml                          # Maven configuration
-├── Dockerfile                       # multi-stage Docker build
-├── mvnw                             # Maven wrapper (Unix)
-├── mvnw.cmd                         # Maven wrapper (Windows)
-└── README.md
+├── src/main/java/com/bcm/
+│   ├── shared/              # Cross-cutting concerns
+│   │   ├── config/          # Security, CORS, web config
+│   │   ├── controller/      # Shared REST endpoints
+│   │   ├── model/           # Domain models
+│   │   ├── repository/      # R2DBC repositories
+│   │   └── service/         # Business logic
+│   └── cluster_manager/     # CM-specific implementation
+├── src/main/resources/
+│   ├── application.yml
+│   └── db/migration/        # Flyway scripts
+└── src/test/
 ```
 
 ## Prerequisites
@@ -56,13 +29,13 @@ backend/
 - PostgreSQL 15+ (or via Docker)
 
 ## Tech Stack
-- **Spring Boot 3.x** - Application framework
-- **Spring WebFlux** - Reactive web framework
-- **R2DBC** - Reactive database connectivity
-- **PostgreSQL** - Primary database
-- **Flyway** - Database migrations
-- **MyBatis** - SQL mapping (for complex queries)
-- **H2** - In-memory database for testing
+| Category | Technology |
+|----------|------------|
+| Framework | Spring Boot 3.x, Spring WebFlux |
+| Database | PostgreSQL 15+, R2DBC, Flyway |
+| SQL Mapping | MyBatis (complex queries) |
+| Caching | Caffeine (5 min TTL, 100 entries) |
+| Testing | H2 in-memory |
 
 ## Build & Run
 ```bash
@@ -89,9 +62,11 @@ To extend the functionality of the application and let the app run with differen
 ```bash
 mvn spring-boot:run -Dspring-boot.run.profiles=cluster_manager,dev
 ```
-Profiles: cluster_manager,dev,prod,test
-
-Dev and Prod profiles can be used in the future to configure the nodes independently of the node roles to configure e.g. datasources, etc.
+| Profile | Purpose |
+|---------|---------|
+| `cluster_manager` | Cluster manager node role |
+| `dev` / `prod` | Environment-specific config |
+| `test` | Testing configuration |
 
 Docker/Docker Compose:
 SPRING_PROFILES_ACTIVE=cluster_manager
@@ -110,17 +85,15 @@ For this to work, you need unique ports:
 
 The application uses **R2DBC** for reactive database access:
 
-**Cluster Manager** uses two databases:
-- **CM Database** (`bcm`): Cluster management data (users, groups, etc.)
-- **BN Database** (`bcm_node0`): Backup node data
-
-**Backup Node** uses one database:
-- **BN Database** (`bcm_nodeX`): Node-specific backup data
+| Node Type | Databases |
+|-----------|-----------|
+| Cluster Manager | `bcm` (cluster data) + `bcm_node0` (backup data) |
+| Backup Node | `bcm_nodeX` (node-specific data) |
 
 **Reactive Data Access**:
 - R2DBC repositories with reactive types (`Mono`, `Flux`)
 - Non-blocking operations with Spring WebFlux
-- 
+
 ### Caching
 
 The application uses **Caffeine Cache** for performance optimization:

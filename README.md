@@ -47,7 +47,7 @@ docker compose up --build
 This will start:
 - Frontend at `http://localhost:4200`
 - Backend (Cluster Manager) at `http://localhost:8080`
-- PostgreSQL Database
+- PostgreSQL Database at `http://localhost:5432`
 
 ### Run with Node Simulation
 To start the application along with simulated nodes (defined in the `test` profile), use:
@@ -87,3 +87,28 @@ Visit `http://localhost:3000` to access Grafana:
 - Default login: **admin / admin** (change on first login)
 - **Data Source**: Prometheus is pre-configured at `http://prometheus:9090`
 - **Dashboard**: "Cluster Overview" dashboard is auto-loaded
+
+## Stress Testing
+
+**Setup:** In `docker-compose.yml`, change the cluster-manager profile:
+```yaml
+- SPRING_PROFILES_ACTIVE=cluster_manager,test-runner
+```
+
+**Run a test:**
+```bash
+docker compose --profile test-backup-volume-create up --build
+```
+
+Results → `/stress-test/test-backup-volume-create/results/`
+
+### Available Tests
+
+| Test | Description | Config |
+|------|-------------|--------|
+| `test-backup-volume-create` | Concurrent backup creation across nodes | `MAX_VUS`, `ITERATIONS` |
+| `test-backup-volume-delete` | Create + delete backups concurrently | `MAX_VUS`, `ITERATIONS` |
+| `test-backup-volume-read` | Stress `GET /api/v1/cm/backups` with ramping users | `INITIAL_BACKUPS`, `BACKUP_INCREMENT`, `ITERATIONS` |
+
+Configure via environment variables in `docker-compose.yml`. See each test's README for details.  
+Tests use [Grafana K6](https://grafana.com/docs/k6/latest/) — advanced options in `backup-stress-test.js`.

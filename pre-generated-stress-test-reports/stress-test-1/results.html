@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    select, button {
+        margin: 10px 0;
+        padding: 5px;
+    }
+</style>
+<body>
+    <h1>Stress Test Results</h1>
+
+    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+    <label for="reportSelect">Select a Report Type:</label>
+    <select id="reportSelect" onchange="loadHtmlFiles()">
+        <option value="">Select a report</option>
+        <option value="test-backup-volume-create/results">Backup Volume Create Summary</option>
+        <option value="test-backup-volume-delete/results">Backup Volume Delete Summary</option>
+        <option value="test-backup-volume-read/results">Backup Volume Read Summary</option>
+    </select>
+
+    <label for="htmlFileSelect">Select an HTML Report:</label>
+    <select id="htmlFileSelect" disabled>
+        <option value="">Select an HTML file</option>
+    </select>
+    
+    <button onclick="showReport()">Show Report</button>
+    </div>
+    <script>
+        // Auto-generated file list from scanning directories
+        const htmlFiles = {
+        "test-backup-volume-create/results": [
+                "test_1_create_backups-summary.html",
+                "test_2_create_backups-summary.html",
+                "test_3_create_backups-summary.html"
+        ],
+        "test-backup-volume-delete/results": [
+                "test_1_delete_backups-summary.html",
+                "test_2_delete_backups-summary.html",
+                "test_3_delete_backups-summary.html"
+        ],
+        "test-backup-volume-read/results": [
+                "test_10_backups-summary.html",
+                "test_110_backups-summary.html",
+                "test_60_backups-summary.html"
+        ]
+};
+
+        function loadHtmlFiles() {
+            const reportSelect = document.getElementById('reportSelect');
+            const htmlFileSelect = document.getElementById('htmlFileSelect');
+            const selectedReport = reportSelect.value;
+
+            // Reset the HTML file dropdown
+            htmlFileSelect.innerHTML = '<option value="">Select an HTML file</option>';
+            htmlFileSelect.disabled = true;
+
+            if (selectedReport && htmlFiles[selectedReport]) {
+                const files = htmlFiles[selectedReport];
+                if (files.length > 0) {
+                    files.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = selectedReport + '/' + file;
+                        option.textContent = file.replace('-summary.html', '').replace(/-/g, ' ');
+                        htmlFileSelect.appendChild(option);
+                    });
+                    htmlFileSelect.disabled = false;
+                } else {
+                    const option = document.createElement('option');
+                    option.textContent = 'No HTML files available';
+                    htmlFileSelect.appendChild(option);
+                }
+            }
+        }
+
+        function showReport() {
+            const htmlFileSelect = document.getElementById('htmlFileSelect');
+            const selectedFile = htmlFileSelect.value;
+
+            if (selectedFile) {
+                window.location.href = selectedFile;
+            } else {
+                alert('Please select a report type and an HTML file');
+            }
+        }
+    </script>
+</body>
+</html>

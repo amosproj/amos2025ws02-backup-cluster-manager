@@ -1,0 +1,173 @@
+{
+    "metrics": {
+        "http_req_connecting": {
+            "min": 0,
+            "med": 0,
+            "max": 7.387208,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.0025338181413565954
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 11234,
+            "value": 0
+        },
+        "data_sent": {
+            "count": 2712202,
+            "rate": 54159.710657183445
+        },
+        "http_req_duration": {
+            "avg": 141.39297592469333,
+            "min": 4.722333,
+            "med": 130.497854,
+            "max": 785.548944,
+            "p(90)": 251.6341463,
+            "p(95)": 295.75995055
+        },
+        "checks": {
+            "fails": 0,
+            "passes": 16851,
+            "value": 1
+        },
+        "data_received": {
+            "count": 5970826,
+            "rate": 119230.87164760884
+        },
+        "http_req_duration{expected_response:true}": {
+            "max": 785.548944,
+            "p(90)": 251.6341463,
+            "p(95)": 295.75995055,
+            "avg": 141.39297592469333,
+            "min": 4.722333,
+            "med": 130.497854
+        },
+        "iteration_duration": {
+            "max": 1075.930583,
+            "p(90)": 568.2324090000001,
+            "p(95)": 627.8877334,
+            "avg": 384.8747156747378,
+            "min": 110.966333,
+            "med": 380.664334
+        },
+        "vus_max": {
+            "value": 66,
+            "min": 66,
+            "max": 66
+        },
+        "errors{type:delete_backup}": {
+            "passes": 0,
+            "fails": 5617,
+            "thresholds": {
+                "rate<0.5": false
+            },
+            "value": 0
+        },
+        "http_reqs": {
+            "rate": 224.3307060177667,
+            "count": 11234
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "iterations": {
+            "count": 5617,
+            "rate": 112.16535300888334
+        },
+        "errors": {
+            "passes": 0,
+            "fails": 5617,
+            "value": 0
+        },
+        "http_req_blocked": {
+            "med": 0.00375,
+            "max": 7.475333,
+            "p(90)": 0.008541,
+            "p(95)": 0.00980634999999998,
+            "avg": 0.009479877336656476,
+            "min": 0.000541
+        },
+        "vus": {
+            "value": 2,
+            "min": 1,
+            "max": 66
+        },
+        "http_req_duration{type:delete_backup}": {
+            "min": 4.722333,
+            "med": 120.771625,
+            "max": 541.099541,
+            "p(90)": 237.6830246,
+            "p(95)": 272.8102837999999,
+            "avg": 131.66102828752003,
+            "thresholds": {
+                "p(95)<5000": false
+            }
+        },
+        "http_req_sending": {
+            "max": 52.869792,
+            "p(90)": 0.030666,
+            "p(95)": 0.03633335,
+            "avg": 0.02905138597115893,
+            "min": 0.001958,
+            "med": 0.012042
+        },
+        "backup_delete_duration": {
+            "p(90)": 237.6830246,
+            "p(95)": 272.8102837999999,
+            "avg": 131.66102828752003,
+            "min": 4.722333,
+            "med": 120.771625,
+            "max": 541.099541
+        },
+        "http_req_waiting": {
+            "med": 130.391417,
+            "max": 785.397694,
+            "p(90)": 251.5127669,
+            "p(95)": 295.60262895,
+            "avg": 141.2839168242843,
+            "min": 4.682042
+        },
+        "http_req_receiving": {
+            "avg": 0.080007714438312,
+            "min": 0.005834,
+            "med": 0.040875,
+            "max": 8.27275,
+            "p(90)": 0.10815440000000001,
+            "p(95)": 0.1842254499999999
+        }
+    },
+    "root_group": {
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "create backup status is 201": {
+                    "id": "4e5d9bacb2f3d5c2b0bfd41ed1c49422",
+                    "passes": 5617,
+                    "fails": 0,
+                    "name": "create backup status is 201",
+                    "path": "::create backup status is 201"
+                },
+                "delete backup status is 204": {
+                    "name": "delete backup status is 204",
+                    "path": "::delete backup status is 204",
+                    "id": "7424778910d0b213020ee74fbaf29aad",
+                    "passes": 5617,
+                    "fails": 0
+                },
+                "delete response time < 5000ms": {
+                    "fails": 0,
+                    "name": "delete response time < 5000ms",
+                    "path": "::delete response time < 5000ms",
+                    "id": "75a8630ee741866b50a2ca3a1122f5d0",
+                    "passes": 5617
+                }
+            },
+        "name": "",
+        "path": ""
+    }
+}

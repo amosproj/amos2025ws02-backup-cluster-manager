@@ -1,0 +1,153 @@
+{
+    "metrics": {
+        "http_req_connecting": {
+            "avg": 0.10433807777777776,
+            "min": 0,
+            "med": 0,
+            "max": 3.134583,
+            "p(90)": 0.25537909999999997,
+            "p(95)": 0.291774
+        },
+        "http_req_waiting": {
+            "avg": 6672.721355822222,
+            "min": 612.757377,
+            "med": 6850.2283575,
+            "max": 13200.363216,
+            "p(90)": 10841.313220799999,
+            "p(95)": 11675.245250299999
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(95)": 11675.4254448,
+            "avg": 6672.948867903708,
+            "min": 612.982446,
+            "med": 6850.3855625,
+            "max": 13200.531525,
+            "p(90)": 10841.485302399999
+        },
+        "backup_request_duration": {
+            "p(95)": 11675.4254448,
+            "avg": 6672.948867903708,
+            "min": 612.982446,
+            "med": 6850.3855625,
+            "max": 13200.531525,
+            "p(90)": 10841.485302399999
+        },
+        "data_received": {
+            "count": 2473200,
+            "rate": 66100.91718930336
+        },
+        "http_req_sending": {
+            "p(95)": 0.09055445,
+            "avg": 0.08813268518518516,
+            "min": 0.0119,
+            "med": 0.033101500000000006,
+            "max": 11.24653,
+            "p(90)": 0.07583469999999999
+        },
+        "iterations": {
+            "count": 270,
+            "rate": 7.2162573350767865
+        },
+        "http_req_receiving": {
+            "med": 0.12872250000000002,
+            "max": 0.8262,
+            "p(90)": 0.18287689999999998,
+            "p(95)": 0.20102669999999997,
+            "avg": 0.13937939629629617,
+            "min": 0.042303
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "iteration_duration": {
+            "avg": 6774.3605446925885,
+            "min": 713.755628,
+            "med": 6952.441038999999,
+            "max": 13301.123701,
+            "p(90)": 10941.9320983,
+            "p(95)": 11776.3274647
+        },
+        "vus_max": {
+            "min": 100,
+            "max": 100,
+            "value": 100
+        },
+        "http_reqs": {
+            "count": 270,
+            "rate": 7.2162573350767865
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 270,
+            "value": 0
+        },
+        "errors": {
+            "passes": 175,
+            "fails": 95,
+            "thresholds": {
+                "rate<0.5": true
+            },
+            "value": 0.6481481481481481
+        },
+        "http_req_duration": {
+            "p(90)": 10841.485302399999,
+            "p(95)": 11675.4254448,
+            "avg": 6672.948867903708,
+            "min": 612.982446,
+            "med": 6850.3855625,
+            "max": 13200.531525,
+            "thresholds": {
+                "p(95)<5000": true
+            }
+        },
+        "checks": {
+            "passes": 365,
+            "fails": 175,
+            "value": 0.6759259259259259
+        },
+        "vus": {
+            "value": 10,
+            "min": 1,
+            "max": 100
+        },
+        "data_sent": {
+            "count": 33750,
+            "rate": 902.0321668845984
+        },
+        "http_req_blocked": {
+            "min": 0.0041,
+            "med": 0.0085995,
+            "max": 11.415129,
+            "p(90)": 0.3680683,
+            "p(95)": 0.43023049999999985,
+            "avg": 0.18972819999999982
+        }
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "list backups status is 200": {
+                    "path": "::list backups status is 200",
+                    "id": "db60578f44bd2071c949c33b71a08f9b",
+                    "passes": 270,
+                    "fails": 0,
+                    "name": "list backups status is 200"
+                },
+                "list backups response time < 5000ms": {
+                    "id": "c29c3f7735d14bb853c8d1d40f3a127d",
+                    "passes": 95,
+                    "fails": 175,
+                    "name": "list backups response time < 5000ms",
+                    "path": "::list backups response time < 5000ms"
+                }
+            }
+    }
+}

@@ -93,7 +93,7 @@ services:
       - CM_ADDRESS=cluster-manager:8080
       #- APPLICATION_PORT=8080
       - NODE_ADDRESS=cluster-manager:8080
-      - SPRING_PROFILES_ACTIVE=cluster_manager,test-runner
+      - SPRING_PROFILES_ACTIVE=cluster_manager
       - SELF_REGISTERATION=true
     ports:
       - "8080:8080"

@@ -59,7 +59,7 @@ services:
     environment:
       - BASE_URL=http://cluster-manager:8080
       - MAX_VUS=1000
-      - ITERATIONS=10
+      - ITERATIONS=3
     volumes:
       - ./stress-test/test-backup-volume-create/results:/stress-test/results
 
@@ -73,7 +73,7 @@ services:
     environment:
       - BASE_URL=http://cluster-manager:8080
       - MAX_VUS=200
-      - ITERATIONS=2
+      - ITERATIONS=3
     volumes:
       - ./stress-test/test-backup-volume-delete/results:/stress-test/results
 

@@ -90,25 +90,24 @@ Visit `http://localhost:3000` to access Grafana:
 
 ## Stress Testing
 
-**Setup:** In `docker-compose.yml`, change the cluster-manager profile:
-```yaml
-- SPRING_PROFILES_ACTIVE=cluster_manager,test-runner
-```
+---
+### Requirement for running any stress test:
+1. Navigate to the docker-compose.yml file located in the root directory of the project.
+2. Replace the environment variable  
+   `- SPRING_PROFILES_ACTIVE=cluster_manager`  
+   inside the cluster-manager service with  
+   `- SPRING_PROFILES_ACTIVE=cluster_manager,test-runner`
 
-**Run a test:**
-```bash
-docker compose --profile test-backup-volume-create up --build
-```
+### Running the stress test:
+1. Make sure you have followed the Requirement above for running any stress test.
+1. Select a test from the `/stress-test` folder you want to run
+    - Each test has its own folder with a descriptive folder name, starting with `test-`
+    - Each test folder contains its own README.md file with specific instructions.
+1. After selecting the test, run  
+   `docker compose --profile [folder-name] up --build`  
+   where `[folder-name]` is the name of the test folder you selected in step 2.
+1. After running the test, you can find the results in the `/stress-test/[folder-name]/results` folder.
+1. If you want to see the HTML report, run `node generate-results-page.js` which will update the `results.html`.
 
-Results → `/stress-test/test-backup-volume-create/results/`
-
-### Available Tests
-
-| Test | Description | Config |
-|------|-------------|--------|
-| `test-backup-volume-create` | Concurrent backup creation across nodes | `MAX_VUS`, `ITERATIONS` |
-| `test-backup-volume-delete` | Create + delete backups concurrently | `MAX_VUS`, `ITERATIONS` |
-| `test-backup-volume-read` | Stress `GET /api/v1/cm/backups` with ramping users | `INITIAL_BACKUPS`, `BACKUP_INCREMENT`, `ITERATIONS` |
-
-Configure via environment variables in `docker-compose.yml`. See each test's README for details.  
-Tests use [Grafana K6](https://grafana.com/docs/k6/latest/) — advanced options in `backup-stress-test.js`.
+#### Credits
+`k6-reporter` is used to create HTML reports of each test, you can access the code from [Github](https://github.com/benc-uk/k6-reporter)

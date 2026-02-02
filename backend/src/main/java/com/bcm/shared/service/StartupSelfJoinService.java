@@ -84,7 +84,7 @@ public class StartupSelfJoinService {
                 .doOnSuccess(resp ->
                         log.info("Sent request for self-register"))
                 .doOnError(e ->
-                        log.error("Error registering node", e))
+                        log.error("Error registering node"))
                 .then();
 
     }

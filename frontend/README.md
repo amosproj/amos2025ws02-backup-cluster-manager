@@ -1,47 +1,46 @@
 # Frontend
+[![CI Build](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/amosproj/amos2025ws02-backup-cluster-manager/actions/workflows/build-frontend.yml)
 
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.6.
+
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Angular 20.3.6 |
+| Server | Nginx (production) |
+| Testing | Karma (unit), e2e (configurable) |
 
 ## Example Project Structure
 ```bash
-  src
-├── app
-│   ├── core                   # singleton services, interceptors, guards
-│   │   ├── services
-│   │   │   ├── api.service.ts
-│   │   │   └── auth.service.ts
-│   │   ├── interceptors
-│   │   │   └── auth.interceptor.ts
-│   │   └── guards
-│   │       └── auth.guard.ts
+frontend/src/
+├── app/
+│   ├── core/                # Singletons: services, interceptors, guards
+│   │   ├── services/        # api.service, auth.service
+│   │   ├── interceptors/    # auth.interceptor
+│   │   └── guards/          # auth.guard, permission.guard
 │   │
-│   ├── shared                 # reusable UI components, pipes, directives
-│   │   ├── components
-│   │   │   └── loader
-│   │   └── pipes
-│   │       └── format-bytes.pipe.ts
+│   ├── shared/              # Reusable components, pipes, directives
+│   │   ├── components/
+│   │   ├── types/
+│   │   └── utils/
 │   │
-│   ├── features               # feature modules (each with routing, components, etc.)
-│   │   ├── home
-│   │   │   ├── home.component.ts
-│   │   │   └── home.module.ts
-│   │   ├── clusters
-│   │   │   ├── clusters.component.ts
-│   │   │   ├── clusters.service.ts
-│   │   │   └── clusters.module.ts
-│   │   └── nodes
-│   │       ├── nodes.component.ts
-│   │       ├── tasks.service.ts
-│   │       └── nodes.module.ts
+│   ├── features/            # Feature modules
+│   │   ├── dashboard/
+│   │   ├── backups/
+│   │   ├── clients/
+│   │   ├── clusters/
+│   │   ├── nodes/
+│   │   ├── tasks/
+│   │   ├── users/
+│   │   ├── permissions/
+│   │   └── login/
 │   │
-│   ├── app.component.ts
-│   ├── app.module.ts
-│   └── app-routing.module.ts
+│   ├── app.config.ts        # App configuration
+│   └── app.routes.ts        # Route definitions
 │
-├── assets
-├── environments
-├── main.ts
-├── index.html
-└── styles.css
+├── environments/            # Environment configs
+└── public/                  # Static assets (SVG icons)
 ```
 
 

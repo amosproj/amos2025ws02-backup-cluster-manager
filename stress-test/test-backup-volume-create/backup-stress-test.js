@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate, Trend } from 'k6/metrics';
+import { htmlReport } from 'https://raw.githubusercontent.com/benc-uk/k6-reporter/latest/dist/bundle.js';
 
 // Custom metrics
 const errorRate = new Rate('errors');
@@ -78,6 +79,7 @@ export function handleSummary(data) {
     };
 
     return {
-        'stdout': JSON.stringify(summary, null, 2)
+        'stdout': JSON.stringify(summary, null, 2),
+        'summary.html': htmlReport(data)
     };
 }

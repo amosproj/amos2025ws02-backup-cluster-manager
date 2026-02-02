@@ -17,3 +17,7 @@ inside the cluster-manager service with
 `docker compose --profile [folder-name] up --build`  
 where `[folder-name]` is the name of the test folder you selected in step 2.
 1. After running the test, you can find the results in the `/stress-test/[folder-name]/results` folder.
+1. If you want to see the HTML report, run `node generate-results-page.js` which will update the `results.html`.
+
+#### Credits
+`k6-reporter` is used to create HTML reports of each test, you can access the code from [Github](https://github.com/benc-uk/k6-reporter)

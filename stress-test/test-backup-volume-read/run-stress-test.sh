@@ -93,12 +93,18 @@ run_k6_test() {
     # Run K6 test
     export BASE_URL
     export TEST_NAME="$test_name"
-    
+
     # We output summary to a fixed filename, then move it
     k6 run /stress-test/backup-stress-test.js \
         --summary-export="$RESULTS_DIR/k6-summary.json" \
         --out json="$RESULTS_DIR/${test_name}-raw.json" \
         2>&1 | tee "$RESULTS_DIR/${test_name}-output.log"
+
+    # Move the HTML file if it was created
+    if [ -f "summary.html" ]; then
+        mv "summary.html" "$RESULTS_DIR/${test_name}-summary.html"
+        echo "HTML report saved to: $RESULTS_DIR/${test_name}-summary.html"
+    fi
     
     # Read K6 summary if available
     local k6_result="{}"

@@ -1,0 +1,116 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: /stress-test/backup-stress-test.js
+        output: json (/stress-test/results/test_10_backups-raw.json)
+
+     scenarios: (100.00%) 1 scenario, 100 max VUs, 1m0s max duration (incl. graceful stop):
+              * default: Up to 100 looping VUs for 30s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+running (0m01.0s), 001/100 VUs, 2 complete and 0 interrupted iterations
+default   [   3% ] 001/100 VUs  01.0s/30.0s
+
+running (0m02.0s), 001/100 VUs, 6 complete and 0 interrupted iterations
+default   [   7% ] 001/100 VUs  02.0s/30.0s
+
+running (0m03.0s), 001/100 VUs, 11 complete and 0 interrupted iterations
+default   [  10% ] 001/100 VUs  03.0s/30.0s
+
+running (0m04.0s), 001/100 VUs, 16 complete and 0 interrupted iterations
+default   [  13% ] 001/100 VUs  04.0s/30.0s
+
+running (0m05.0s), 001/100 VUs, 21 complete and 0 interrupted iterations
+default   [  17% ] 001/100 VUs  05.0s/30.0s
+
+running (0m06.0s), 005/100 VUs, 31 complete and 0 interrupted iterations
+default   [  20% ] 005/100 VUs  06.0s/30.0s
+
+running (0m07.0s), 010/100 VUs, 62 complete and 0 interrupted iterations
+default   [  23% ] 010/100 VUs  07.0s/30.0s
+
+running (0m08.0s), 015/100 VUs, 97 complete and 0 interrupted iterations
+default   [  27% ] 015/100 VUs  08.0s/30.0s
+
+running (0m09.0s), 020/100 VUs, 136 complete and 0 interrupted iterations
+default   [  30% ] 020/100 VUs  09.0s/30.0s
+
+running (0m10.0s), 025/100 VUs, 178 complete and 0 interrupted iterations
+default   [  33% ] 025/100 VUs  10.0s/30.0s
+
+running (0m11.0s), 030/100 VUs, 220 complete and 0 interrupted iterations
+default   [  37% ] 030/100 VUs  11.0s/30.0s
+
+running (0m12.0s), 035/100 VUs, 262 complete and 0 interrupted iterations
+default   [  40% ] 035/100 VUs  12.0s/30.0s
+
+running (0m13.0s), 040/100 VUs, 307 complete and 0 interrupted iterations
+default   [  43% ] 040/100 VUs  13.0s/30.0s
+
+running (0m14.0s), 045/100 VUs, 355 complete and 0 interrupted iterations
+default   [  47% ] 045/100 VUs  14.0s/30.0s
+
+running (0m15.0s), 050/100 VUs, 398 complete and 0 interrupted iterations
+default   [  50% ] 050/100 VUs  15.0s/30.0s
+
+running (0m16.0s), 055/100 VUs, 436 complete and 0 interrupted iterations
+default   [  53% ] 055/100 VUs  16.0s/30.0s
+
+running (0m17.0s), 060/100 VUs, 481 complete and 0 interrupted iterations
+default   [  57% ] 060/100 VUs  17.0s/30.0s
+
+running (0m18.0s), 065/100 VUs, 527 complete and 0 interrupted iterations
+default   [  60% ] 065/100 VUs  18.0s/30.0s
+
+running (0m19.0s), 070/100 VUs, 567 complete and 0 interrupted iterations
+default   [  63% ] 070/100 VUs  19.0s/30.0s
+
+running (0m20.0s), 075/100 VUs, 610 complete and 0 interrupted iterations
+default   [  67% ] 075/100 VUs  20.0s/30.0s
+
+running (0m21.0s), 080/100 VUs, 655 complete and 0 interrupted iterations
+default   [  70% ] 080/100 VUs  21.0s/30.0s
+
+running (0m22.0s), 085/100 VUs, 697 complete and 0 interrupted iterations
+default   [  73% ] 085/100 VUs  22.0s/30.0s
+
+running (0m23.0s), 090/100 VUs, 735 complete and 0 interrupted iterations
+default   [  77% ] 090/100 VUs  23.0s/30.0s
+
+running (0m24.0s), 094/100 VUs, 780 complete and 0 interrupted iterations
+default   [  80% ] 094/100 VUs  24.0s/30.0s
+
+running (0m25.0s), 099/100 VUs, 821 complete and 0 interrupted iterations
+default   [  83% ] 099/100 VUs  25.0s/30.0s
+
+running (0m26.0s), 096/100 VUs, 860 complete and 0 interrupted iterations
+default   [  87% ] 096/100 VUs  26.0s/30.0s
+
+running (0m27.0s), 086/100 VUs, 898 complete and 0 interrupted iterations
+default   [  90% ] 086/100 VUs  27.0s/30.0s
+
+running (0m28.0s), 068/100 VUs, 945 complete and 0 interrupted iterations
+default   [  93% ] 068/100 VUs  28.0s/30.0s
+
+running (0m29.0s), 042/100 VUs, 990 complete and 0 interrupted iterations
+default   [  97% ] 042/100 VUs  29.0s/30.0s
+
+running (0m30.0s), 007/100 VUs, 1036 complete and 0 interrupted iterations
+default   [ 100% ] 007/100 VUs  30.0s/30.0s
+time="2026-02-02T15:57:00Z" level=info msg="[k6-reporter v3.0.0] Generating HTML summary report, with theme: default" source=console
+{
+  "total_requests": 1043,
+  "avg_duration_ms": 1195.9745838475558,
+  "p95_duration_ms": 2802.2817583,
+  "max_duration_ms": 4745.844738,
+  "min_duration_ms": 92.417791,
+  "fail_rate": 0,
+  "vus_max": 100
+}
+running (0m30.2s), 000/100 VUs, 1043 complete and 0 interrupted iterations
+default ✓ [ 100% ] 000/100 VUs  30s

@@ -10,3 +10,10 @@ The first report was based on a Windows 11 System with the following specificati
 - RAM: 32 GB
 - Storage: 1 TB NVMe SSD M.2
 - OS: Windows 11 Pro
+
+The second report was based on MacOS system with the following specifications:
+- CPU: Apple M2 
+- GPU: Built-in
+- RAM: 16 GB
+- Storage: 512 GB SSD
+- OS: Tahoe Version 26.2 
